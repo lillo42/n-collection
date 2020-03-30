@@ -91,9 +91,6 @@ namespace NCollection
             return true;
         }
 
-        public virtual void Add(object? item) 
-            => Push(item);
-        
         public virtual void CopyTo(Array array, int index)
         {
             if (array == null)

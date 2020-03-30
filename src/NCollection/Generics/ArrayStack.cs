@@ -10,7 +10,7 @@ namespace NCollection.Generics
 {
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    public class ArrayStack<T> : IStack<T>, ICloneable<ArrayStack<T>>
+    public class ArrayStack<T> : IStack<T>, IStack, ICloneable<ArrayStack<T>>
     {
         private int _size = 0;
         private T[] _array;
@@ -20,7 +20,7 @@ namespace NCollection.Generics
             _array = ArrayPool<T>.Shared.Rent(4);
         }
 
-        public ArrayStack(uint initialCapacity)
+        public ArrayStack(int initialCapacity)
         {
             _array = new T[initialCapacity];
         }
@@ -82,6 +82,11 @@ namespace NCollection.Generics
 
         public void CopyTo(T[] array, int arrayIndex)
         {
+            if (array == null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+
             if (array.Rank != 1)
             {
                 throw new ArgumentException("Rank multi-dimensional not supported", nameof(array));
@@ -102,7 +107,12 @@ namespace NCollection.Generics
                 throw new ArgumentException("Invalid length");
             }
 
-            _array.CopyTo(array, arrayIndex);
+            var srcIndex = 0;
+            var dstIndex = arrayIndex + _size;
+            while(srcIndex < _size)
+            {
+                array[--dstIndex] = _array[srcIndex++];
+            }
         }
         
         [return: MaybeNull]
@@ -187,8 +197,13 @@ namespace NCollection.Generics
             return false;
         }
 
-        public ArrayStack<T> Clone() 
-            => new ArrayStack<T>(this);
+        public ArrayStack<T> Clone()
+        {
+            var clone = new ArrayStack<T>(_size);
+            Array.Copy(_array, clone._array, _size);
+            clone._size = _size;
+            return clone;
+        }
 
         IStack<T> ICloneable<IStack<T>>.Clone() 
             => Clone();
@@ -208,6 +223,36 @@ namespace NCollection.Generics
         IEnumerator IEnumerable.GetEnumerator() 
             => GetEnumerator();
 
+        
+        void IStack.Push(object? item)
+            => Push((T) item!);
+
+        bool IStack.TryPop(out object? item)
+        {
+            if (TryPop(out var result))
+            {
+                item = result;
+                return true;
+            }
+
+            item = null;
+            return false;
+        }
+        
+        bool ICollection.Contains(object? item)
+            => Contains((T) item!);
+
+        bool IStack.TryPeek(out object? item)
+        {
+            if (TryPeek(out var result))
+            {
+                item = result;
+                return true;
+            }
+
+            item = null;
+            return false;
+        }
 
         public struct ArrayStackEnumerator : IEnumerator<T>
         {
@@ -241,7 +286,7 @@ namespace NCollection.Generics
                         return false;
                 }
 
-                returnValue = --_index > 0;
+                returnValue = --_index >= 0;
                 _current = returnValue ? _stack._array[_index] : default!;
                 return returnValue;
             }

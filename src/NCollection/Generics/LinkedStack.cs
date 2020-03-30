@@ -9,7 +9,7 @@ namespace NCollection.Generics
 {
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    public class LinkedStack<T> : IStack<T>, ICloneable<LinkedStack<T>>
+    public class LinkedStack<T> : IStack<T>, IStack, ICloneable<LinkedStack<T>>
     {
         private Node? _current;
         public LinkedStack()
@@ -39,6 +39,7 @@ namespace NCollection.Generics
 
         public virtual bool IsReadOnly => false;
         
+
         [return: MaybeNull]
         public virtual T Peek()
         {
@@ -49,7 +50,7 @@ namespace NCollection.Generics
 
             return item;
         }
-        
+
         public virtual bool TryPeek([MaybeNullWhen(false)]out T item)
         {
             if (_current == null)
@@ -194,7 +195,19 @@ namespace NCollection.Generics
             => GetEnumerator();
 
         public LinkedStack<T> Clone() 
-            => new LinkedStack<T>(this);
+        {
+            var clone =  new LinkedStack<T>();
+           
+            var array = new T[Count];
+            CopyTo(array, 0);
+
+            for (var i = array.Length - 1 ; i >= 0; i--)
+            {
+                clone.Push(array[i]);
+            }
+
+            return clone;
+        }
 
         IStack<T> ICloneable<IStack<T>>.Clone()
             => Clone();
@@ -204,6 +217,36 @@ namespace NCollection.Generics
         
         object ICloneable.Clone()
             => Clone();
+        
+        void IStack.Push(object? item)
+            => Push((T) item!);
+
+        bool IStack.TryPop(out object? item)
+        {
+            if (TryPop(out var result))
+            {
+                item = result;
+                return true;
+            }
+
+            item = null;
+            return false;
+        }
+        
+        bool ICollection.Contains(object? item)
+            => Contains((T) item!);
+
+        bool IStack.TryPeek(out object? item)
+        {
+            if (TryPeek(out var result))
+            {
+                item = result;
+                return true;
+            }
+
+            item = null;
+            return false;
+        }
         
         private class Node
         {

@@ -5,12 +5,12 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace NCollection.Generics
 {
-    public interface IStack<T> : IStack, ICollection<T>, ICloneable<IStack<T>>
+    public interface IStack<T> : ICollection<T>, ICloneable<IStack<T>>
     { 
         bool TryPeek([MaybeNullWhen(false)]out T item);
         
         [return: MaybeNull]
-        new T Peek()
+        T Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -22,11 +22,10 @@ namespace NCollection.Generics
 
         void Push(T item);
         
-        
         bool TryPop([MaybeNullWhen(false)]out T item);
 
         [return: MaybeNull]
-        new T Pop()
+         T Pop()
         {
             if (!TryPop(out var item))
             {
@@ -38,45 +37,8 @@ namespace NCollection.Generics
 
         new bool Contains(T item);
 
-        #region IStack
-
-        bool IStack.TryPeek(out object? item)
-        {
-            item = null;
-            if (TryPeek(out var result))
-            {
-                item = result;
-                return true;
-            }
-            
-            return false;
-        }
-        
-        object? IStack.Peek() 
-            => Peek();
-
-        void IStack.Push(object? item) 
-            => Push((T) item!);
-
-        object? IStack.Pop() 
-            => Pop();
-
-        bool IStack.TryPop(out object? item)
-        {
-            item = null;
-            if (TryPop(out var result))
-            {
-                item = result;
-                return true;
-            }
-            
-            return false;
-        }
-
-        #endregion
-
         #region ICollection
-        
+
         void ICollection<T>.Clear()
         {
             while (TryPop(out _)) { }
@@ -87,10 +49,7 @@ namespace NCollection.Generics
 
         bool ICollection<T>.Remove(T item)
             => Remove(item);
-
-        bool ICollection.Contains(object? item)
-            => Contains((T) item!);
-
+        
         #endregion
 
         #region IEnumerable

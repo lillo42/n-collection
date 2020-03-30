@@ -1,11 +1,12 @@
 using System;
 using AutoFixture;
 using FluentAssertions;
+using NCollection.Generics;
 using Xunit;
 
-namespace NCollection.Test.Stack
+namespace NCollection.Test.Generic.Stack
 {
-    public abstract class IStackTest
+    public abstract class IStackTest<T>
     {
         private Fixture Fixture { get; }
 
@@ -14,7 +15,7 @@ namespace NCollection.Test.Stack
             Fixture = new Fixture();
         }
 
-        protected abstract IStack Create();
+        protected abstract IStack<T> Create();
 
         [Theory]
         [InlineData(1)]
@@ -26,7 +27,7 @@ namespace NCollection.Test.Stack
 
             for (var i = 0; i < size; i++)
             {
-                stack.Push(Fixture.Create<object>());
+                stack.Push(Fixture.Create<T>());
             }
            
             stack.Count.Should().Be(size);
@@ -42,7 +43,7 @@ namespace NCollection.Test.Stack
 
             for (var i = 0; i < size; i++)
             {
-                stack.Push(Fixture.Create<object>());
+                stack.Push(Fixture.Create<T>());
             }
            
             stack.Count.Should().Be(size);
@@ -54,7 +55,7 @@ namespace NCollection.Test.Stack
         public void Peek()
         {
             var stack = Create();
-            var data = Fixture.Create<object>();
+            var data = Fixture.Create<T>();
             stack.Push(data);
             
             var peek = stack.Peek();
@@ -74,7 +75,7 @@ namespace NCollection.Test.Stack
         public void TryPeek_Should_BeTrue_When_HaveData()
         {
             var stack = Create();
-            var data = Fixture.Create<object>();
+            var data = Fixture.Create<T>();
             stack.Push(data);
             
             var isPeeked = stack.TryPeek(out var peek);
@@ -98,7 +99,7 @@ namespace NCollection.Test.Stack
         public void Pop()
         {
             var stack = Create();
-            var data = Fixture.Create<object>();
+            var data = Fixture.Create<T>();
             stack.Push(data);
             
             var peek = stack.Pop();
@@ -117,7 +118,7 @@ namespace NCollection.Test.Stack
         public void TryPop_Should_BeTrue_When_HaveData()
         {
             var stack = Create();
-            var data = Fixture.Create<object>();
+            var data = Fixture.Create<T>();
             stack.Push(data);
             
             var isPeeked = stack.TryPop(out var peek);
@@ -140,7 +141,7 @@ namespace NCollection.Test.Stack
         [Fact]
         public void Clone()
         {
-            var array = Fixture.Create<string[]>();
+            var array = Fixture.Create<T[]>();
             var stack = Create();
 
             foreach (var item in array)
@@ -170,7 +171,7 @@ namespace NCollection.Test.Stack
         [Fact]
         public void  IClonable_Clone()
         {
-            var array = Fixture.Create<string[]>();
+            var array = Fixture.Create<T[]>();
             var stack = Create();
 
             foreach (var item in array)
@@ -202,21 +203,18 @@ namespace NCollection.Test.Stack
         {
             var stack = Create();
 
-            var values = Fixture.Create<object[]>();
+            var values = Fixture.Create<T[]>();
 
             foreach (var value in values)
             {
                 stack.Push(value);
             }
-            
-            stack.Push(null);
 
             foreach (var value in values)
             {
                 stack.Contains(value).Should().BeTrue();
             }
 
-            stack.Contains(null).Should().BeTrue();
         }
 
         [Fact] 
@@ -224,15 +222,14 @@ namespace NCollection.Test.Stack
         {
             var stack = Create();
 
-            var values = Fixture.Create<object[]>();
+            var values = Fixture.Create<T[]>();
 
             foreach (var value in values)
             {
                 stack.Push(value);
             }
             
-            stack.Contains(Fixture.Create<object>()).Should().BeFalse();
-            stack.Contains(null).Should().BeFalse();
+            stack.Contains(Fixture.Create<T>()).Should().BeFalse();
         }
         
         [Fact] 
@@ -240,14 +237,14 @@ namespace NCollection.Test.Stack
         {
             var stack = Create();
 
-            var values = Fixture.Create<string[]>();
+            var values = Fixture.Create<T[]>();
 
             foreach (var value in values)
             {
                 stack.Push(value);
             }
             
-            var objArray = new object[values.Length];
+            var objArray = new T[values.Length];
             stack.CopyTo(objArray, 0);
 
             var enumerable = stack.GetEnumerator();
@@ -258,7 +255,7 @@ namespace NCollection.Test.Stack
                 value.Should().Be(enumerable.Current);
             }
             
-            var strArray = new string[values.Length];
+            var strArray = new T[values.Length];
             stack.CopyTo(strArray, 0);
             
             enumerable.Reset();
@@ -266,7 +263,7 @@ namespace NCollection.Test.Stack
             foreach (var value in strArray)
             {
                 enumerable.MoveNext().Should().BeTrue();
-                value.Should().Be((string)enumerable.Current);
+                value.Should().Be(enumerable.Current);
             }
         }
 
@@ -275,7 +272,7 @@ namespace NCollection.Test.Stack
         {
             var stack = Create();
             
-            var values = Fixture.Create<object[]>();
+            var values = Fixture.Create<T[]>();
 
             foreach (var value in values)
             {
@@ -283,10 +280,9 @@ namespace NCollection.Test.Stack
             }
             
             Assert.Throws<ArgumentNullException>(() => stack.CopyTo(null!, values.Length));
-            Assert.Throws<ArgumentException>(() => stack.CopyTo(new object[10, 10], values.Length));
-            Assert.Throws<ArgumentOutOfRangeException>(() => stack.CopyTo(new object[10], -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => stack.CopyTo(new object[10], values.Length + 1));
-            Assert.Throws<ArgumentException>(() => stack.CopyTo(new object[1], values.Length));
+            Assert.Throws<ArgumentOutOfRangeException>(() => stack.CopyTo(new T[10], -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => stack.CopyTo(new T[10], values.Length + 1));
+            Assert.Throws<ArgumentException>(() => stack.CopyTo(new T[1], values.Length));
         }
     }
 }
