@@ -151,6 +151,14 @@ namespace NCollection.Generics
             _array[_size] = item;
             _size++;
         }
+        
+        public void Push(IEnumerable<T> items)
+        {
+            foreach (var item in items)
+            {
+                Push(item);
+            }
+        }
 
         [return: MaybeNull]
         public virtual T Pop()

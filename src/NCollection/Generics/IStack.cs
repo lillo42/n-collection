@@ -21,6 +21,14 @@ namespace NCollection.Generics
         }
 
         void Push(T item);
+
+        void Push(IEnumerable<T> items)
+        {
+            foreach (var item in items)
+            {
+                Push(item);
+            }
+        }
         
         bool TryPop([MaybeNullWhen(false)]out T item);
 

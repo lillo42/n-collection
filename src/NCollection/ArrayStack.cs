@@ -141,6 +141,14 @@ namespace NCollection
             _array[_size] = item;
             _size++;
         }
+        
+        public virtual void Push(IEnumerable items)
+        {
+            foreach (var item in items)
+            {
+                Push(item);
+            }
+        }
 
         public virtual object? Pop()
         {

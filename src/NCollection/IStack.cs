@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 
 namespace NCollection
 {
@@ -17,6 +18,14 @@ namespace NCollection
         }
 
         void Push(object? item);
+
+        void Push(IEnumerable items)
+        {
+            foreach (var item in items)
+            {
+                Push(item);
+            }
+        }
 
         bool TryPop(out object? item);
 
