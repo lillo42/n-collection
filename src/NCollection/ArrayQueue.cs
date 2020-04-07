@@ -58,7 +58,8 @@ namespace NCollection
                     Array.Copy(_array, _head, array, 0, _array.Length - _head);
                     Array.Copy(_array, 0, array,  _array.Length - _head, _tail);
                 }
-                
+                _head = 0;
+                _tail = _array.Length;
                 ArrayPool<object>.Shared.Return(array);
                 _array = array;
             }
