@@ -28,6 +28,11 @@ namespace NCollection.Generics
         public ArrayStack(IEnumerable<T> enumerable)
             : this()
         {
+            if (enumerable == null)
+            {
+                throw new ArgumentNullException(nameof(enumerable));
+            }
+            
             foreach (var item in enumerable)
             {
                 Push(item);
@@ -44,6 +49,11 @@ namespace NCollection.Generics
         
         public void CopyTo(Array array, int index)
         {
+            if (array == null)
+            {
+                throw new ArgumentNullException(nameof(array));
+            }
+            
             if (array.Rank != 1)
             {
                 throw new ArgumentException("Rank multi-dimensional not supported", nameof(array));

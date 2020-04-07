@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using AutoFixture;
 using FluentAssertions;
 using Xunit;
@@ -7,7 +8,7 @@ namespace NCollection.Test.Stack
 {
     public abstract class IStackTest
     {
-        private Fixture Fixture { get; }
+        protected Fixture Fixture { get; }
 
         protected IStackTest()
         {
@@ -15,6 +16,30 @@ namespace NCollection.Test.Stack
         }
 
         protected abstract IStack Create();
+        
+        protected abstract IStack Create(IEnumerable values);
+
+        
+        [Fact]
+        public void CreateWithIEnumerable()
+        {
+            var values = Fixture.Create<string[]>();
+            
+            var stack = Create(values);
+            stack.Count.Should().Be(values.Length);
+
+            var i = values.Length - 1;
+
+            while (stack.TryPop(out var value))
+            {
+                value.Should().Be(values[i--]);
+            }
+        }
+        
+        [Fact]
+        public void CreateWithIEnumerable_Throw() 
+            => Assert.Throws<ArgumentNullException>(() => Create(null));
+
 
         [Theory]
         [InlineData(1)]

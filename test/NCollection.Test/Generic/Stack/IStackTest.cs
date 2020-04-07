@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
 using NCollection.Generics;
@@ -8,7 +9,7 @@ namespace NCollection.Test.Generic.Stack
 {
     public abstract class IStackTest<T>
     {
-        private Fixture Fixture { get; }
+        protected Fixture Fixture { get; }
 
         protected IStackTest()
         {
@@ -16,6 +17,28 @@ namespace NCollection.Test.Generic.Stack
         }
 
         protected abstract IStack<T> Create();
+        
+        protected abstract IStack<T> Create(IEnumerable<T> values);
+
+        [Fact]
+        public void CreateWithIEnumerable()
+        {
+            var values = Fixture.Create<T[]>();
+            
+            var stack = Create(values);
+            stack.Count.Should().Be(values.Length);
+
+            var i = values.Length - 1;
+
+            while (stack.TryPop(out var value))
+            {
+                value.Should().Be(values[i--]);
+            }
+        }
+        
+        [Fact]
+        public void CreateWithIEnumerable_Throw() 
+            => Assert.Throws<ArgumentNullException>(() => Create(null));
 
         [Theory]
         [InlineData(1)]
@@ -49,6 +72,22 @@ namespace NCollection.Test.Generic.Stack
             stack.Count.Should().Be(size);
             stack.Clear();
             stack.Count.Should().Be(0);
+        }
+
+        [Fact]
+        public void PushCollection()
+        {
+            var values = Fixture.Create<T[]>();
+            var stack = Create();
+            stack.Push(values);
+            
+            stack.Count.Should().Be(values.Length);
+            var i = values.Length - 1;
+
+            while (stack.TryPop(out var value))
+            {
+                value.Should().Be(values[i--]);
+            }
         }
         
         [Fact]

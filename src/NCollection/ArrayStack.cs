@@ -21,12 +21,17 @@ namespace NCollection
 
         public ArrayStack(int initialCapacity)
         {
-            _array = new object[initialCapacity];
+            _array = ArrayPool<object>.Shared.Rent(initialCapacity);
         }
         
         public ArrayStack(IEnumerable enumerable)
             : this()
         {
+            if (enumerable == null)
+            {
+                throw new ArgumentNullException(nameof(enumerable));
+            }
+            
             var enumerator = enumerable.GetEnumerator();
             while (enumerator.MoveNext())
             {
@@ -140,14 +145,6 @@ namespace NCollection
 
             _array[_size] = item;
             _size++;
-        }
-        
-        public virtual void Push(IEnumerable items)
-        {
-            foreach (var item in items)
-            {
-                Push(item);
-            }
         }
 
         public virtual object? Pop()

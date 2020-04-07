@@ -66,14 +66,6 @@ namespace NCollection
             _current = new Node(_current, item);
             Count++;
         }
-
-        public virtual void Push(IEnumerable items)
-        {
-            foreach (var item in items)
-            {
-                Push(item);
-            }
-        }
         
         public virtual object? Pop()
         {
