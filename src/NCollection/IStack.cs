@@ -43,6 +43,6 @@ namespace NCollection
             => Push(item);
 
         void ICollection.Remove(object? item) 
-            => throw new InvalidOperationException($"Remove only first of stack, use {nameof(Pop)} or {nameof(TryPop)}");
+            => throw new InvalidOperationException($"Tp remove item, use {nameof(Pop)} or {nameof(TryPop)}");
     }
 }

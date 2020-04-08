@@ -188,7 +188,7 @@ namespace NCollection.Generics
             var current = _current;
             for (var i = 0; current != null; i++)
             {
-                array[i] = current.Value;
+                array[i + arrayIndex] = current.Value;
                 current = current.Preview;
             }
         }
