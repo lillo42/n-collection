@@ -1,19 +1,19 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using AutoFixture;
 using FluentAssertions;
+using NCollection.Generics;
 using Xunit;
 
-namespace NCollection.Test.Queue
+namespace NCollection.Test.Generic.Queue
 {
-    public class ArrayQueueTest : IQueueTest
+    public class ArrayQueueTest : IQueueTest<string>
     {
-        protected override IQueue Create() 
-            => new ArrayQueue();
+        protected override IQueue<string> Create() 
+            => new ArrayQueue<string>();
 
-        protected override IQueue Create(IEnumerable values) 
-            => new ArrayQueue(values);
+        protected override IQueue<string> Create(IEnumerable<string> values) 
+            => new ArrayQueue<string>(values);
 
         [Theory]
         [InlineData(10)]
