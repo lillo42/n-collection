@@ -1,0 +1,11 @@
+name: Pull Request
+on: pull_request
+
+jobs:
+  ubuntu-latest-pr:
+    name: PR - Ubuntu Latest
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run './build.sh Test'
+      run: ./build.sh Test

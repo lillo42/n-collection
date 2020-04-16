@@ -1,0 +1,25 @@
+name: Release
+on: 
+  release:
+    types: [created]
+
+jobs:
+  releasebuild:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Run './build.sh Test Publish'
+      run: ./build.sh Test Publish --api-key ${{secrets.NUGET_TOKEN}}
+    - uses: actions/upload-artifact@v1
+      with:
+        name: test-results
+        path: artifacts/test-results
+    - uses: actions/upload-artifact@v1
+      with:
+        name: coverage-report.zip
+        path: artifacts/coverage-report.zip
+    - uses: actions/upload-artifact@v1
+      with:
+        name: packages
+        path: artifacts/packages
