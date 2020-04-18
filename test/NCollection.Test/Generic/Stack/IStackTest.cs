@@ -73,22 +73,6 @@ namespace NCollection.Test.Generic.Stack
             stack.Clear();
             stack.Count.Should().Be(0);
         }
-
-        [Fact]
-        public void PushCollection()
-        {
-            var values = Fixture.Create<T[]>();
-            var stack = Create();
-            stack.Push(values);
-            
-            stack.Count.Should().Be(values.Length);
-            var i = values.Length - 1;
-
-            while (stack.TryPop(out var value))
-            {
-                value.Should().Be(values[i--]);
-            }
-        }
         
         [Fact]
         public void Peek()
@@ -188,7 +172,7 @@ namespace NCollection.Test.Generic.Stack
                 stack.Push(item);
             }
 
-            var clone = stack.Clone();
+            var clone = (IStack<T>)stack.Clone();
             clone.Should().NotBeNull();
             var cloneEnumerator = clone!.GetEnumerator();
             var enumerator = stack.GetEnumerator();

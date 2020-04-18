@@ -7,25 +7,42 @@ using NCollection.Generics.DebugViews;
 
 namespace NCollection.Generics
 {
+    /// <summary>
+    /// Represents a first-in, first-out (FIFO) collection of <typeparamref name="T"/> with linked node.
+    /// </summary>
+    /// <typeparam name="T">Specifies the type of elements in the queue.</typeparam>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
     [Serializable]
-    public class ArrayQueue<T> : IQueue<T>, IQueue, ICloneable<ArrayQueue<T>>
+    public class ArrayQueue<T> : IQueue<T>
     {
         private int _head;
         private int _tail;
         private T[] _array;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayQueue{T}"/>.
+        /// </summary>
         public ArrayQueue()
         {
             _array = ArrayPool<T>.Shared.Rent(4);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayQueue{T}"/> class that is empty and has the specified initial capacity or the default initial capacity, whichever is greater.
+        /// </summary>
+        /// <param name="initialCapacity">The initial number of elements that the <see cref="ArrayQueue"/> can contain.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="initialCapacity"/>is less than zero.</exception>
         public ArrayQueue(int initialCapacity)
         {
             _array = ArrayPool<T>.Shared.Rent(initialCapacity);
         }
         
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayQueue{T}"/>.
+        /// </summary>
+        /// <param name="enumerable">The <see cref="IEnumerable{T}"/> to copy elements from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is null</exception>
         public ArrayQueue(IEnumerable<T> enumerable)
             : this()
         {
@@ -40,17 +57,36 @@ namespace NCollection.Generics
             }
         }
 
-        public int Count { get; private set; }
-        public bool IsSynchronized => false;
-        public object SyncRoot => this;
-        public bool IsReadOnly => false;
-        
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual void Clear()
+        {
+            Count = 0;
+            _head = 0;
+            _tail = 0;
+            Array.Clear(_array, 0, _array.Length);
+        }
 
-        public void Enqueue(T item)
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual int Count { get; private set; }
+        
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual bool IsSynchronized => false;
+        
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual object SyncRoot => this;
+        
+        /// <inheritdoc cref="ICollection"/>
+        public virtual bool IsReadOnly => false;
+        
+        /// <inheritdoc cref="ICollection"/>
+        public virtual bool IsEmpty => Count == 0;
+        
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual void Enqueue(T item)
         {
             if (Count == _array.Length)
             {
-                var array = ArrayPool<T>.Shared.Rent(_array.Length * 2);
+                var array = ArrayPool<T>.Shared.Rent(_array.Length << 1);
                 if (_head < _tail)
                 {
                     Array.Copy(_array, array, _array.Length);
@@ -62,7 +98,8 @@ namespace NCollection.Generics
                 }
                 _head = 0;
                 _tail = _array.Length;
-                ArrayPool<T>.Shared.Return(array);
+                Array.Clear(_array, 0, _array.Length);
+                ArrayPool<T>.Shared.Return(_array);
                 _array = array;
             }
             
@@ -71,10 +108,8 @@ namespace NCollection.Generics
             Count++;
         }
 
-        void IQueue.Enqueue(object? item)
-            => Enqueue((T) item!);
-
-        public T Peek()
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual T Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -84,19 +119,8 @@ namespace NCollection.Generics
             return item;
         }
 
-        bool IQueue.TryPeek(out object? item)
-        {
-            if (TryPeek(out var value))
-            {
-                item = value;
-                return true;
-            }
-
-            item = null;
-            return false;
-        }
-
-        public bool TryPeek(out T item)
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual bool TryPeek(out T item)
         {
             if (Count == 0)
             {
@@ -108,8 +132,8 @@ namespace NCollection.Generics
             return true;
         }
         
-        
-        public T Dequeue()
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual T Dequeue()
         {
             if (!TryDequeue(out var item))
             {
@@ -119,19 +143,8 @@ namespace NCollection.Generics
             return item;
         }
 
-        bool IQueue.TryDequeue(out object? item)
-        {
-            if (TryDequeue(out var value))
-            {
-                item = value;
-                return true;
-            }
-
-            item = null;
-            return false;
-        }
-
-        public bool TryDequeue(out T item)
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual bool TryDequeue(out T item)
         {
             if (Count == 0)
             {
@@ -145,6 +158,7 @@ namespace NCollection.Generics
             return true;
         }
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public void CopyTo(Array array, int index)
         {
             if (array == null)
@@ -185,7 +199,7 @@ namespace NCollection.Generics
             Array.Copy(_array, 0, array, index + _array.Length - _head, size);
         }
         
-        
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public bool Contains(T item)
         {
             var size = -1;
@@ -206,10 +220,8 @@ namespace NCollection.Generics
             
             return false;
         }
-        
-        bool ICollection.Contains(object? item) 
-            => Contains((T) item!);
 
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
@@ -249,18 +261,14 @@ namespace NCollection.Generics
             
             Array.Copy(_array, 0, array, arrayIndex + _array.Length - _head, size);
         }
-
-        IQueue ICloneable<IQueue>.Clone()
-        {
-            return Clone();
-        }
-
-        IQueue<T> ICloneable<IQueue<T>>.Clone() 
-            => Clone();
         
         object ICloneable.Clone()
             => Clone();
 
+        /// <summary>
+        /// Creates a shallow copy of the <see cref="ArrayQueue{T}"/>.
+        /// </summary>
+        /// <returns>A shallow copy of the <see cref="ArrayQueue{T}"/>.</returns>
         public ArrayQueue<T> Clone()
         {
             var queue = new ArrayQueue<T>(_array.Length);
@@ -271,6 +279,10 @@ namespace NCollection.Generics
             return queue;
         }
         
+        /// <summary>
+        /// Returns an <see cref="QueueStackEnumerator"/> for the <see cref="ArrayQueue{T}"/>.
+        /// </summary>
+        /// <returns>An <see cref="QueueStackEnumerator"/>  for the <see cref="ArrayQueue{T}"/>.</returns>
         public QueueStackEnumerator GetEnumerator() 
             => new QueueStackEnumerator(this);
 
@@ -280,11 +292,19 @@ namespace NCollection.Generics
         IEnumerator IEnumerable.GetEnumerator() 
             => GetEnumerator();
 
+        /// <summary>
+        /// Implementation of <see cref="IEnumerable{T}"/> for <see cref="ArrayQueue{T}"/>.
+        /// </summary>
         public struct QueueStackEnumerator : IEnumerator<T>
         {
             private int _index;
             private T _current;
             private readonly ArrayQueue<T> _queue;
+            
+            /// <summary>
+            /// Initializes a new instance of the <see cref="QueueStackEnumerator"/>.
+            /// </summary>
+            /// <param name="queue">The <see cref="ArrayQueue{T}"/>.</param>
             public QueueStackEnumerator(ArrayQueue<T> queue)
             {
                 _queue = queue;
@@ -292,6 +312,7 @@ namespace NCollection.Generics
                 _current = default!;
             }
 
+            /// <inheritdoc />
             public bool MoveNext()
             {
                 switch (_index)
@@ -308,12 +329,14 @@ namespace NCollection.Generics
                 return returnValue;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
                 _index = -2;
                 _current = default!;
             }
 
+            /// <inheritdoc />
             public T Current => _index switch
             {
                 -2 => throw new InvalidOperationException("Enumerable not started"),
@@ -325,6 +348,7 @@ namespace NCollection.Generics
             object? IEnumerator.Current
                 => Current;
             
+            /// <inheritdoc />
             public void Dispose() { }
         }
     }

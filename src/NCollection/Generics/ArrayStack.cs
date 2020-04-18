@@ -8,23 +8,40 @@ using NCollection.Generics.DebugViews;
 
 namespace NCollection.Generics
 {
+    /// <summary>
+    /// Represents a last-in-first-out (LIFO) generic collection of <typeparamref name="T"/> with array.
+    /// </summary>
+    /// <typeparam name="T">Specifies the type of elements in the stack.</typeparam>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    public class ArrayStack<T> : IStack<T>, IStack, ICloneable<ArrayStack<T>>
+    public class ArrayStack<T> : IStack<T>
     {
         private int _size = 0;
         private T[] _array;
         
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayStack{T}"/>.
+        /// </summary>
         public ArrayStack()
         {
             _array = ArrayPool<T>.Shared.Rent(4);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayStack{T}"/> class that is empty and has the specified initial capacity or the default initial capacity, whichever is greater.
+        /// </summary>
+        /// <param name="initialCapacity">The initial number of elements that the <see cref="ArrayStack"/> can contain.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="initialCapacity"/>is less than zero.</exception>
         public ArrayStack(int initialCapacity)
         {
             _array = new T[initialCapacity];
         }
         
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayStack{T}"/>.
+        /// </summary>
+        /// <param name="enumerable">The <see cref="IEnumerable"/> to copy elements from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is null</exception>
         public ArrayStack(IEnumerable<T> enumerable)
             : this()
         {
@@ -39,15 +56,23 @@ namespace NCollection.Generics
             }
         }
         
+        /// <inheritdoc cref="IStack{T}"/>
         public virtual int Count => _size;
 
+        /// <inheritdoc cref="IStack"/>
+        public virtual bool IsEmpty => Count == 0;
+
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual bool IsSynchronized => false;
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual object SyncRoot => this;
 
+        /// <inheritdoc cref="IStack{T}"/>
         public virtual bool IsReadOnly => false;
         
-        public void CopyTo(Array array, int index)
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual void CopyTo(Array array, int index)
         {
             if (array == null)
             {
@@ -90,7 +115,8 @@ namespace NCollection.Generics
             }
         }
 
-        public void CopyTo(T[] array, int arrayIndex)
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
+        public virtual void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
             {
@@ -125,6 +151,7 @@ namespace NCollection.Generics
             }
         }
         
+        /// <inheritdoc cref="IStack{T}"/>
         [return: MaybeNull]
         public virtual T Peek()
         {
@@ -135,8 +162,16 @@ namespace NCollection.Generics
 
             return item;
         }
-        
-        public bool TryPeek([MaybeNullWhen(false)]out T item)
+
+        /// <inheritdoc cref="IStack{T}"/>
+        public virtual void Clear()
+        {
+            Array.Clear(_array, 0, _array.Length);
+            _size = 0;
+        }
+
+        /// <inheritdoc cref="IStack{T}"/>
+        public virtual bool TryPeek([MaybeNullWhen(false)]out T item)
         {
             if (_size == 0)
             {
@@ -148,12 +183,14 @@ namespace NCollection.Generics
             return true;
         }
 
-        public void Push(T item)
+        /// <inheritdoc cref="IStack{T}"/>
+        public virtual void Push(T item)
         {
             if (_size == _array.Length)
             {
-                var array = ArrayPool<T>.Shared.Rent(_array.Length * 2);
+                var array = ArrayPool<T>.Shared.Rent(_array.Length << 1);
                 Array.Copy(_array, array, _array.Length);
+                Array.Clear(_array, 0, _array.Length);
                 ArrayPool<T>.Shared.Return(_array!);
                 _array = array;
             }
@@ -161,15 +198,8 @@ namespace NCollection.Generics
             _array[_size] = item;
             _size++;
         }
-        
-        public void Push(IEnumerable<T> items)
-        {
-            foreach (var item in items)
-            {
-                Push(item);
-            }
-        }
 
+        /// <inheritdoc cref="IStack{T}"/>
         [return: MaybeNull]
         public virtual T Pop()
         {
@@ -181,7 +211,8 @@ namespace NCollection.Generics
             return item;
         }
         
-        public bool TryPop([MaybeNullWhen(false)]out T item)
+        /// <inheritdoc cref="IStack{T}"/>
+        public virtual bool TryPop([MaybeNullWhen(false)]out T item)
         {
             if (_size == 0)
             {
@@ -194,7 +225,8 @@ namespace NCollection.Generics
             return true;
         }
 
-        public bool Contains(T item)
+        /// <inheritdoc cref="IStack{T}"/>
+        public virtual bool Contains(T item)
         {
             var size = _size;
             while (size-- > 0)
@@ -215,6 +247,10 @@ namespace NCollection.Generics
             return false;
         }
 
+        /// <summary>
+        /// Creates a shallow copy of the <see cref="ArrayStack{T}"/>.
+        /// </summary>
+        /// <returns>A shallow copy of the <see cref="ArrayStack{T}"/>.</returns>
         public ArrayStack<T> Clone()
         {
             var clone = new ArrayStack<T>(_size);
@@ -222,16 +258,14 @@ namespace NCollection.Generics
             clone._size = _size;
             return clone;
         }
-
-        IStack<T> ICloneable<IStack<T>>.Clone() 
-            => Clone();
-
-        IStack ICloneable<IStack>.Clone()
-            => Clone();
-
+        
         object ICloneable.Clone()
             => Clone();
 
+        /// <summary>
+        /// Returns an <see cref="ArrayStackEnumerator"/> for the <see cref="ArrayStack{T}"/>.
+        /// </summary>
+        /// <returns>An <see cref="ArrayStackEnumerator"/>  for the <see cref="ArrayStack{T}"/>.</returns>
         public ArrayStackEnumerator GetEnumerator()
             => new ArrayStackEnumerator(this);
         
@@ -241,42 +275,19 @@ namespace NCollection.Generics
         IEnumerator IEnumerable.GetEnumerator() 
             => GetEnumerator();
 
-        
-        void IStack.Push(object? item)
-            => Push((T) item!);
-
-        bool IStack.TryPop(out object? item)
-        {
-            if (TryPop(out var result))
-            {
-                item = result;
-                return true;
-            }
-
-            item = null;
-            return false;
-        }
-        
-        bool ICollection.Contains(object? item)
-            => Contains((T) item!);
-
-        bool IStack.TryPeek(out object? item)
-        {
-            if (TryPeek(out var result))
-            {
-                item = result;
-                return true;
-            }
-
-            item = null;
-            return false;
-        }
-
+        /// <summary>
+        /// Implementation of <see cref="IEnumerable{T}"/> for <see cref="ArrayStack{T}"/>.
+        /// </summary>
         public struct ArrayStackEnumerator : IEnumerator<T>
         {
             private int _index;
             private T _current;
             private readonly ArrayStack<T> _stack;
+            
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ArrayStackEnumerator"/>.
+            /// </summary>
+            /// <param name="stack">The <see cref="ArrayStack{T}"/>.</param>
             public ArrayStackEnumerator(ArrayStack<T> stack)
             {
                 _stack = stack;
@@ -284,6 +295,7 @@ namespace NCollection.Generics
                 _current = default!;
             }
 
+            /// <inheritdoc />
             public bool MoveNext()
             {
                 bool returnValue;
@@ -309,6 +321,7 @@ namespace NCollection.Generics
                 return returnValue;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
                 _index = -2;
@@ -317,6 +330,7 @@ namespace NCollection.Generics
 
             object? IEnumerator.Current => Current;
 
+            /// <inheritdoc />
             public T Current 
                 => _index switch
                 {
@@ -325,6 +339,7 @@ namespace NCollection.Generics
                     _ => _current
                 };
 
+            /// <inheritdoc />
             public void Dispose()
             {
                 

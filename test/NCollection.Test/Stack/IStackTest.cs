@@ -173,7 +173,7 @@ namespace NCollection.Test.Stack
                 stack.Push(item);
             }
 
-            var clone = stack.Clone();
+            var clone = (IStack)stack.Clone();
             clone.Should().NotBeNull();
             var cloneEnumerator = clone!.GetEnumerator();
             var enumerator = stack.GetEnumerator();
@@ -203,7 +203,7 @@ namespace NCollection.Test.Stack
                 stack.Push(item);
             }
 
-            var clone = ((ICloneable)stack).Clone();
+            var clone = stack.Clone();
             clone.Should().NotBeNull();
             (clone is IStack).Should().BeTrue();
             var cloneEnumerator = ((IStack)clone).GetEnumerator();
