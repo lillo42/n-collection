@@ -7,16 +7,29 @@ using NCollection.Generics.DebugViews;
 
 namespace NCollection.Generics
 {
+    /// <summary>
+    /// Represents a last-in-first-out (LIFO) generic collection of <typeparamref name="T"/> with linked node.
+    /// </summary>
+    /// <typeparam name="T">Specifies the type of elements in the stack.</typeparam>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    public class LinkedStack<T> : IStack<T>, IStack, ICloneable<LinkedStack<T>>
+    public class LinkedStack<T> : IStack<T>
     {
         private Node? _current;
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinkedStack{T}"/>.
+        /// </summary>
         public LinkedStack()
         {
             
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinkedStack{T}"/>.
+        /// </summary>
+        /// <param name="enumerable">The <see cref="IEnumerable"/> to copy elements from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is null</exception>
         public LinkedStack(IEnumerable<T> enumerable)
         {
             if (enumerable == null)
@@ -31,15 +44,22 @@ namespace NCollection.Generics
             }
         }
         
+        /// <inheritdoc cref="IStack{T}"/>
         public virtual int Count { get; private set; }
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual bool IsSynchronized => false;
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual object SyncRoot => this;
 
-        public virtual bool IsReadOnly => false;
-        
+        /// <inheritdoc cref="IStack"/>
+        public bool IsEmpty => _current == null;
 
+        /// <inheritdoc cref="IStack{T}"/>
+        public virtual bool IsReadOnly => false;
+
+        /// <inheritdoc cref="IStack{T}"/>
         [return: MaybeNull]
         public virtual T Peek()
         {
@@ -51,6 +71,7 @@ namespace NCollection.Generics
             return item;
         }
 
+        /// <inheritdoc cref="IStack{T}"/>
         public virtual bool TryPeek([MaybeNullWhen(false)]out T item)
         {
             if (_current == null)
@@ -63,20 +84,14 @@ namespace NCollection.Generics
             return true;
         }
 
+        /// <inheritdoc cref="IStack{T}"/>
         public void Push(T item)
         {
             _current = new Node(_current, item);
             Count++;
         }
-        
-        public void Push(IEnumerable<T> items)
-        {
-            foreach (var item in items)
-            {
-                Push(item);
-            }
-        }
-        
+
+        /// <inheritdoc cref="IStack{T}"/>
         [return: MaybeNull]
         public virtual T Pop()
         {
@@ -87,7 +102,21 @@ namespace NCollection.Generics
 
             return item;
         }
-        
+
+        /// <inheritdoc cref="IStack{T}"/>
+        public void Clear()
+        {
+            while (_current != null)
+            {
+                var item = _current;
+                _current = _current.Preview;
+                item.Dispose();
+            }
+
+            Count = 0;
+        }
+
+        /// <inheritdoc cref="IStack{T}"/>
         public virtual bool TryPop([MaybeNullWhen(false)]out T item)
         {
             if (Count == 0 || _current == null)
@@ -96,12 +125,15 @@ namespace NCollection.Generics
                 return false;
             }
 
-            item = _current.Value;
+            var dispose = _current;
+            item = dispose.Value;
             _current = _current.Preview;
             Count--;
+            dispose.Dispose();
             return true;
         }
         
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public virtual bool Contains(T item)
         {
             var node = _current;
@@ -126,6 +158,7 @@ namespace NCollection.Generics
             return false;
         }
         
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual void CopyTo(Array array, int index)
         {
             if (array == null)
@@ -167,7 +200,8 @@ namespace NCollection.Generics
                 throw new ArgumentException("Invalid array type", nameof(array), ex);
             }
         }
-
+        
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public virtual void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
@@ -193,15 +227,17 @@ namespace NCollection.Generics
             }
         }
 
+        /// <summary>
+        /// Returns an <see cref="LinkedStackEnumerator"/> for the <see cref="LinkedStack{T}"/>.
+        /// </summary>
+        /// <returns>An <see cref="LinkedStackEnumerator"/>  for the <see cref="LinkedStack{T}"/>.</returns>
         public LinkedStackEnumerator GetEnumerator()
             => new LinkedStackEnumerator(this);
-        
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() 
-            => GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() 
-            => GetEnumerator();
-
+        /// <summary>
+        /// Creates a shallow copy of the <see cref="LinkedStack{T}"/>.
+        /// </summary>
+        /// <returns>A shallow copy of the <see cref="LinkedStack{T}"/>.</returns>
         public LinkedStack<T> Clone() 
         {
             var clone =  new LinkedStack<T>();
@@ -217,46 +253,16 @@ namespace NCollection.Generics
             return clone;
         }
 
-        IStack<T> ICloneable<IStack<T>>.Clone()
-            => Clone();
-
-        IStack ICloneable<IStack>.Clone() 
-            => Clone();
-        
         object ICloneable.Clone()
             => Clone();
         
-        void IStack.Push(object? item)
-            => Push((T) item!);
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() 
+            => GetEnumerator();
 
-        bool IStack.TryPop(out object? item)
-        {
-            if (TryPop(out var result))
-            {
-                item = result;
-                return true;
-            }
+        IEnumerator IEnumerable.GetEnumerator() 
+            => GetEnumerator();
 
-            item = null;
-            return false;
-        }
-        
-        bool ICollection.Contains(object? item)
-            => Contains((T) item!);
-
-        bool IStack.TryPeek(out object? item)
-        {
-            if (TryPeek(out var result))
-            {
-                item = result;
-                return true;
-            }
-
-            item = null;
-            return false;
-        }
-        
-        private class Node
+        private class Node : IDisposable
         {
             public Node(Node? preview, T value)
             {
@@ -264,15 +270,28 @@ namespace NCollection.Generics
                 Value = value;
             }
 
-            internal T Value { get; }
-            internal Node? Preview { get; }
+            internal T Value { get; private set; }
+            internal Node? Preview { get; private set; }
+
+            public void Dispose()
+            {
+                Value = default!;
+                Preview = null;
+            }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IEnumerable{T}"/> for <see cref="LinkedStack{T}"/>.
+        /// </summary>
         public struct LinkedStackEnumerator : IEnumerator<T>
         {
             private readonly LinkedStack<T> _stack;
             private Node? _current;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LinkedStackEnumerator"/>.
+            /// </summary>
+            /// <param name="stack">The <see cref="LinkedStack{T}"/>.</param>
             public LinkedStackEnumerator(LinkedStack<T> stack)
             {
                 _stack = stack;
@@ -280,6 +299,7 @@ namespace NCollection.Generics
                 Current = default!;
             }
             
+            /// <inheritdoc />
             public bool MoveNext()
             {
                 if (_current == null)
@@ -293,13 +313,16 @@ namespace NCollection.Generics
                 return true;
             }
 
+            /// <inheritdoc />
             public void Reset() 
                 => _current = _stack._current;
-
+            
             object? IEnumerator.Current => Current;
 
+            /// <inheritdoc />
             public T Current { get; private set; }
             
+            /// <inheritdoc />
             public void Dispose()
             {
             }

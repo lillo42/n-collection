@@ -6,24 +6,45 @@ using NCollection.DebugViews;
 
 namespace NCollection
 {
+    /// <summary>
+    /// Implementation of last-in-first-out (LIFO) non-generic collection of <see cref="object"/> with array.
+    /// </summary>
     [DebuggerTypeProxy(typeof(ICollectionDebugView))]
     [DebuggerDisplay("Count = {Count}")]
     [Serializable]
-    public class ArrayStack : IStack, ICloneable<ArrayStack>
+    public class ArrayStack : IStack
     {
         private int _size = 0;
         private object?[] _array;
         
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayStack"/>.
+        /// </summary>
         public ArrayStack()
         {
             _array = ArrayPool<object>.Shared.Rent(4);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayStack"/> class that is empty and has the specified initial capacity or the default initial capacity, whichever is greater.
+        /// </summary>
+        /// <param name="initialCapacity">The initial number of elements that the <see cref="ArrayStack"/> can contain.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="initialCapacity"/>is less than zero.</exception>
         public ArrayStack(int initialCapacity)
         {
+            if (initialCapacity < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(initialCapacity), "Need non-negative number");
+            }
+            
             _array = ArrayPool<object>.Shared.Rent(initialCapacity);
         }
         
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinkedStack"/>.
+        /// </summary>
+        /// <param name="enumerable">The <see cref="IEnumerable"/> to copy elements from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is null</exception>
         public ArrayStack(IEnumerable enumerable)
             : this()
         {
@@ -32,21 +53,92 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(enumerable));
             }
             
-            var enumerator = enumerable.GetEnumerator();
-            while (enumerator.MoveNext())
+            foreach (var item in enumerable)
             {
-                Push(enumerator.Current);
+                Push(item);
             }
         }
         
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual int Count => _size;
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual bool IsSynchronized => false;
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual object SyncRoot => this;
 
+        /// <inheritdoc cref="ICollection"/>
+        public bool IsEmpty => Count == 0;
+
+        /// <inheritdoc cref="ICollection"/>
         public virtual bool IsReadOnly => false;
+
+        /// <inheritdoc cref="IStack"/>
+        public virtual object? Peek()
+        {
+            if (!TryPeek(out var item))
+            {
+                throw new InvalidOperationException("Empty stack");
+            }
+
+            return item;
+        }
         
+        /// <inheritdoc cref="IStack"/>
+        public virtual bool TryPeek(out object? item)
+        {
+            if (_size == 0)
+            {
+                item = null;
+                return false;
+            }
+
+            item = _array[_size - 1];
+            return true;
+        }
+        
+        /// <inheritdoc cref="IStack"/>
+        public virtual void Push(object? item)
+        {
+            if (_size == _array.Length)
+            {
+                var array = ArrayPool<object>.Shared.Rent(_array.Length * 2);
+                Array.Copy(_array, array, _array.Length);
+                ArrayPool<object>.Shared.Return(_array!);
+                _array = array;
+            }
+
+            _array[_size] = item;
+            _size++;
+        }
+
+        /// <inheritdoc cref="IStack"/>
+        public virtual object? Pop()
+        {
+            if (!TryPop(out var item))
+            {
+                throw new InvalidOperationException("Empty stack");
+            }
+
+            return item;
+        }
+        
+        /// <inheritdoc cref="IStack"/>
+        public virtual bool TryPop(out object? item)
+        {
+            if (_size == 0)
+            {
+                item = null;
+                return false;
+            }
+
+            item = _array[_size - 1];
+            _size--;
+            return true;
+        }
+
+        /// <inheritdoc cref="IStack"/>
         public virtual void CopyTo(Array array, int index)
         {
             if (array == null)
@@ -90,6 +182,7 @@ namespace NCollection
             }
         }
 
+        /// <inheritdoc cref="IStack"/>
         public virtual bool Contains(object? item)
         {
             var size = _size;
@@ -111,71 +204,17 @@ namespace NCollection
             return false;
         }
         
-        public virtual object? Peek()
-        {
-            if (!TryPeek(out var item))
-            {
-                throw new InvalidOperationException("Empty stack");
-            }
-
-            return item;
-        }
-        
-        public virtual bool TryPeek(out object? item)
-        {
-            if (_size == 0)
-            {
-                item = null;
-                return false;
-            }
-
-            item = _array[_size - 1];
-            return true;
-        }
-
-        public virtual void Push(object? item)
-        {
-            if (_size == _array.Length)
-            {
-                var array = ArrayPool<object>.Shared.Rent(_array.Length * 2);
-                Array.Copy(_array, array, _array.Length);
-                ArrayPool<object>.Shared.Return(_array!);
-                _array = array;
-            }
-
-            _array[_size] = item;
-            _size++;
-        }
-
-        public virtual object? Pop()
-        {
-            if (!TryPop(out var item))
-            {
-                throw new InvalidOperationException("Empty stack");
-            }
-
-            return item;
-        }
-        
-        public virtual bool TryPop(out object? item)
-        {
-            if (_size == 0)
-            {
-                item = null;
-                return false;
-            }
-
-            item = _array[_size - 1];
-            _size--;
-            return true;
-        }
-
+        /// <inheritdoc cref="ICollection"/>
         public virtual void Clear()
         {
             Array.Clear(_array, 0, _size);
             _size = 0;
         }
 
+        /// <summary>
+        /// Creates a shallow copy of the <see cref="ArrayStack"/>.
+        /// </summary>
+        /// <returns>A shallow copy of the <see cref="ArrayStack"/>.</returns>
         public ArrayStack Clone()
         {
             var clone = new ArrayStack(_size);
@@ -183,31 +222,41 @@ namespace NCollection
             clone._size = _size;
             return clone;
         }
-
-        IStack ICloneable<IStack>.Clone()
-            => Clone();
-
-        object ICloneable.Clone()
-            => Clone();
         
+        /// <summary>
+        /// Returns an <see cref="ArrayStackEnumerator"/> for the <see cref="ArrayStack"/>.
+        /// </summary>
+        /// <returns>An <see cref="ArrayStackEnumerator"/>  for the <see cref="ArrayStack"/>.</returns>
         public ArrayStackEnumerator GetEnumerator()
             => new ArrayStackEnumerator(this);
         
+        object ICloneable.Clone()
+            => Clone();
+
         IEnumerator IEnumerable.GetEnumerator() 
             => GetEnumerator();
 
+        /// <summary>
+        /// Implementation of <see cref="IEnumerable"/> for <see cref="ArrayStack"/>.
+        /// </summary>
         public struct ArrayStackEnumerator : IEnumerator
         {
             private int _index;
             private object? _current;
             private readonly ArrayStack _stack;
+            
+            /// <summary>
+            /// Initializes a new instance of the <see cref="ArrayStackEnumerator"/>.
+            /// </summary>
+            /// <param name="stack">The <see cref="ArrayStack"/>.</param>
             public ArrayStackEnumerator(ArrayStack stack)
             {
                 _stack = stack;
                 _index = -2;
                 _current = null;
             }
-
+            
+            /// <inheritdoc />
             public bool MoveNext()
             {
                 bool returnValue;
@@ -233,12 +282,14 @@ namespace NCollection
                 return returnValue;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
                 _index = -2;
                 _current = null;
             }
 
+            /// <inheritdoc />
             public object? Current 
                 => _index switch
                 {

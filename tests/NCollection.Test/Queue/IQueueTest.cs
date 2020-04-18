@@ -173,7 +173,7 @@ namespace NCollection.Test.Queue
                 queue.Enqueue(item);
             }
 
-            var clone = queue.Clone();
+            var clone = (IQueue)queue.Clone();
             clone.Should().NotBeNull();
             var cloneEnumerator = clone!.GetEnumerator();
             var enumerator = queue.GetEnumerator();

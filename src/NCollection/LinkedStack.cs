@@ -5,18 +5,29 @@ using NCollection.DebugViews;
 
 namespace NCollection
 {
+    /// <summary>
+    /// Represents a last-in-first-out (LIFO) non-generic collection of <see cref="object"/> with linked node.
+    /// </summary>
     [DebuggerTypeProxy(typeof(ICollectionDebugView))]
     [DebuggerDisplay("Count = {Count}")]
     [Serializable]
-    public class LinkedStack : IStack, ICloneable<LinkedStack>
+    public class LinkedStack : IStack
     {
         private Node? _current;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinkedStack"/>.
+        /// </summary>
         public LinkedStack()
         {
             
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinkedStack"/>.
+        /// </summary>
+        /// <param name="enumerable">The <see cref="IEnumerable"/> to copy elements from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is null</exception>
         public LinkedStack(IEnumerable enumerable)
         {
             if (enumerable == null)
@@ -31,14 +42,22 @@ namespace NCollection
             }
         }
         
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual int Count { get; private set; }
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual bool IsSynchronized => false;
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual object SyncRoot => this;
 
+        /// <inheritdoc cref="ICollection"/>
+        public bool IsEmpty => _current == null;
+
+        /// <inheritdoc cref="ICollection"/>
         public virtual bool IsReadOnly => false;
         
+        /// <inheritdoc cref="IStack"/>
         public virtual object? Peek()
         {
             if (!TryPeek(out var item))
@@ -49,6 +68,7 @@ namespace NCollection
             return item;
         }
         
+        /// <inheritdoc cref="IStack"/>
         public virtual bool TryPeek(out object? item)
         {
             if (_current == null)
@@ -61,12 +81,14 @@ namespace NCollection
             return true;
         }
 
+        /// <inheritdoc cref="IStack"/>
         public virtual void Push(object? item)
         {
             _current = new Node(_current, item);
             Count++;
         }
         
+        /// <inheritdoc cref="IStack"/>
         public virtual object? Pop()
         {
             if (!TryPop(out var item))
@@ -77,6 +99,7 @@ namespace NCollection
             return item;
         }
 
+        /// <inheritdoc cref="IStack"/>
         public virtual bool TryPop(out object? item)
         {
             if (Count == 0 || _current == null)
@@ -85,12 +108,15 @@ namespace NCollection
                 return false;
             }
 
+            var dispose = _current;
             item = _current.Value;
             _current = _current.Preview;
+            dispose.Dispose();
             Count--;
             return true;
         }
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public virtual void CopyTo(Array array, int index)
         {
             if (array == null)
@@ -133,6 +159,7 @@ namespace NCollection
             }
         }
         
+        /// <inheritdoc cref="ICollection"/>
         public virtual bool Contains(object? item)
         {
             var node = _current;
@@ -156,7 +183,25 @@ namespace NCollection
 
             return false;
         }
+        
+        /// <inheritdoc cref="ICollection"/>
+        public virtual void Clear()
+        {
+            var current = _current;
+            while (current != null)
+            {
+                var item = current;
+                current = current.Preview;
+                item.Dispose();
+            }
 
+            Count = 0;
+        }
+
+        /// <summary>
+        /// Creates a shallow copy of the <see cref="LinkedStack"/>.
+        /// </summary>
+        /// <returns>A shallow copy of the <see cref="LinkedStack"/>.</returns>
         public LinkedStack Clone()
         {
            var clone =  new LinkedStack();
@@ -172,11 +217,12 @@ namespace NCollection
            return clone;
         }
 
+        /// <summary>
+        /// Returns an <see cref="LinkedArrayEnumerator"/> for the <see cref="LinkedStack"/>.
+        /// </summary>
+        /// <returns>An <see cref="LinkedArrayEnumerator"/>  for the <see cref="LinkedStack"/>.</returns>
         public LinkedArrayEnumerator GetEnumerator()
             => new LinkedArrayEnumerator(this);
-        
-        IStack ICloneable<IStack>.Clone()
-            => Clone();
         
         object ICloneable.Clone()
             => Clone();
@@ -184,7 +230,7 @@ namespace NCollection
         IEnumerator IEnumerable.GetEnumerator() 
             => new LinkedArrayEnumerator(this);
 
-        private class Node
+        private class Node : IDisposable
         {
             public Node(Node? preview, object? value)
             {
@@ -192,15 +238,28 @@ namespace NCollection
                 Value = value;
             }
 
-            internal object? Value { get; }
-            internal Node? Preview { get; }
+            internal object? Value { get; set; }
+            internal Node? Preview { get; set; }
+
+            public void Dispose()
+            {
+                Value = null;
+                Preview = null;
+            }
         }
 
+        /// <summary>
+        /// Implementation of <see cref="IEnumerable"/> for <see cref="LinkedStack"/>.
+        /// </summary>
         public struct LinkedArrayEnumerator : IEnumerator
         {
             private readonly LinkedStack _stack;
             private Node? _current;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LinkedArrayEnumerator"/>.
+            /// </summary>
+            /// <param name="stack">The <see cref="LinkedStack"/>.</param>
             public LinkedArrayEnumerator(LinkedStack stack)
             {
                 _stack = stack;
@@ -208,6 +267,7 @@ namespace NCollection
                 Current = null;
             }
             
+            /// <inheritdoc />
             public bool MoveNext()
             {
                 if (_current == null)
@@ -221,9 +281,10 @@ namespace NCollection
                 return true;
             }
 
-            public void Reset() 
-                => _current = _stack._current;
+            /// <inheritdoc />
+            public void Reset() => _current = _stack._current;
 
+            /// <inheritdoc />
             public object? Current { get; private set; }
         }
     }

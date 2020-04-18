@@ -5,23 +5,30 @@ using NCollection.DebugViews;
 
 namespace NCollection
 {
+    /// <summary>
+    ///  Represents a first-in, first-out (FIFO) collection of <see cref="object"/>  with linked node.
+    /// </summary>
     [DebuggerTypeProxy(typeof(ICollectionDebugView))]
     [DebuggerDisplay("Count = {Count}")]
     [Serializable]
-    public class LinkedQueue : IQueue, ICloneable<LinkedQueue>
+    public class LinkedQueue : IQueue
     {
         private Node? _root;
         private Node? _last;
-        public int Count { get; private set; }
-        public bool IsSynchronized => false;
-        public object SyncRoot => this;
-        public bool IsReadOnly => false;
-
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinkedQueue"/>.
+        /// </summary>
         public LinkedQueue()
         {
             
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinkedQueue"/>.
+        /// </summary>
+        /// <param name="enumerable">The <see cref="IEnumerable"/> to copy elements from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is null</exception>
         public LinkedQueue(IEnumerable enumerable)
         {
             if (enumerable == null)
@@ -29,13 +36,29 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(enumerable));
             }
             
-            foreach (var value in enumerable)
+            foreach (var item in enumerable)
             {
-                Enqueue(value);
+                Enqueue(item);
             }
         }
+        
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual int Count { get; private set; }
+        
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual bool IsSynchronized => false;
+        
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual object SyncRoot => this;
+        
+        /// <inheritdoc cref="ICollection"/>
+        public virtual bool IsEmpty => _root == null;
 
-        public void Enqueue(object? item)
+        /// <inheritdoc cref="ICollection"/>
+        public virtual bool IsReadOnly => false;
+
+        /// <inheritdoc cref="IQueue"/>
+        public virtual void Enqueue(object? item)
         {
             if (_root == null)
             {
@@ -50,7 +73,8 @@ namespace NCollection
             Count++;
         }
 
-        public object? Peek()
+        /// <inheritdoc cref="IQueue"/>
+        public virtual object? Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -60,7 +84,8 @@ namespace NCollection
             return item;
         }
 
-        public bool TryPeek(out object? item)
+        /// <inheritdoc cref="IQueue"/>
+        public virtual bool TryPeek(out object? item)
         {
             if (_root == null)
             {
@@ -72,7 +97,8 @@ namespace NCollection
             return true;
         }
 
-        public object? Dequeue()
+        /// <inheritdoc cref="IQueue"/>
+        public virtual object? Dequeue()
         {
             if (TryDequeue(out var value))
             {
@@ -82,7 +108,8 @@ namespace NCollection
             throw new InvalidOperationException("Empty queue");
         }
 
-        public bool TryDequeue(out object? item)
+        /// <inheritdoc cref="IQueue"/>
+        public virtual bool TryDequeue(out object? item)
         {
             if (_root == null)
             {
@@ -90,19 +117,39 @@ namespace NCollection
                 return false;
             }
 
-            
+            var dispose = _root;
             item = _root.Value;
             _root = _root.Next;
+            dispose.Dispose();
             Count--;
             return true;
         }
-        
+
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual void Clear()
+        {
+            var current = _root;
+            while (current != null)
+            {
+                var item = current;
+                current = current.Next;
+                item.Dispose();
+            }
+
+            Count = 0;
+        }
+
+        /// <summary>
+        /// Returns an <see cref="LinkedQueueEnumerator"/> for the <see cref="LinkedQueue"/>.
+        /// </summary>
+        /// <returns>An <see cref="LinkedQueueEnumerator"/>  for the <see cref="LinkedQueue"/>.</returns>
         public LinkedQueueEnumerator GetEnumerator()
             => new LinkedQueueEnumerator(this);
 
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public void CopyTo(Array array, int index)
         {
             if (array == null)
@@ -147,18 +194,25 @@ namespace NCollection
             }
         }
 
-        private class Node
+        private class Node : IDisposable
         {
             public Node(object? value)
             {
                 Value = value;
             }
 
-            public object? Value { get; }
+            public object? Value { get; set; }
             public Node? Next { get; set; }
+
+            public void Dispose()
+            {
+                Value = null;
+                Next = null;
+            }
         }
 
-        public bool Contains(object? item)
+        /// <inheritdoc cref="IQueue"/>
+        public virtual bool Contains(object? item)
         {
             var current = _root;
 
@@ -182,20 +236,28 @@ namespace NCollection
             return false;
         }
 
+        /// <summary>
+        /// Creates a shallow copy of the <see cref="LinkedQueue"/>.
+        /// </summary>
+        /// <returns>A shallow copy of the <see cref="LinkedQueue"/>.</returns>
         public LinkedQueue Clone() 
             => new LinkedQueue(this);
-
-        IQueue ICloneable<IQueue>.Clone()
-            => Clone();
 
         object ICloneable.Clone()
             => Clone();
 
+        /// <summary>
+        /// Implementation of <see cref="IEnumerable"/> for <see cref="LinkedQueue"/>.
+        /// </summary>
         public struct LinkedQueueEnumerator : IEnumerator
         {
             private readonly LinkedQueue _queue;
             private Node? _current;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LinkedQueueEnumerator"/>.
+            /// </summary>
+            /// <param name="queue">The <see cref="LinkedQueue"/> queue.</param>
             public LinkedQueueEnumerator(LinkedQueue queue)
             {
                 _queue = queue;
@@ -203,6 +265,7 @@ namespace NCollection
                 Current = null;
             }
 
+            /// <inheritdoc />
             public bool MoveNext()
             {
                 if (_current == null)
@@ -216,11 +279,13 @@ namespace NCollection
                 return true;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
                 _current = _queue._root;
             }
 
+            /// <inheritdoc />
             public object? Current { get; private set; }
         }
     }
