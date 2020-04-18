@@ -6,23 +6,46 @@ using NCollection.Generics.DebugViews;
 
 namespace NCollection.Generics
 {
+    /// <summary>
+    /// Represents a first-in, first-out (FIFO) collection of <typeparamref name="T"/> with linked node.
+    /// </summary>
+    /// <typeparam name="T">Specifies the type of elements in the queue.</typeparam>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
     [Serializable]
-    public class LinkedQueue<T> : IQueue<T>, IQueue, ICloneable<LinkedQueue<T>>
+    public class LinkedQueue<T> : IQueue<T>
     {
         private Node? _root;
         private Node? _last;
-        public int Count { get; private set; }
-        public bool IsSynchronized => false;
-        public object SyncRoot => this;
-        public bool IsReadOnly => false;
+        
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual int Count { get; private set; }
+        
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual bool IsSynchronized => false;
+        
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual object SyncRoot => this;
 
+        /// <inheritdoc cref="ICollection"/>
+        public virtual bool IsEmpty => _root == null;
+
+        /// <inheritdoc cref="ICollection"/>
+        public virtual bool IsReadOnly => false;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinkedQueue{T}"/>.
+        /// </summary>
         public LinkedQueue()
         {
             
         }
-
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinkedQueue{T}"/>.
+        /// </summary>
+        /// <param name="enumerable">The <see cref="IEnumerable{T}"/> to copy elements from.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is null</exception>
         public LinkedQueue(IEnumerable<T> enumerable)
         {
             if (enumerable == null)
@@ -36,7 +59,8 @@ namespace NCollection.Generics
             }
         }
 
-        public void Enqueue(T item)
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual void Enqueue(T item)
         {
             if (_root == null)
             {
@@ -51,10 +75,8 @@ namespace NCollection.Generics
             Count++;
         }
 
-        void IQueue.Enqueue(object? item)
-            => Enqueue((T) item!);
-
-        public T Peek()
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual T Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -63,20 +85,9 @@ namespace NCollection.Generics
 
             return item;
         }
-
-        bool IQueue.TryPeek(out object? item)
-        {
-            if (TryPeek(out var value))
-            {
-                item = value;
-                return true;
-            }
-
-            item = null;
-            return false;
-        }
-
-        public bool TryPeek(out T item)
+        
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual bool TryPeek(out T item)
         {
             if (_root == null)
             {
@@ -88,7 +99,8 @@ namespace NCollection.Generics
             return true;
         }
 
-        public T Dequeue()
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual T Dequeue()
         {
             if (TryDequeue(out var value))
             {
@@ -97,33 +109,42 @@ namespace NCollection.Generics
 
             throw new InvalidOperationException("Empty queue");
         }
-
-        bool IQueue.TryDequeue(out object? item)
-        {
-            if (TryDequeue(out var value))
-            {
-                item = value;
-                return true;
-            }
-
-            item = null;
-            return false;
-        }
-
-        public bool TryDequeue(out T item)
+        
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual bool TryDequeue(out T item)
         {
             if (_root == null)
             {
                 item = default!;
                 return false;
             }
-            
+
+            var dispose = _root;
             item = _root.Value;
             _root = _root.Next;
+            dispose.Dispose();
             Count--;
             return true;
         }
+        
+        /// <inheritdoc cref="IQueue{T}"/>
+        public virtual void Clear()
+        {
+            var current = _root;
+            while (current != null)
+            {
+                var item = current;
+                current = current.Next;
+                item.Dispose();
+            }
 
+            Count = 0;
+        }
+
+        /// <summary>
+        /// Returns an <see cref="LinkedQueueEnumerator"/> for the <see cref="LinkedQueue{T}"/>.
+        /// </summary>
+        /// <returns>An <see cref="LinkedQueueEnumerator"/>  for the <see cref="LinkedQueue{T}"/>.</returns>
         public LinkedQueueEnumerator GetEnumerator()
             => new LinkedQueueEnumerator(this);
 
@@ -133,6 +154,7 @@ namespace NCollection.Generics
         IEnumerator<T> IEnumerable<T>.GetEnumerator() 
             => GetEnumerator();
 
+        /// <inheritdoc cref="System.Collections.ICollection"/>
         public void CopyTo(Array array, int index)
         {
             if (array == null)
@@ -177,6 +199,7 @@ namespace NCollection.Generics
             }
         }
 
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
@@ -210,17 +233,24 @@ namespace NCollection.Generics
             }
         }
         
-        private class Node
+        private class Node : IDisposable
         {
             public Node(T value)
             {
                 Value = value;
             }
 
-            public T Value { get; }
+            public T Value { get; private set; }
             public Node? Next { get; set; }
+
+            public void Dispose()
+            {
+                Value = default!;
+                Next = null;
+            }
         }
 
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public bool Contains(T item)
         {
             var current = _root;
@@ -245,28 +275,28 @@ namespace NCollection.Generics
             return false;
         }
 
-        bool ICollection.Contains(object? item)
-            => Contains((T) item!);
-
-        IQueue ICloneable<IQueue>.Clone()
-        {
-            return Clone();
-        }
-
+        /// <summary>
+        /// Creates a shallow copy of the <see cref="LinkedQueue{T}"/>.
+        /// </summary>
+        /// <returns>A shallow copy of the <see cref="LinkedQueue{T}"/>.</returns>
         public LinkedQueue<T> Clone() 
             => new LinkedQueue<T>(this);
-
-        IQueue<T> ICloneable<IQueue<T>>.Clone()
-            => Clone();
 
         object ICloneable.Clone()
             => Clone();
 
+        /// <summary>
+        /// Implementation of <see cref="IEnumerable{T}"/> for <see cref="LinkedQueue{T}"/>.
+        /// </summary>
         public struct LinkedQueueEnumerator : IEnumerator<T>
         {
             private readonly LinkedQueue<T> _queue;
             private Node? _current;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="LinkedQueueEnumerator"/>.
+            /// </summary>
+            /// <param name="queue">The <see cref="LinkedQueue{T}"/>.</param>
             public LinkedQueueEnumerator(LinkedQueue<T> queue)
             {
                 _queue = queue;
@@ -274,6 +304,7 @@ namespace NCollection.Generics
                 Current = default!;
             }
 
+            /// <inheritdoc />
             public bool MoveNext()
             {
                 if (_current == null)
@@ -287,6 +318,7 @@ namespace NCollection.Generics
                 return true;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
                 _current = _queue._root;
@@ -294,8 +326,10 @@ namespace NCollection.Generics
 
             object? IEnumerator.Current => Current;
 
+            /// <inheritdoc />
             public T Current { get; private set; }
             
+            /// <inheritdoc />
             public void Dispose() { }
         }
     }
