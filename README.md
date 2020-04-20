@@ -1,0 +1,1 @@
+[![Build Status](https://travis-ci.com/lillo42/n-collection.svg?branch=master)](https://travis-ci.com/lillo42/n-collection)
