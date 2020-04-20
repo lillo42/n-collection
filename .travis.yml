@@ -8,6 +8,9 @@ addons:
 mono:
     - latest
 
+git:
+    depth: false
+
 script:
 - ./build.sh Test
 
