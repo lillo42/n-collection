@@ -1,6 +1,7 @@
-using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.IO;
 using Nuke.Common;
+using Nuke.Common.CI;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
@@ -9,14 +10,17 @@ using Nuke.Common.Tooling;
 using Nuke.Common.Tools.Coverlet;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Tools.GitVersion;
+using Nuke.Common.Tools.ReportGenerator;
 using Nuke.Common.Utilities.Collections;
-using static Nuke.Common.EnvironmentInfo;
+using static Nuke.Common.IO.CompressionTasks;
 using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 
 [CheckBuildProjectConfigurations]
+[DotNetVerbosityMapping]
 [UnsetVisualStudioEnvironmentVariables]
+[ShutdownDotNetBuildServerOnFinish]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
@@ -25,20 +29,32 @@ class Build : NukeBuild
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
-    public static int Main() => Execute<Build>(x => x.Compile);
+    public static int Main () => Execute<Build>(x => x.Compile);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    [Parameter("The API key for the server.")] readonly string ApiKey = string.Empty;
+    [Parameter("Nuget API key", Name = "api-key")] readonly string ApiKey;
+
+    [Parameter("NuGet Source for Packages", Name = "nuget-source")]
+    readonly string NugetSource = "https://api.nuget.org/v3/index.json";
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
-    [GitVersion] readonly GitVersion GitVersion;
+    [GitVersion(NoFetch = true)] readonly GitVersion GitVersion;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath TestsDirectory => RootDirectory / "tests";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
+    
+    AbsolutePath PackageDirectory => ArtifactsDirectory / "packages";
+    
+    AbsolutePath TestResultDirectory => ArtifactsDirectory / "test-results";
+    
+    string CoverageReportDirectory => ArtifactsDirectory / "coverage-report";
+    string CoverageReportArchive => ArtifactsDirectory / "coverage-report.zip";
+    
+    IEnumerable<Project> TestProjects => Solution.GetProjects("*.Test");
 
     Target Clean => _ => _
         .Before(Restore)
@@ -47,7 +63,6 @@ class Build : NukeBuild
             DotNetClean(s => s
                 .SetProject(Solution)
                 .SetConfiguration(Configuration));
-
             SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
             TestsDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
             EnsureCleanDirectory(ArtifactsDirectory);
@@ -61,73 +76,90 @@ class Build : NukeBuild
         });
 
     Target Compile => _ => _
+        .DependsOn(Clean)
         .DependsOn(Restore)
         .Executes(() =>
         {
             DotNetBuild(s => s
+                .SetNoRestore(InvokedTargets.Contains(Restore))
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .SetAssemblyVersion(GitVersion.AssemblySemVer)
                 .SetFileVersion(GitVersion.AssemblySemFileVer)
-                .SetInformationalVersion(GitVersion.InformationalVersion)
-                .EnableNoRestore());
+                .SetInformationalVersion(GitVersion.InformationalVersion));
         });
-
+    
     Target Test => _ => _
         .DependsOn(Compile)
+        .Produces(TestResultDirectory / "*.trx")
+        .Produces(TestResultDirectory / "*.xml")
         .Executes(() =>
         {
-            foreach (var project in Solution.Projects)
+            DotNetTest(s => s
+                .SetProjectFile(Solution)
+                .SetNoBuild(InvokedTargets.Contains(Compile))
+                .SetResultsDirectory(TestResultDirectory)
+                .SetConfiguration(Configuration)
+                .EnableNoRestore()
+                .When(InvokedTargets.Contains(Coverage) || IsServerBuild, _ => _
+                    .EnableCollectCoverage()
+                    .SetCoverletOutputFormat(CoverletOutputFormat.opencover)
+                    .When(IsServerBuild, _ => _.EnableUseSourceLink()))
+                .CombineWith(TestProjects, (_, v) => _
+                    .SetProjectFile(v)
+                    .SetLogger($"trx;LogFileName={v.Name}.trx")
+                    .SetCoverletOutput(TestResultDirectory / $"{v.Name}.xml")));
+        });
+
+    Target Coverage => _ => _
+        .DependsOn(Test)
+        .TriggeredBy(Test)
+        .Consumes(Test)
+        .Produces(CoverageReportArchive)
+        .Executes(() =>
+        {
+            if (InvokedTargets.Contains(Coverage) || IsServerBuild)
             {
-                if (project.Name.EndsWith("Test"))
-                {
-                    DotNetTest(s => s
-                        .SetProjectFile(project)
-                        .SetConfiguration(Configuration)
-                        .EnableCollectCoverage()
-                        .EnableNoRestore()
-                        .EnableNoBuild());
-                }
+                ReportGenerator(_ => _
+                    .SetReports(TestResultDirectory / "*.xml")
+                    .SetReportTypes(ReportTypes.HtmlInline)
+                    .SetTargetDirectory(CoverageReportDirectory)
+                    .SetFramework("netcoreapp2.1"));
+
+                CompressZip(
+                    directory: CoverageReportDirectory,
+                    archiveFile: CoverageReportArchive,
+                    fileMode: FileMode.Create);
             }
         });
+
 
     Target Pack => _ => _
-        .DependsOn(Compile)
+        .DependsOn(Compile, Test)
+        .Produces(PackageDirectory / "*.nupkg")
+        .Produces(PackageDirectory / "*.snupkg")
         .Executes(() =>
         {
-            foreach (var project in Solution.Projects)
-            {
-                if (!project.Name.EndsWith("Test"))
-                {
-                    DotNetPack(s => s
-                        .SetProject(project)
-                        .SetConfiguration(Configuration)
-                        .SetAssemblyVersion(GitVersion.AssemblySemVer)
-                        .SetFileVersion(GitVersion.AssemblySemFileVer)
-                        .SetInformationalVersion(GitVersion.InformationalVersion)
-                        .EnableNoRestore());
-                }
-            }
+            DotNetPack(s => s
+                .SetProject(Solution)
+                .SetNoBuild(InvokedTargets.Contains(Compile))
+                .SetConfiguration(Configuration)
+                .SetOutputDirectory(PackageDirectory)
+                .SetVersion(GitVersion.NuGetVersionV2)
+                .EnableIncludeSource()
+                .EnableIncludeSymbols()
+                .EnableNoRestore());
         });
-
-    Target Push => _ => _
-        .Triggers(Pack)
+    
+    Target Publish => _ => _
+        .DependsOn(Clean, Test, Pack)
+        .Consumes(Pack)
+        .Requires(() => Configuration.Equals(Configuration.Release))
         .Executes(() =>
         {
-            DotNetNuGetPush(c => c
-                .SetSource("https://api.nuget.org/v3/index.json")
+            DotNetNuGetPush(s => s
                 .SetApiKey(ApiKey)
-                .SetNoSymbols(false)
                 .SetSkipDuplicate(true)
-            );
+                .SetSource(NugetSource));
         });
-
-    Target CI => _ => _
-        .DependsOn(Compile)
-        .DependsOn(Test)
-        .DependsOn(Pack)
-        .Executes(() =>
-        {
-        });
-
 }

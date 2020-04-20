@@ -1,0 +1,27 @@
+languange: csharp
+dist: bionic
+addons:
+    apt:
+      packages:
+      - libunwind8
+env:
+    global:
+      - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      - DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+script:
+- ./build.sh Test
+
+deploy:
+    provider: releases
+    api_key: "GITHUB OAUTH TOKEN"
+    script: ./build.sh Publish --api-key $NUGET_APIKEY
+    file_glob: true
+    file:
+        - "./artifacts/test-results/*.trx"
+        - "./artifacts/coverage-report.zip"
+        - "./artifacts/packages/*.nupkg"
+        - "./artifacts/packages/*.snupkg"
+    skip_cleanup: true
+        on:
+          tags: true
