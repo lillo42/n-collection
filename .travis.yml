@@ -6,7 +6,7 @@ addons:
       - libunwind8
 
 mono:
-    - 5.0.0
+    - latest
 
 script:
 - ./build.sh Test
