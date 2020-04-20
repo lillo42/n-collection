@@ -154,6 +154,7 @@ class Build : NukeBuild
     Target Publish => _ => _
         .DependsOn(Clean, Test, Pack)
         .Consumes(Pack)
+        .Requires(() => ApiKey)
         .Requires(() => Configuration.Equals(Configuration.Release))
         .Executes(() =>
         {
