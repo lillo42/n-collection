@@ -1,0 +1,29 @@
+languange: csharp
+dist: bionic
+addons:
+    apt:
+      packages:
+      - libunwind8
+
+mono:
+    - latest
+
+git:
+    depth: false
+
+script:
+- ./build.sh Test
+
+deploy:
+    provider: releases
+    api_key: "GITHUB OAUTH TOKEN"
+    script: ./build.sh Publish --api-key $NUGET_APIKEY
+    file_glob: true
+    file:
+        - "./artifacts/test-results/*.trx"
+        - "./artifacts/coverage-report.zip"
+        - "./artifacts/packages/*.nupkg"
+        - "./artifacts/packages/*.snupkg"
+    skip_cleanup: true
+    on:
+        tags: true
