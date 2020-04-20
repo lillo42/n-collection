@@ -5,6 +5,9 @@ addons:
       packages:
       - libunwind8
 
+mono:
+    - 5.0.0
+
 script:
 - ./build.sh Test
 
