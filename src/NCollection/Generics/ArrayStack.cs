@@ -14,7 +14,7 @@ namespace NCollection.Generics
     /// <typeparam name="T">Specifies the type of elements in the stack.</typeparam>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    public class ArrayStack<T> : IStack<T>
+    public class ArrayStack<T> : IStack<T>, IStack
     {
         private int _size = 0;
         private T[] _array;
@@ -274,6 +274,37 @@ namespace NCollection.Generics
         
         IEnumerator IEnumerable.GetEnumerator() 
             => GetEnumerator();
+        
+        #region Stack
+        void IStack.Push(object? item)
+            => Push((T) item!);
+
+        bool IStack.TryPop(out object? item)
+        {
+            if (TryPop(out var result))
+            {
+                item = result;
+                return true;
+            }
+
+            item = null;
+            return false;
+        }
+        
+        bool IStack.TryPeek(out object? item)
+        {
+            if (TryPeek(out var result))
+            {
+                item = result;
+                return true;
+            }
+
+            item = null;
+            return false;
+        }
+
+        bool ICollection.Contains(object? item) => Contains((T) item);
+        #endregion
 
         /// <summary>
         /// Implementation of <see cref="IEnumerable{T}"/> for <see cref="ArrayStack{T}"/>.

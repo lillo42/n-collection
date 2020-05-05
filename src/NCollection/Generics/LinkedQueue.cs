@@ -13,7 +13,7 @@ namespace NCollection.Generics
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
     [Serializable]
-    public class LinkedQueue<T> : IQueue<T>
+    public class LinkedQueue<T> : IQueue<T>, IQueue
     {
         private Node? _root;
         private Node? _last;
@@ -284,6 +284,40 @@ namespace NCollection.Generics
 
         object ICloneable.Clone()
             => Clone();
+        
+        #region Queue
+
+        void IQueue.Enqueue(object? item)
+            => Enqueue((T) item!);
+        
+        bool IQueue.TryPeek(out object? item)
+        {
+            if (TryPeek(out var value))
+            {
+                item = value;
+                return true;
+            }
+
+            item = null;
+            return false;
+        }
+
+        bool IQueue.TryDequeue(out object? item)
+        {
+            if (TryDequeue(out var value))
+            {
+                item = value;
+                return true;
+            }
+
+            item = null;
+            return false;
+        }
+        
+        bool ICollection.Contains(object? item) 
+            => Contains((T) item);
+
+        #endregion
 
         /// <summary>
         /// Implementation of <see cref="IEnumerable{T}"/> for <see cref="LinkedQueue{T}"/>.

@@ -14,7 +14,7 @@ namespace NCollection.Generics
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
     [Serializable]
-    public class ArrayQueue<T> : IQueue<T>
+    public class ArrayQueue<T> : IQueue<T>, IQueue
     {
         private int _head;
         private int _tail;
@@ -291,6 +291,40 @@ namespace NCollection.Generics
         
         IEnumerator IEnumerable.GetEnumerator() 
             => GetEnumerator();
+        
+        #region Queue
+
+        void IQueue.Enqueue(object? item)
+            => Enqueue((T) item!);
+        
+        bool IQueue.TryPeek(out object? item)
+        {
+            if (TryPeek(out var value))
+            {
+                item = value;
+                return true;
+            }
+
+            item = null;
+            return false;
+        }
+
+        bool IQueue.TryDequeue(out object? item)
+        {
+            if (TryDequeue(out var value))
+            {
+                item = value;
+                return true;
+            }
+
+            item = null;
+            return false;
+        }
+        
+        bool ICollection.Contains(object? item) 
+            => Contains((T) item);
+
+        #endregion
 
         /// <summary>
         /// Implementation of <see cref="IEnumerable{T}"/> for <see cref="ArrayQueue{T}"/>.
