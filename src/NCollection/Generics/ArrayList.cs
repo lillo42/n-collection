@@ -112,9 +112,6 @@ namespace NCollection.Generics
             Count++;
         }
 
-
-        
-
         /// <inheritdoc cref="IList.Clear" />
         public void Clear()
         {
