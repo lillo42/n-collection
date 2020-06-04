@@ -1,12 +1,11 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
 using Xunit;
-
-namespace NCollection.Test.List
+namespace NCollection.Test.Generic.List
 {
-    public abstract class IListTest
+    public abstract class IListTest<T>
     {
         protected Fixture Fixture { get; }
 
@@ -15,14 +14,14 @@ namespace NCollection.Test.List
             Fixture = new Fixture();
         }
 
-        protected abstract IList Create();
+        protected abstract NCollection.Generics.IList<T> Create();
         
-        protected abstract IList Create(IEnumerable values);
+        protected abstract NCollection.Generics.IList<T> Create(IEnumerable<T> values);
         
         [Fact]
         public void CreateWithIEnumerable()
         {
-            var values = Fixture.Create<string[]>();
+            var values = Fixture.Create<T[]>();
             
             var list = Create(values);
             list.Count.Should().Be(values.Length);
@@ -35,7 +34,7 @@ namespace NCollection.Test.List
         
         [Fact]
         public void CreateWithIEnumerable_Throw() 
-            => Assert.Throws<ArgumentNullException>(() => Create(null));
+            => Assert.Throws<ArgumentNullException>(() => Create(default));
 
 
         [Theory]
@@ -44,9 +43,9 @@ namespace NCollection.Test.List
         public void Index_Should_Throw_When_IndexNotInRange(int index)
         {
             var list = Create();
-            list.Add(Fixture.Create<object>());
+            list.Add(Fixture.Create<T>());
             Assert.Throws<ArgumentOutOfRangeException>(() => list[index]);
-            Assert.Throws<ArgumentOutOfRangeException>(() => list[index] = Fixture.Create<object>());
+            Assert.Throws<ArgumentOutOfRangeException>(() => list[index] = Fixture.Create<T>());
             
         }
         
@@ -60,7 +59,7 @@ namespace NCollection.Test.List
 
             for (var i = 0; i < size; i++)
             {
-                stack.Add(Fixture.Create<object>());
+                stack.Add(Fixture.Create<T>());
             }
            
             stack.Count.Should().Be(size);
@@ -71,8 +70,8 @@ namespace NCollection.Test.List
         [InlineData(10)]
         public void Insert_Should_Throw_When_IndexIsOutOfRange(int index)
         {
-            var list = Create(Fixture.Create<object[]>());
-            Assert.Throws<ArgumentOutOfRangeException>(() => list.Insert(index, Fixture.Create<object>()));
+            var list = Create(Fixture.Create<T[]>());
+            Assert.Throws<ArgumentOutOfRangeException>(() => list.Insert(index, Fixture.Create<T>()));
         }
         
         [Theory]
@@ -81,9 +80,9 @@ namespace NCollection.Test.List
         [InlineData(2)]
         public void Insert(int index)
         {
-            var list = Create(Fixture.Create<object[]>());
+            var list = Create(Fixture.Create<T[]>());
 
-            var @new = Fixture.Create<object>();
+            var @new = Fixture.Create<T>();
             list.Insert(index, @new);
             list.Count.Should().Be(4);
             list[index].Should().Be(@new);
@@ -92,45 +91,45 @@ namespace NCollection.Test.List
         [Fact]
         public void IndexOf()
         {
-            var items = Fixture.Create<object[]>();
+            var items = Fixture.Create<T[]>();
             var list = Create(items);
-            list.Add(null);
+            list.Add(default);
 
             for (int i = 0; i < items.Length; i++)
             {
                 list.IndexOf(items[i]).Should().Be(i);
             }
             
-            list.IndexOf(null).Should().Be(items.Length);
+            list.IndexOf(default).Should().Be(items.Length);
         }
         
         [Fact]
         public void IndexOf_Should_ReturnNegative1_When_ItemNotFound()
         {
-            var items = Fixture.Create<object[]>();
+            var items = Fixture.Create<T[]>();
             var list = Create(items);
-            list.IndexOf(Fixture.Create<object>()).Should().Be(-1);
+            list.IndexOf(Fixture.Create<T>()).Should().Be(-1);
         }
         
         [Fact]
         public void Remove()
         {
-            var items = Fixture.Create<object[]>();
+            var items = Fixture.Create<T[]>();
             var list = Create(items);
             list.Remove(items[1]).Should().BeTrue();
             list.Should().HaveCount(items.Length -1);
             
-            list.Add(null);
-            list.Remove(null).Should().BeTrue();
+            list.Add(default);
+            list.Remove(default).Should().BeTrue();
             list.Should().HaveCount(items.Length -1);
         }
         
         [Fact]
         public void RemoveAt_Should_ReturnFalse_When_ItemNotExist()
         {
-            var items = Fixture.Create<object[]>();
+            var items = Fixture.Create<T[]>();
             var list = Create(items);
-            list.Remove(Fixture.Create<object>()).Should().BeFalse();
+            list.Remove(Fixture.Create<T>()).Should().BeFalse();
             list.Should().HaveCount(items.Length);
         }
         
@@ -139,7 +138,7 @@ namespace NCollection.Test.List
         [InlineData(4)]
         public void RemoveAt_Should_Throw_When_IndexIsInvalid(int index)
         {
-            var items = Fixture.Create<object[]>();
+            var items = Fixture.Create<T[]>();
             var list = Create(items);
             Assert.Throws<ArgumentOutOfRangeException>(() => list.RemoveAt(index)); 
         }
@@ -150,7 +149,7 @@ namespace NCollection.Test.List
         [InlineData(2)]
         public void RemoveAt(int index)
         {
-            var items = Fixture.Create<object[]>();
+            var items = Fixture.Create<T[]>();
             var list = Create(items);
             list.RemoveAt(index);
             list.Should().HaveCount(items.Length - 1);
@@ -170,7 +169,7 @@ namespace NCollection.Test.List
 
             for (var i = 0; i < size; i++)
             {
-                list.Add(Fixture.Create<object>());
+                list.Add(Fixture.Create<T>());
             }
            
             list.Count.Should().Be(size);
@@ -181,7 +180,7 @@ namespace NCollection.Test.List
         [Fact]
         public void Clone()
         {
-            var array = Fixture.Create<string[]>();
+            var array = Fixture.Create<T[]>();
             var list = Create();
 
             foreach (var item in array)
@@ -189,7 +188,7 @@ namespace NCollection.Test.List
                 list.Add(item);
             }
 
-            var clone = (IList)list.Clone();
+            var clone = (IList<T>)list.Clone();
             clone.Should().NotBeNull();
             var cloneEnumerator = clone!.GetEnumerator();
             var enumerator = list.GetEnumerator();
@@ -211,7 +210,7 @@ namespace NCollection.Test.List
         [Fact]
         public void  IClonable_Clone()
         {
-            var array = Fixture.Create<string[]>();
+            var array = Fixture.Create<T[]>();
             var stack = Create();
 
             foreach (var item in array)
@@ -221,8 +220,8 @@ namespace NCollection.Test.List
 
             var clone = stack.Clone();
             clone.Should().NotBeNull();
-            (clone is IList).Should().BeTrue();
-            var cloneEnumerator = ((IList)clone).GetEnumerator();
+            (clone is IList<T>).Should().BeTrue();
+            var cloneEnumerator = ((IList<T>)clone).GetEnumerator();
             var enumerator = stack.GetEnumerator();
 
             for (var i = 0; i < array.Length; i++)
@@ -243,21 +242,21 @@ namespace NCollection.Test.List
         {
             var stack = Create();
 
-            var values = Fixture.Create<object[]>();
+            var values = Fixture.Create<T[]>();
 
             foreach (var value in values)
             {
                 stack.Add(value);
             }
             
-            stack.Add(null);
+            stack.Add(default);
 
             foreach (var value in values)
             {
                 stack.Contains(value).Should().BeTrue();
             }
 
-            stack.Contains(null).Should().BeTrue();
+            stack.Contains(default).Should().BeTrue();
         }
 
         [Fact] 
@@ -265,15 +264,15 @@ namespace NCollection.Test.List
         {
             var stack = Create();
 
-            var values = Fixture.Create<object[]>();
+            var values = Fixture.Create<T[]>();
 
             foreach (var value in values)
             {
                 stack.Add(value);
             }
             
-            stack.Contains(Fixture.Create<object>()).Should().BeFalse();
-            stack.Contains(null).Should().BeFalse();
+            stack.Contains(Fixture.Create<T>()).Should().BeFalse();
+            stack.Contains(default).Should().BeFalse();
         }
         
         [Fact] 
@@ -281,14 +280,14 @@ namespace NCollection.Test.List
         {
             var stack = Create();
 
-            var values = Fixture.Create<string[]>();
+            var values = Fixture.Create<T[]>();
 
             foreach (var value in values)
             {
                 stack.Add(value);
             }
             
-            var objArray = new object[values.Length];
+            var objArray = new T[values.Length];
             stack.CopyTo(objArray, 0);
 
             var enumerable = stack.GetEnumerator();
@@ -299,7 +298,7 @@ namespace NCollection.Test.List
                 value.Should().Be(enumerable.Current);
             }
             
-            var strArray = new string[values.Length];
+            var strArray = new T[values.Length];
             stack.CopyTo(strArray, 0);
             
             enumerable.Reset();
@@ -307,7 +306,7 @@ namespace NCollection.Test.List
             foreach (var value in strArray)
             {
                 enumerable.MoveNext().Should().BeTrue();
-                value.Should().Be((string)enumerable.Current);
+                value.Should().Be((T)enumerable.Current);
             }
         }
 
@@ -316,18 +315,17 @@ namespace NCollection.Test.List
         {
             var stack = Create();
             
-            var values = Fixture.Create<object[]>();
+            var values = Fixture.Create<T[]>();
 
             foreach (var value in values)
             {
                 stack.Add(value);
             }
             
-            Assert.Throws<ArgumentNullException>(() => stack.CopyTo(null!, values.Length));
-            Assert.Throws<ArgumentException>(() => stack.CopyTo(new object[10, 10], values.Length));
-            Assert.Throws<ArgumentOutOfRangeException>(() => stack.CopyTo(new object[10], -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => stack.CopyTo(new object[10], values.Length + 1));
-            Assert.Throws<ArgumentException>(() => stack.CopyTo(new object[1], values.Length));
+            Assert.Throws<ArgumentNullException>(() => stack.CopyTo(default!, values.Length));
+            Assert.Throws<ArgumentOutOfRangeException>(() => stack.CopyTo(new T[10], -1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => stack.CopyTo(new T[10], values.Length + 1));
+            Assert.Throws<ArgumentException>(() => stack.CopyTo(new T[1], values.Length));
         }
     }
 }

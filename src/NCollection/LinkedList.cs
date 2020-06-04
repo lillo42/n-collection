@@ -267,6 +267,8 @@ namespace NCollection
             {
                 _first = node;
             }
+
+            Count++;
         }
 
         /// <inheritdoc />

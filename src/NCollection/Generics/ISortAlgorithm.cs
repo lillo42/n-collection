@@ -12,7 +12,7 @@ namespace NCollection.Generics
         {
             var newArray = new T[array.Length];
             Execute(newArray, (IComparer<T>)comparer);
-            Array.Copy(newArray, array, array.Length);
+            Array.Copy(array, newArray, array.Length);
         }
     }
 }

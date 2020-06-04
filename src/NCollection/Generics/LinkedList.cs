@@ -135,6 +135,8 @@ namespace NCollection.Generics
                 
                 current = next;
             }
+
+            Count = 0;
         }
 
         int System.Collections.IList.IndexOf(object value)
@@ -367,6 +369,8 @@ namespace NCollection.Generics
             {
                 _first = node;
             }
+
+            Count++;
         }
         
         /// <inheritdoc />
