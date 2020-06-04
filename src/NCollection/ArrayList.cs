@@ -87,7 +87,7 @@ namespace NCollection
                     throw new ArgumentOutOfRangeException(nameof(index),  "index out of range");
                 }
 
-                return _array[Count];
+                return _array[index];
             }
             set
             {
@@ -96,7 +96,7 @@ namespace NCollection
                     throw new ArgumentOutOfRangeException(nameof(index),  "index out of range");
                 }
 
-                _array[Count] =  value;
+                _array[index] =  value;
             }
         }
 

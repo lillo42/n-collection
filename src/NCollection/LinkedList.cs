@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections;
+using System.Diagnostics;
+using NCollection.DebugViews;
 
 namespace NCollection
 {
     /// <summary>
     ///  The link listed
     /// </summary>
+    [DebuggerTypeProxy(typeof(ICollectionDebugView))]
+    [DebuggerDisplay("Count = {Count}")]
+    [Serializable]
     public class LinkedList : IList
     {
         private Node? _first;
@@ -73,15 +78,15 @@ namespace NCollection
             if (index <= Count / 2)
             { 
                 current = _first;
-                for (var i = 1; i < index; i++)
+                for (var i = 0; i < index; i++)
                 {
                     current = current!.Next;
                 }
             }
             else
             {
-                current = _first;
-                for (var i = Count; i > index; i++)
+                current = _last;
+                for (var i = Count - 1; i > index; i--)
                 {
                     current = current!.Preview;
                 }
@@ -124,6 +129,8 @@ namespace NCollection
                 
                 current = next;
             }
+
+            Count = 0;
         }
 
         /// <inheritdoc cref="IList"/>
