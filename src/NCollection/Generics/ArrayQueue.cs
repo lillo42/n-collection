@@ -58,7 +58,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual void Clear()
+        public void Clear()
         {
             Count = 0;
             _head = 0;
@@ -67,22 +67,22 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual int Count { get; private set; }
+        public int Count { get; private set; }
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual bool IsSynchronized => false;
+        public bool IsSynchronized => false;
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual object SyncRoot => this;
+        public object SyncRoot => this;
         
         /// <inheritdoc cref="ICollection"/>
-        public virtual bool IsReadOnly => false;
+        public bool IsReadOnly => false;
         
         /// <inheritdoc cref="ICollection"/>
-        public virtual bool IsEmpty => Count == 0;
+        public bool IsEmpty => Count == 0;
         
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual void Enqueue(T item)
+        public void Enqueue(T item)
         {
             if (Count == _array.Length)
             {
@@ -109,7 +109,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual T Peek()
+        public T Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -120,7 +120,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual bool TryPeek(out T item)
+        public bool TryPeek(out T item)
         {
             if (Count == 0)
             {
@@ -133,7 +133,7 @@ namespace NCollection.Generics
         }
         
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual T Dequeue()
+        public T Dequeue()
         {
             if (!TryDequeue(out var item))
             {
@@ -144,7 +144,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual bool TryDequeue(out T item)
+        public bool TryDequeue(out T item)
         {
             if (Count == 0)
             {

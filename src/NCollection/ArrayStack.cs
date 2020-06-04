@@ -60,22 +60,22 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual int Count => _size;
+        public int Count => _size;
 
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual bool IsSynchronized => false;
+        public bool IsSynchronized => false;
 
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual object SyncRoot => this;
+        public object SyncRoot => this;
 
         /// <inheritdoc cref="ICollection"/>
         public bool IsEmpty => Count == 0;
 
         /// <inheritdoc cref="ICollection"/>
-        public virtual bool IsReadOnly => false;
+        public bool IsReadOnly => false;
 
         /// <inheritdoc cref="IStack"/>
-        public virtual object? Peek()
+        public object? Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -86,7 +86,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="IStack"/>
-        public virtual bool TryPeek(out object? item)
+        public bool TryPeek(out object? item)
         {
             if (_size == 0)
             {
@@ -99,7 +99,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="IStack"/>
-        public virtual void Push(object? item)
+        public void Push(object? item)
         {
             if (_size == _array.Length)
             {
@@ -114,7 +114,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="IStack"/>
-        public virtual object? Pop()
+        public object? Pop()
         {
             if (!TryPop(out var item))
             {
@@ -125,7 +125,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="IStack"/>
-        public virtual bool TryPop(out object? item)
+        public bool TryPop(out object? item)
         {
             if (_size == 0)
             {
@@ -139,7 +139,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="IStack"/>
-        public virtual void CopyTo(Array array, int index)
+        public void CopyTo(Array array, int index)
         {
             if (array == null)
             {
@@ -183,7 +183,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="IStack"/>
-        public virtual bool Contains(object? item)
+        public bool Contains(object? item)
         {
             var size = _size;
             while (size-- > 0)
@@ -205,7 +205,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="ICollection"/>
-        public virtual void Clear()
+        public void Clear()
         {
             Array.Clear(_array, 0, _size);
             _size = 0;

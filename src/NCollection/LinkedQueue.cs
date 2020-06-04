@@ -43,22 +43,22 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual int Count { get; private set; }
+        public int Count { get; private set; }
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual bool IsSynchronized => false;
+        public bool IsSynchronized => false;
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual object SyncRoot => this;
+        public object SyncRoot => this;
         
         /// <inheritdoc cref="ICollection"/>
-        public virtual bool IsEmpty => _root == null;
+        public bool IsEmpty => _root == null;
 
         /// <inheritdoc cref="ICollection"/>
-        public virtual bool IsReadOnly => false;
+        public bool IsReadOnly => false;
 
         /// <inheritdoc cref="IQueue"/>
-        public virtual void Enqueue(object? item)
+        public void Enqueue(object? item)
         {
             if (_root == null)
             {
@@ -74,7 +74,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="IQueue"/>
-        public virtual object? Peek()
+        public object? Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -85,7 +85,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="IQueue"/>
-        public virtual bool TryPeek(out object? item)
+        public bool TryPeek(out object? item)
         {
             if (_root == null)
             {
@@ -98,7 +98,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="IQueue"/>
-        public virtual object? Dequeue()
+        public object? Dequeue()
         {
             if (TryDequeue(out var value))
             {
@@ -109,7 +109,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="IQueue"/>
-        public virtual bool TryDequeue(out object? item)
+        public bool TryDequeue(out object? item)
         {
             if (_root == null)
             {
@@ -126,7 +126,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual void Clear()
+        public void Clear()
         {
             var current = _root;
             while (current != null)
@@ -194,7 +194,7 @@ namespace NCollection
             }
         }
 
-        private class Node : IDisposable
+        private sealed class Node : IDisposable
         {
             public Node(object? value)
             {
@@ -212,7 +212,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="IQueue"/>
-        public virtual bool Contains(object? item)
+        public bool Contains(object? item)
         {
             var current = _root;
 

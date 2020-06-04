@@ -57,22 +57,22 @@ namespace NCollection.Generics
         }
         
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual int Count => _size;
+        public int Count => _size;
 
         /// <inheritdoc cref="IStack"/>
-        public virtual bool IsEmpty => Count == 0;
+        public bool IsEmpty => Count == 0;
 
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual bool IsSynchronized => false;
+        public bool IsSynchronized => false;
 
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual object SyncRoot => this;
+        public object SyncRoot => this;
 
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual bool IsReadOnly => false;
+        public bool IsReadOnly => false;
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual void CopyTo(Array array, int index)
+        public void CopyTo(Array array, int index)
         {
             if (array == null)
             {
@@ -116,7 +116,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
-        public virtual void CopyTo(T[] array, int arrayIndex)
+        public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
             {
@@ -153,7 +153,7 @@ namespace NCollection.Generics
         
         /// <inheritdoc cref="IStack{T}"/>
         [return: MaybeNull]
-        public virtual T Peek()
+        public T Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -164,14 +164,14 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual void Clear()
+        public void Clear()
         {
             Array.Clear(_array, 0, _array.Length);
             _size = 0;
         }
 
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual bool TryPeek([MaybeNullWhen(false)]out T item)
+        public bool TryPeek([MaybeNullWhen(false)]out T item)
         {
             if (_size == 0)
             {
@@ -184,7 +184,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual void Push(T item)
+        public void Push(T item)
         {
             if (_size == _array.Length)
             {
@@ -201,7 +201,7 @@ namespace NCollection.Generics
 
         /// <inheritdoc cref="IStack{T}"/>
         [return: MaybeNull]
-        public virtual T Pop()
+        public T Pop()
         {
             if (!TryPop(out var item))
             {
@@ -212,7 +212,7 @@ namespace NCollection.Generics
         }
         
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual bool TryPop([MaybeNullWhen(false)]out T item)
+        public bool TryPop([MaybeNullWhen(false)]out T item)
         {
             if (_size == 0)
             {
@@ -226,7 +226,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual bool Contains(T item)
+        public bool Contains(T item)
         {
             var size = _size;
             while (size-- > 0)

@@ -19,19 +19,19 @@ namespace NCollection.Generics
         private Node? _last;
         
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual int Count { get; private set; }
+        public int Count { get; private set; }
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual bool IsSynchronized => false;
+        public bool IsSynchronized => false;
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual object SyncRoot => this;
+        public object SyncRoot => this;
 
         /// <inheritdoc cref="ICollection"/>
-        public virtual bool IsEmpty => _root == null;
+        public bool IsEmpty => _root == null;
 
         /// <inheritdoc cref="ICollection"/>
-        public virtual bool IsReadOnly => false;
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LinkedQueue{T}"/>.
@@ -60,7 +60,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual void Enqueue(T item)
+        public void Enqueue(T item)
         {
             if (_root == null)
             {
@@ -76,7 +76,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual T Peek()
+        public T Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -87,7 +87,7 @@ namespace NCollection.Generics
         }
         
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual bool TryPeek(out T item)
+        public bool TryPeek(out T item)
         {
             if (_root == null)
             {
@@ -100,7 +100,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual T Dequeue()
+        public T Dequeue()
         {
             if (TryDequeue(out var value))
             {
@@ -111,7 +111,7 @@ namespace NCollection.Generics
         }
         
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual bool TryDequeue(out T item)
+        public bool TryDequeue(out T item)
         {
             if (_root == null)
             {
@@ -128,7 +128,7 @@ namespace NCollection.Generics
         }
         
         /// <inheritdoc cref="IQueue{T}"/>
-        public virtual void Clear()
+        public void Clear()
         {
             var current = _root;
             while (current != null)
@@ -233,7 +233,7 @@ namespace NCollection.Generics
             }
         }
         
-        private class Node : IDisposable
+        private sealed class Node : IDisposable
         {
             public Node(T value)
             {

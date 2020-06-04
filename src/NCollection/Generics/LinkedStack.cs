@@ -45,23 +45,23 @@ namespace NCollection.Generics
         }
         
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual int Count { get; private set; }
+        public int Count { get; private set; }
 
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual bool IsSynchronized => false;
+        public bool IsSynchronized => false;
 
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual object SyncRoot => this;
+        public object SyncRoot => this;
 
         /// <inheritdoc cref="IStack"/>
         public bool IsEmpty => _current == null;
 
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual bool IsReadOnly => false;
+        public bool IsReadOnly => false;
 
         /// <inheritdoc cref="IStack{T}"/>
         [return: MaybeNull]
-        public virtual T Peek()
+        public T Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -72,7 +72,7 @@ namespace NCollection.Generics
         }
 
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual bool TryPeek([MaybeNullWhen(false)]out T item)
+        public bool TryPeek([MaybeNullWhen(false)]out T item)
         {
             if (_current == null)
             {
@@ -93,7 +93,7 @@ namespace NCollection.Generics
 
         /// <inheritdoc cref="IStack{T}"/>
         [return: MaybeNull]
-        public virtual T Pop()
+        public T Pop()
         {
             if (!TryPop(out var item))
             {
@@ -119,7 +119,7 @@ namespace NCollection.Generics
         
 
         /// <inheritdoc cref="IStack{T}"/>
-        public virtual bool TryPop([MaybeNullWhen(false)]out T item)
+        public bool TryPop([MaybeNullWhen(false)]out T item)
         {
             if (Count == 0 || _current == null)
             {
@@ -136,7 +136,7 @@ namespace NCollection.Generics
         }
         
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
-        public virtual bool Contains(T item)
+        public bool Contains(T item)
         {
             var node = _current;
             
@@ -161,7 +161,7 @@ namespace NCollection.Generics
         }
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual void CopyTo(Array array, int index)
+        public void CopyTo(Array array, int index)
         {
             if (array == null)
             {
@@ -204,7 +204,7 @@ namespace NCollection.Generics
         }
         
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
-        public virtual void CopyTo(T[] array, int arrayIndex)
+        public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
             {
@@ -295,7 +295,7 @@ namespace NCollection.Generics
         bool ICollection.Contains(object? item) => Contains((T) item);
         #endregion
 
-        private class Node : IDisposable
+        private sealed class Node : IDisposable
         {
             public Node(Node? preview, T value)
             {

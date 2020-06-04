@@ -61,22 +61,22 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual int Count { get; private set; }
+        public int Count { get; private set; }
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual bool IsSynchronized => false;
+        public bool IsSynchronized => false;
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual object SyncRoot => this;
+        public object SyncRoot => this;
 
         /// <inheritdoc cref="ICollection"/>
-        public virtual bool IsEmpty => Count == 0;
+        public bool IsEmpty => Count == 0;
 
         /// <inheritdoc cref="ICollection"/>
-        public virtual bool IsReadOnly => false;
+        public bool IsReadOnly => false;
         
         /// <inheritdoc cref="IQueue"/>
-        public virtual void Enqueue(object? item)
+        public void Enqueue(object? item)
         {
             if (Count == _array.Length)
             {
@@ -103,7 +103,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="IQueue"/>
-        public virtual object? Peek()
+        public object? Peek()
         {
             if (!TryPeek(out var item))
             {
@@ -114,7 +114,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="IQueue"/>
-        public virtual bool TryPeek(out object? item)
+        public bool TryPeek(out object? item)
         {
             if (Count == 0)
             {
@@ -127,7 +127,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="IQueue"/>
-        public virtual object? Dequeue()
+        public object? Dequeue()
         {
             if (!TryDequeue(out var item))
             {
@@ -138,7 +138,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="IQueue"/>
-        public virtual bool TryDequeue(out object? item)
+        public bool TryDequeue(out object? item)
         {
             if (Count == 0)
             {
@@ -153,7 +153,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual void CopyTo(Array array, int index)
+        public void CopyTo(Array array, int index)
         {
             if (array == null)
             {
@@ -216,7 +216,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        public virtual void Clear()
+        public void Clear()
         {
             Array.Clear(_array, 0, _array.Length);
             Count = 0;

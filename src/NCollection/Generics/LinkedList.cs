@@ -138,14 +138,10 @@ namespace NCollection.Generics
         }
 
         int System.Collections.IList.IndexOf(object value)
-        {
-            throw new NotImplementedException();
-        }
+            => IndexOf((T) value!);
 
         void System.Collections.IList.Insert(int index, object value)
-        {
-            throw new NotImplementedException();
-        }
+            => Insert(index, (T) value!);
 
         /// <inheritdoc />
         public bool Contains(T item)
@@ -444,7 +440,7 @@ namespace NCollection.Generics
 
         #endregion
 
-        private class Node
+        private sealed class Node
         {
             public Node(Node? preview, Node? next, T value)
             {

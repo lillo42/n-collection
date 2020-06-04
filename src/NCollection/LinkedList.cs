@@ -4,7 +4,7 @@ using System.Collections;
 namespace NCollection
 {
     /// <summary>
-    ///  
+    ///  The link listed
     /// </summary>
     public class LinkedList : IList
     {
@@ -346,7 +346,7 @@ namespace NCollection
         object ICloneable.Clone()
             => Clone();
         
-        private class Node
+        private sealed class Node
         {
             public Node(Node? preview, Node? next, object? value)
             {
