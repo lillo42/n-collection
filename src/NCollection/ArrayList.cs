@@ -260,7 +260,7 @@ namespace NCollection
             var array = new object[Count];
             CopyTo(array, 0);
             
-            algorithm.Execute(array, comparable);
+            algorithm.Sort(array, comparable);
             
             Array.Copy(array, _array, Count);
         }

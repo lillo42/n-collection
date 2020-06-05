@@ -281,7 +281,7 @@ namespace NCollection
             var array = new object[Count];
             CopyTo(array, 0);
             
-            algorithm.Execute(array, comparable);
+            algorithm.Sort(array, comparable);
 
             var current = _first;
             foreach (var value in array)

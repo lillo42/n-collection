@@ -268,7 +268,7 @@ namespace NCollection.Generics
             var array = new T[Count];
             CopyTo(array, 0);
             
-            algorithm.Execute(array, comparer);
+            algorithm.Sort(array, comparer);
             
             Array.Copy(array, _array, Count);
         }

@@ -9,7 +9,7 @@ namespace NCollection.Sorting
     public class QuickSortAlgorithm : ISortAlgorithm
     {
         /// <inheritdoc />
-        public void Execute(object[] array, IComparer comparer)
+        public void Sort(object[] array, IComparer comparer)
         {
             if (array == null)
             {

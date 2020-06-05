@@ -379,7 +379,7 @@ namespace NCollection.Generics
             var array = new T[Count];
             CopyTo(array, 0);
             
-            algorithm.Execute(array, comparer);
+            algorithm.Sort(array, comparer);
 
             var current = _first;
             foreach (var value in array)
@@ -422,7 +422,7 @@ namespace NCollection.Generics
             
             var obj = new object[Count];
             CopyTo(obj, 0);
-            algorithm.Execute(obj, comparable);
+            algorithm.Sort(obj, comparable);
 
             var current = _first;
             foreach (var value in obj)
