@@ -141,13 +141,13 @@ namespace NCollection
             var newBuckets = ArrayPool<int>.Shared.Rent(_buckets.Length * 2);
             for (var i = 0; i < _lastIndex; i++)
             {
-                var bucket = newSlot[i].hashCode % size;
+                var bucket = Math.Abs(newSlot[i].hashCode.GetValueOrDefault() % size);
                 newSlot[i].next = newBuckets[bucket] - 1;
                 newBuckets[bucket] = i + 1;
             }
             
-            ArrayPool<Slot>.Shared.Return(_slots);
-            ArrayPool<int>.Shared.Return(_buckets);
+            ArrayPool<Slot>.Shared.Return(_slots, true);
+            ArrayPool<int>.Shared.Return(_buckets, true);
 
             _slots = newSlot;
             _buckets = newBuckets;
@@ -157,7 +157,7 @@ namespace NCollection
         public bool Add(object? item)
         {
             var hashCode = HashCode.Combine(item);
-            var bucket = hashCode % _buckets.Length;
+            var bucket = Math.Abs(hashCode % _buckets.Length);
             for (var i = _buckets[bucket] - 1 ; i >= 0; i = _slots[i].next)
             {
                 if (_slots[i].hashCode == hashCode && _comparer.Equals(_slots[i].value, item))
@@ -177,7 +177,7 @@ namespace NCollection
                 if (_lastIndex == _slots.Length)
                 {
                     IncreaseCapacity();   
-                    bucket = hashCode % _buckets.Length;
+                    bucket = Math.Abs(hashCode % _buckets.Length);
                 }
 
                 index = _lastIndex;
@@ -225,7 +225,7 @@ namespace NCollection
             var numCopied = 0;
             for (var i = 0; i < _lastIndex && numCopied < Count; i++)
             {
-                if (_slots[i].hashCode >= 0)
+                if (_slots[i].hashCode.HasValue)
                 {
                     array.SetValue(_slots[i].value, index + numCopied);
                     numCopied++;
@@ -236,6 +236,7 @@ namespace NCollection
         /// <inheritdoc />
         public void Clear()
         {
+            Count = 0;
             _freeList = -1;
             _lastIndex = 0;
             Array.Clear(_slots, 0, _slots.Length);
@@ -247,10 +248,11 @@ namespace NCollection
         {
             if (Count > 0)
             {
-                var bucket = HashCode.Combine(item);
+                var hashCode = HashCode.Combine(item);
+                var bucket = Math.Abs(hashCode % _buckets.Length);
                 for (var i = _buckets[bucket] - 1; i >= 0; i = _slots[i].next)
                 {
-                    if (_slots[i].hashCode == bucket && _comparer.Equals(_slots[i].value, item))
+                    if (_slots[i].hashCode == hashCode && _comparer.Equals(_slots[i].value, item))
                     {
                         return true;
                     }
@@ -265,12 +267,13 @@ namespace NCollection
         {
             if (Count > 0)
             {
-                var bucket = HashCode.Combine(item);
+                var hashCode = HashCode.Combine(item);
+                var bucket = Math.Abs(hashCode % _buckets.Length);
                 var last = -1;
                 
                 for (var i = _buckets[bucket] - 1; i >= 0; last = i, i = _slots[i].next)
                 {
-                    if (_slots[i].hashCode == bucket && _comparer.Equals(_slots[i].value, item))
+                    if (_slots[i].hashCode == hashCode && _comparer.Equals(_slots[i].value, item))
                     {
                         if (last < 0)
                         {
@@ -281,7 +284,7 @@ namespace NCollection
                             // subsequent iterations; update 'next' pointers
                             _slots[last].next = _slots[i].next;
                         }
-                        _slots[i].hashCode = -1;
+                        _slots[i].hashCode = null;
                         _slots[i].value = null;
                         _slots[i].next = _freeList;
 
@@ -339,9 +342,9 @@ namespace NCollection
             /// <inheritdoc />
             public bool MoveNext()
             {
-                while (_index < _set._lastIndex)
+                while (_index <= _set._lastIndex)
                 {
-                    if (_set._slots[_index].hashCode > 0)
+                    if (_set._slots[_index].hashCode.HasValue)
                     {
                         Current = _set._slots[_index].value;
                         _index++;
@@ -376,7 +379,25 @@ namespace NCollection
         /// <returns>A shallow copy of the <see cref="HashSet"/>.</returns>
         public HashSet Clone()
         {
-            return new HashSet(this);
+            var hash = new HashSet(_comparer);
+
+            if (_buckets.Length != hash._buckets.Length)
+            {
+                ArrayPool<Slot>.Shared.Return(hash._slots);
+                ArrayPool<int>.Shared.Return(hash._buckets);
+
+                hash._buckets = ArrayPool<int>.Shared.Rent(_buckets.Length);
+                hash._slots = ArrayPool<Slot>.Shared.Rent(_slots.Length);
+            }
+
+            Array.Copy(_buckets, hash._buckets, hash._buckets.Length);
+            Array.Copy(_slots, hash._slots, hash._slots.Length);
+            
+            hash.Count = Count;
+            hash._freeList = _freeList;
+            hash._lastIndex = _lastIndex;
+            
+            return hash;
         }
 
         object ICloneable.Clone()
@@ -386,7 +407,7 @@ namespace NCollection
         
         private struct Slot
         {
-            internal int hashCode;
+            internal int? hashCode;
             internal int next;
             internal object? value;
         }
