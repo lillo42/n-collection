@@ -12,6 +12,7 @@ namespace NCollection.Test.Stack
 
         protected IStackTest()
         {
+            var a = new System.Collections.Generic.HashSet<object>();
             Fixture = new Fixture();
         }
 

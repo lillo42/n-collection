@@ -24,7 +24,7 @@ namespace NCollection
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LinkedList"/>.List
+        /// Initializes a new instance of the <see cref="LinkedList"/>.
         /// </summary>
         /// <param name="enumerable">The <see cref="IEnumerable"/> to copy elements from.</param>
         /// <exception cref="ArgumentNullException"><paramref name="enumerable"/> is null</exception>
