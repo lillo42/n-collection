@@ -2,7 +2,9 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using NCollection.Generics.DebugViews;
 
 namespace NCollection.Generics
 {
@@ -21,25 +23,26 @@ namespace NCollection.Generics
     /// <see cref="Remove"/> and <see cref="Peek"/> access the
     /// element at the head of the queue.
     /// 
-    /// <p>A priority queue is unbounded, but has an internal
-    /// <i>capacity</i> governing the size of an array used to store the
+    /// A priority queue is unbounded, but has an internal
+    /// capacity governing the size of an array used to store the
     /// elements on the queue.  It is always at least as large as the queue
     /// size.  As elements are added to a priority queue, its capacity
     /// grows automatically.  The details of the growth policy are not
     /// specified.
     /// 
-    /// <p><strong>Note that this implementation is not synchronized.</strong>
+    /// Note that this implementation is not synchronized.
     /// Multiple threads should not access a <see cref="PriorityQueue{T}"/>
     /// instance concurrently if any of the threads modifies the queue.
-    /// Instead, use the thread-safe, <see cref="TODO"/>
     /// 
-    /// <p>Implementation note: this implementation provides
+    /// Implementation note: this implementation provides
     /// O(log(n)) time for the enqueuing and dequeuing methods
     /// (<see cref="Enqueue"/> and <see cref="Dequeue"/>);
     /// linear time for the <see cref="Remove"/> and <see cref="Contains"/>
     /// methods; and constant time for the retrieval methods
     /// (<see cref="Peek"/> and <see cref="Count"/>).
     /// </summary>
+    [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
+    [DebuggerDisplay("Count = {Count}")]
     public class PriorityQueue<T> : IQueue<T>, IQueue
     {
         
@@ -74,7 +77,7 @@ namespace NCollection.Generics
         /// </summary>
         public PriorityQueue()
         {
-            Comparer = System.Collections.Generic.Comparer<T>.Default;
+            Comparer = Comparer<T>.Default;
             _queue = ArrayPool<T>.Shared.Rent(DefaultValue);
         }
 
@@ -90,7 +93,7 @@ namespace NCollection.Generics
                 throw new ArgumentOutOfRangeException(nameof(initialCapacity), "Need non-negative number");
             }
 
-            Comparer = System.Collections.Generic.Comparer<T>.Default;
+            Comparer = Comparer<T>.Default;
             _queue = ArrayPool<T>.Shared.Rent(initialCapacity);
         }
 
@@ -132,7 +135,7 @@ namespace NCollection.Generics
                     break;
                 default:
                 {
-                    Comparer = System.Collections.Generic.Comparer<T>.Default;
+                    Comparer = Comparer<T>.Default;
                     _queue = ArrayPool<T>.Shared.Rent(DefaultValue);
 
                     foreach (var item in enumerable)
@@ -268,7 +271,7 @@ namespace NCollection.Generics
                 return false;
             }
 
-            item = _queue[0];
+            item = _queue[0]!;
             return true;
         }
 
@@ -299,7 +302,7 @@ namespace NCollection.Generics
         #region Dequeue
 
         /// <inheritdoc />
-        public bool TryDequeue([MaybeNullWhen(true)] out T item)
+        public bool TryDequeue([MaybeNull] out T item)
         {
             if (IsEmpty)
             {
@@ -308,14 +311,10 @@ namespace NCollection.Generics
             }
             
             item = RemoveFirst(_queue, Count, Comparer);
+            Count--;
+            _version++;
             
-            if (item != null)
-            {
-                Count--;
-                _version++;
-            }
-
-            return item != null;
+            return true;
         }
 
         /// <inheritdoc />
@@ -347,12 +346,12 @@ namespace NCollection.Generics
             return true;
         }
 
+        [return: MaybeNull]
         private static T RemoveFirst(T[] queue, int size, IComparer<T> comparer)
         {
-            
-            var item = queue[0];
-            if (item != null)
+            if (size >= 0)
             {
+                var item = queue[0];
                 var position = --size;
                 var temp = queue[position];
                 queue[position] = default!;
@@ -360,9 +359,11 @@ namespace NCollection.Generics
                 {
                     SiftDown(0, temp, position, queue, comparer);
                 }
+
+                return item;
             }
 
-            return item;
+            return default;
         }
 
         private static void SiftDown(int position, T item, int n, T[] queue, IComparer<T> comparer)
@@ -538,11 +539,11 @@ namespace NCollection.Generics
         #endregion
 
         #region IEnumerator
-        
+
         /// <summary>
-        /// Returns an <see cref="PriorityQueueEnumerator"/> for the <see cref="PriorityQueue"/>.
+        /// Returns an <see cref="PriorityQueueEnumerator"/> for the <see cref="PriorityQueue{T}"/>.
         /// </summary>
-        /// <returns>An <see cref="PriorityQueueEnumerator"/>  for the <see cref="PriorityQueue"/>.</returns>
+        /// <returns>An <see cref="PriorityQueueEnumerator"/>  for the <see cref="PriorityQueue{T}"/>.</returns>
         public PriorityQueueEnumerator GetEnumerator() 
             => new PriorityQueueEnumerator(this);
 
@@ -551,7 +552,6 @@ namespace NCollection.Generics
         
         IEnumerator<T> IEnumerable<T>.GetEnumerator() 
             => GetEnumerator();
-        
 
         /// <summary>
         /// Implementation of <see cref="IEnumerable"/> for <see cref="PriorityQueueEnumerator"/>.
@@ -562,11 +562,11 @@ namespace NCollection.Generics
             private readonly T[] _queue;
             private readonly int _version;
             private int _size;
-            
+
             /// <summary>
             /// Initializes a new instance of the <see cref="PriorityQueueEnumerator"/>.
             /// </summary>
-            /// <param name="priority">The <see cref="PriorityQueue"/>.</param>
+            /// <param name="priority">The <see cref="PriorityQueue{T}"/>.</param>
             public PriorityQueueEnumerator(PriorityQueue<T> priority)
             {
                 _priority = priority ?? throw new ArgumentNullException(nameof(priority));
@@ -592,7 +592,7 @@ namespace NCollection.Generics
                     return false;
                 }
                 
-                Current = RemoveFirst(_queue, _size, _priority.Comparer);
+                Current = RemoveFirst(_queue, _size, _priority.Comparer)!;
                 _size--;
                 return true;
             }

@@ -1,7 +1,9 @@
 using System;
 using System.Buffers;
 using System.Collections;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using NCollection.DebugViews;
 
 namespace NCollection
 {
@@ -16,29 +18,30 @@ namespace NCollection
     /// The head of this queue is the least element
     /// with respect to the specified ordering.  If multiple elements are
     /// tied for least value, the head is one of those elements -- ties are
-    /// broken arbitrarily.  The queue retrieval operations <see cref="Dequeue"/>,
+    /// broken arbitrarily. The queue retrieval operations <see cref="Dequeue"/>,
     /// <see cref="Remove"/> and <see cref="Peek"/> access the
     /// element at the head of the queue.
     /// 
-    /// <p>A priority queue is unbounded, but has an internal
-    /// <i>capacity</i> governing the size of an array used to store the
+    /// A priority queue is unbounded, but has an internal
+    /// capacity governing the size of an array used to store the
     /// elements on the queue.  It is always at least as large as the queue
     /// size.  As elements are added to a priority queue, its capacity
     /// grows automatically.  The details of the growth policy are not
     /// specified.
     /// 
-    /// <p><strong>Note that this implementation is not synchronized.</strong>
+    /// Note that this implementation is not synchronized 
     /// Multiple threads should not access a <see cref="PriorityQueue"/>
     /// instance concurrently if any of the threads modifies the queue.
-    /// Instead, use the thread-safe, <see cref="TODO"/>
     /// 
-    /// <p>Implementation note: this implementation provides
+    /// Implementation note: this implementation provides
     /// O(log(n)) time for the enqueuing and dequeuing methods
     /// (<see cref="Enqueue"/> and <see cref="Dequeue"/>);
     /// linear time for the <see cref="Remove"/> and <see cref="Contains"/>
     /// methods; and constant time for the retrieval methods
     /// (<see cref="Peek"/> and <see cref="Count"/>).
     /// </summary>
+    [DebuggerTypeProxy(typeof(ICollectionDebugView))]
+    [DebuggerDisplay("Count = {Count}")]
     public class PriorityQueue : IQueue
     {
         /// <inheritdoc />
