@@ -67,7 +67,7 @@ namespace NCollection.Generics
         public IComparer<T> Comparer { get; }
 
         private const int DefaultValue = 4;
-        private T[] _queue;
+        private Node[] _queue;
         private int _version = int.MinValue;
 
         #region Constructor
@@ -78,7 +78,7 @@ namespace NCollection.Generics
         public PriorityQueue()
         {
             Comparer = Comparer<T>.Default;
-            _queue = ArrayPool<T>.Shared.Rent(DefaultValue);
+            _queue = ArrayPool<Node>.Shared.Rent(DefaultValue);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace NCollection.Generics
             }
 
             Comparer = Comparer<T>.Default;
-            _queue = ArrayPool<T>.Shared.Rent(initialCapacity);
+            _queue = ArrayPool<Node>.Shared.Rent(initialCapacity);
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace NCollection.Generics
             }
 
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
-            _queue = ArrayPool<T>.Shared.Rent(initialCapacity);
+            _queue = ArrayPool<Node>.Shared.Rent(initialCapacity);
         }
 
         /// <summary>
@@ -130,13 +130,13 @@ namespace NCollection.Generics
                     Count = priorityQueue.Count;
                     _version = priorityQueue._version;
                 
-                    _queue = ArrayPool<T>.Shared.Rent(priorityQueue._queue.Length);
+                    _queue = ArrayPool<Node>.Shared.Rent(priorityQueue._queue.Length);
                     Array.Copy(priorityQueue._queue, _queue, Count);
                     break;
                 default:
                 {
                     Comparer = Comparer<T>.Default;
-                    _queue = ArrayPool<T>.Shared.Rent(DefaultValue);
+                    _queue = ArrayPool<Node>.Shared.Rent(DefaultValue);
 
                     foreach (var item in enumerable)
                     {
@@ -167,12 +167,12 @@ namespace NCollection.Generics
                 Count = priorityQueue.Count;
                 _version = priorityQueue._version;
                 
-                _queue = ArrayPool<T>.Shared.Rent(priorityQueue._queue.Length);
+                _queue = ArrayPool<Node>.Shared.Rent(priorityQueue._queue.Length);
                 Array.Copy(priorityQueue._queue, _queue, Count);
             }
             else
             {
-                _queue = ArrayPool<T>.Shared.Rent(DefaultValue);
+                _queue = ArrayPool<Node>.Shared.Rent(DefaultValue);
 
                 foreach (var item in enumerable)
                 {
@@ -188,7 +188,7 @@ namespace NCollection.Generics
         public PriorityQueue(IComparer<T> comparer)
         {
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
-            _queue = ArrayPool<T>.Shared.Rent(DefaultValue);
+            _queue = ArrayPool<Node>.Shared.Rent(DefaultValue);
         }
 
         #endregion
@@ -208,13 +208,13 @@ namespace NCollection.Generics
             
             if (Count == _queue.Length)
             {
-                var temp = ArrayPool<T>.Shared.Rent(_queue.Length * 2);
+                var temp = ArrayPool<Node>.Shared.Rent(_queue.Length * 2);
                 Array.Copy(_queue, temp, Count);
-                ArrayPool<T>.Shared.Return(_queue, true);
+                ArrayPool<Node>.Shared.Return(_queue, true);
                 _queue = temp;
             }
 
-            SiftUp(Count, item, _queue, Comparer);
+            SiftUp(Count, new Node(item, Comparer), _queue, Comparer);
             Count++;
             _version++;
         }
@@ -239,14 +239,14 @@ namespace NCollection.Generics
         /// <param name="item">the item to insert</param>
         /// <param name="queue">The array queue</param>
         /// <param name="comparer">The <see cref="IComparer{T}"/>.</param>
-        private static void SiftUp(int position, T item, T[] queue, IComparer<T> comparer)
+        private static void SiftUp(int position, Node item, Node[] queue, IComparer<T> comparer)
         {
             while (position > 0)
             {
                 var parent = (position - 1) >> 1;
                 var value = queue[parent];
 
-                if (comparer.Compare(item, value) >= 0)
+                if (comparer.Compare(item.Value, value.Value) >= 0)
                 {
                     break;
                 }
@@ -271,7 +271,7 @@ namespace NCollection.Generics
                 return false;
             }
 
-            item = _queue[0]!;
+            item = _queue[0].Value;
             return true;
         }
 
@@ -294,7 +294,7 @@ namespace NCollection.Generics
             }
 
             item = value;
-            return value != null;
+            return true;
         }
 
         #endregion
@@ -336,8 +336,8 @@ namespace NCollection.Generics
             else
             {
                 var moved = _queue[Count];
-                SiftDown(index, moved!, Count, _queue, Comparer);
-                if (Comparer.Compare(_queue[index], moved) == 0)
+                SiftDown(index, moved, Count, _queue, Comparer);
+                if (Comparer.Compare(_queue[index].Value, moved.Value) == 0)
                 {
                     SiftUp(index, moved, _queue, Comparer);
                 }
@@ -347,7 +347,7 @@ namespace NCollection.Generics
         }
 
         [return: MaybeNull]
-        private static T RemoveFirst(T[] queue, int size, IComparer<T> comparer)
+        private static T RemoveFirst(Node[] queue, int size, IComparer<T> comparer)
         {
             if (size >= 0)
             {
@@ -360,13 +360,13 @@ namespace NCollection.Generics
                     SiftDown(0, temp, position, queue, comparer);
                 }
 
-                return item;
+                return item.Value;
             }
 
             return default;
         }
 
-        private static void SiftDown(int position, T item, int n, T[] queue, IComparer<T> comparer)
+        private static void SiftDown(int position, Node item, int n, Node[] queue, IComparer<T> comparer)
         {
             var half = n >> 1;
             while (position < half)
@@ -374,13 +374,13 @@ namespace NCollection.Generics
                 var childPosition = (position << 1) + 1;
                 var child = queue[childPosition];
                 var right = childPosition + 1;
-                if (right < n && comparer.Compare(child, queue[right]) > 0)
+                if (right < n && comparer.Compare(child.Value, queue[right].Value) > 0)
                 {
                     childPosition = right;
                     child = queue[right];
                 }
 
-                if (comparer.Compare(item, child) <= 0)
+                if (comparer.Compare(item.Value, child.Value) <= 0)
                 {
                     break;
                 }
@@ -511,7 +511,7 @@ namespace NCollection.Generics
             {
                 for (var i = 0; i < _queue.Length; i++)
                 {
-                    if (item.Equals(_queue[i]))
+                    if (item.Equals(_queue[i].Value))
                     {
                         return i;
                     }
@@ -559,7 +559,7 @@ namespace NCollection.Generics
         public struct PriorityQueueEnumerator : IEnumerator<T>
         {
             private readonly PriorityQueue<T> _priority;
-            private readonly T[] _queue;
+            private readonly Node[] _queue;
             private readonly int _version;
             private int _size;
 
@@ -572,7 +572,7 @@ namespace NCollection.Generics
                 _priority = priority ?? throw new ArgumentNullException(nameof(priority));
                 _version = priority._version;
                 
-                _queue = new T[_priority.Count + 1];
+                _queue = new Node[_priority.Count + 1];
                 _size = priority.Count;
                 
                 Array.Copy(_priority._queue, _queue, _priority.Count);
@@ -617,6 +617,70 @@ namespace NCollection.Generics
         }
 
         #endregion
+
+        private class Node : IEquatable<Node>
+        {
+            public Node(T value, IComparer<T> comparer)
+            {
+                Value = value;
+                Comparer = comparer;
+            }
+
+            public T Value { get; }
+
+            public IComparer<T> Comparer { get; }
+
+
+            public bool Equals(Node? other)
+            {
+                if (ReferenceEquals(null, other))
+                {
+                    return false;
+                }
+
+                if (ReferenceEquals(this, other))
+                {
+                    return true;
+                }
+                
+                return Comparer.Compare(Value, other.Value) == 0;
+            }
+
+            public override bool Equals(object? obj)
+            {
+                if (ReferenceEquals(null, obj))
+                {
+                    return false;
+                }
+
+                if (ReferenceEquals(this, obj))
+                {
+                    return true;
+                }
+
+                if (obj.GetType() != this.GetType())
+                {
+                    return false;
+                }
+                
+                return Equals((Node) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return EqualityComparer<T>.Default.GetHashCode(Value);
+            }
+
+            public static bool operator ==(Node? left, Node? right)
+            {
+                return Equals(left, right);
+            }
+
+            public static bool operator !=(Node? left, Node? right)
+            {
+                return !Equals(left, right);
+            }
+        }
     }
 }
 
