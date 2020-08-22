@@ -11,7 +11,7 @@ namespace NCollection
         /// <summary>
         /// Adds an <see cref="object"/> to the end of the <see cref="IQueue"/>.
         /// </summary>
-        /// <param name="item">The <see cref="object"/> to add to the <see cref="IQueue"/>. The value can be null.</param>
+        /// <param name="item">The <see cref="object"/> to add to the <see cref="IQueue"/>.</param>
         void Enqueue(object? item);
 
         /// <summary>
