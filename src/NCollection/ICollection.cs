@@ -76,7 +76,7 @@ namespace NCollection
         /// <exception cref="UnsupportedOperationException">If the <see cref="Add"/>  operation is not supported by this collection</exception>
         /// <exception cref="ArgumentException">if some property of the element prevents it from being added to this collection</exception>
         /// <exception cref="InvalidOperationException">if the element cannot be added at this time due to insertion restrictions</exception>
-        new bool Add([CanBeNull]T item);
+        new bool Add(T item);
 
         /// <summary>
         /// Adds all of the elements in the specified collection to this collection
