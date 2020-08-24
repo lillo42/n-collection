@@ -26,6 +26,13 @@ namespace NCollection
         T[] ToArray();
 
         /// <summary>
+        /// Try adds an item to the <see cref="ICollection{T}"/>
+        /// </summary>
+        /// <param name="item">The object to add to the <see cref="ICollection{T}"/></param>
+        /// <returns>true if could insert <see cref="item"/> in <see cref="ICollection{T}"/></returns>
+        bool TryAdd(T item);
+        
+        /// <summary>
         /// Return true if this if this collection contains all of the elements in the specified collection.
         /// </summary>
         /// <param name="source">The collection to be checked for containment in this collection</param>
@@ -49,34 +56,6 @@ namespace NCollection
 
             return true;
         }
-        
-        
-        /// <summary>
-        ///  Ensures that this collection contains the specified element (optional
-        /// operation). Returns true if this collection changed as a
-        /// result of the call.  (Returns false if this collection does
-        /// not permit duplicates and already contains the specified element.)
-        ///
-        /// Collections that support this operation may place limitations on what
-        /// elements may be added to this collection.  In particular, some
-        /// collections will refuse to add null elements, and others will
-        /// impose restrictions on the type of elements that may be added.
-        /// Collection classes should clearly specify in their documentation any
-        /// restrictions on what elements may be added.
-        ///
-        /// If a collection refuses to add a particular element for any reason
-        /// other than that it already contains the element, it must throw
-        /// an exception (rather than returning false).  This preserves
-        /// the invariant that a collection always contains the specified element
-        /// after this call returns.
-        /// </summary>
-        /// <param name="item">Element whose presence in this collection is to be ensured</param>
-        /// <returns>True if this collection changed as a result of the call</returns>
-        /// <exception cref="ArgumentNullException">f the specified element is null and this collection does not permit null elements</exception>
-        /// <exception cref="UnsupportedOperationException">If the <see cref="Add"/>  operation is not supported by this collection</exception>
-        /// <exception cref="ArgumentException">if some property of the element prevents it from being added to this collection</exception>
-        /// <exception cref="InvalidOperationException">if the element cannot be added at this time due to insertion restrictions</exception>
-        new bool Add(T item);
 
         /// <summary>
         /// Adds all of the elements in the specified collection to this collection
@@ -102,7 +81,7 @@ namespace NCollection
             var modified = false;
             foreach (var item in source)
             {
-                if (Add(item))
+                if (TryAdd(item))
                 {
                     modified = true;
                 }
@@ -201,9 +180,6 @@ namespace NCollection
         }
 
         #region ICollection
-
-        void System.Collections.Generic.ICollection<T>.Add(T item) => Add(item);
-
         bool System.Collections.Generic.ICollection<T>.Contains(T item)
         {
             if (item == null)

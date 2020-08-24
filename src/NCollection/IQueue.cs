@@ -99,8 +99,25 @@ namespace NCollection
         /// by throwing an exception.
         /// </summary>
         /// <param name="item">the element to add</param>
+        void Enqueue(T item)
+        {
+            if (!TryEnqueue(item))
+            {
+                throw new InvalidOperationException("The queue is full");
+            }
+        }
+        
+        
+        /// <summary>
+        /// Inserts the specified element into this queue if it is possible to do
+        /// so immediately without violating capacity restrictions.
+        /// When using a capacity-restricted queue, this method is generally
+        /// preferable to <see cref="ICollection{T}.Add"/>, which can fail to insert an element only
+        /// by throwing an exception.
+        /// </summary>
+        /// <param name="item">the element to add</param>
         /// <returns>true if the element was added to this queue, else false</returns>
-        bool TryAdd(T item);
+        bool TryEnqueue(T item);
         
         /// <summary>
         /// Retrieves, but does not remove, the head of this queue.  This method

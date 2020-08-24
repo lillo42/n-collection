@@ -13,7 +13,13 @@ namespace NCollection
         /// Pushes an item onto the top of this stack.
         /// </summary>
         /// <param name="item">The item to be pushed onto this stack.</param>
-        void Push(T item);
+        void Push(T item)
+        {
+            if (!TryPush(item))
+            {
+                throw new InvalidOperationException("The stack is empty");
+            }
+        }
         
         /// <summary>
         /// Try to pushes an item onto the top of this stack.

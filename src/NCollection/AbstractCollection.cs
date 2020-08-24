@@ -42,10 +42,10 @@ namespace NCollection
 
         #region Properties
         
-        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>>
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public abstract int Count { get; }
         
-        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>>
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public abstract bool IsReadOnly { get; }
 
         #endregion
@@ -143,7 +143,16 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="ICollection{T}"/>
-        public virtual bool Add(T item) => throw new UnsupportedOperationException();
+        public virtual bool TryAdd(T item) => throw new UnsupportedOperationException();
+
+        /// <inheritdoc cref="ICollection{T}"/>
+        public virtual void Add(T item)
+        {
+            if (!TryAdd(item))
+            {
+                throw new InvalidOperationException();
+            }
+        }
 
         /// <inheritdoc cref="ICollection{T}"/>
         public virtual bool AddRange(IEnumerable<T> source)
@@ -156,7 +165,7 @@ namespace NCollection
             var modified = false;
             foreach (var item in source)
             {
-                if (Add(item))
+                if (TryAdd(item))
                 {
                     modified = true;
                 }

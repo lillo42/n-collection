@@ -71,7 +71,7 @@ namespace NCollection
 
         #region ICollection
 
-        bool ICollection<T>.Add(T item) => Add(item);
+        void System.Collections.Generic.ICollection<T>.Add(T item) => Add(item);
 
         #endregion
 
