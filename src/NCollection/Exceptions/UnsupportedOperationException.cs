@@ -7,7 +7,7 @@ namespace NCollection.Exceptions
     /// <summary>
     /// Exception to indicate that the requested operation is not supported.
     /// </summary>
-    public class UnsupportedOperationException : Exception
+    public class UnsupportedOperationException : NCollectionException
     {
         /// <summary>
         ///  Constructs an UnsupportedOperationException with no detail message.

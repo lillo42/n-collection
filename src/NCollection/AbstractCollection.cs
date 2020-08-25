@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using JetBrains.Annotations;
 using NCollection.Exceptions;
 
 namespace NCollection
@@ -9,24 +10,6 @@ namespace NCollection
     /// <summary>
     /// This class provides a skeletal implementation of the <see cref="ICollection{T}"/>
     /// interface, to minimize the effort required to implement this interface.
-    ///
-    /// To implement an unmodifiable collection, the programmer needs only to
-    /// extend this class and provide implementations for the <see cref="IEnumerable{T}"/> and
-    /// <see cref="ICollection{T}.Count"/> property.
-    ///
-    /// To implement a modifiable collection, the programmer must additionally
-    /// override this class's {@code add} method (which otherwise throws an
-    /// {@code UnsupportedOperationException}), and the iterator returned by the
-    /// {@code iterator} method must additionally implement its {@code remove}
-    /// method
-    ///
-    /// The programmer should generally provide a void (no argument) and
-    /// <see cref="ICollection{T}"/> constructor, as per the recommendation in the
-    /// <see cref="ICollection{T}"/> interface specification.
-    /// 
-    /// The documentation for each non-abstract method in this class describes its
-    /// implementation in detail.  Each of these methods may be overridden if
-    /// the collection being implemented admits a more efficient implementation.
     /// </summary>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
@@ -44,9 +27,9 @@ namespace NCollection
         
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public abstract int Count { get; }
-        
+
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
-        public abstract bool IsReadOnly { get; }
+        public virtual bool IsReadOnly { get; } = false;
 
         #endregion
         
@@ -57,6 +40,32 @@ namespace NCollection
         
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public virtual bool Contains(T item)
+        {
+            if (item == null)
+            {
+                foreach (var value in this)
+                {
+                    if (value == null)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                foreach (var value in this)
+                {
+                    if (item.Equals(value))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        
+        public virtual bool Contains(T item, [NotNull]IEqualityComparer<T> comparer)
         {
             if (item == null)
             {

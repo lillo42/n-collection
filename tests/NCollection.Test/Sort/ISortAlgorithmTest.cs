@@ -12,6 +12,7 @@ namespace NCollection.Test.Sort
         [Fact]
         public void ExecuteInt()
         {
+            var a = new System.Collections.Generic.List<>();
             var numbers = new object[] {3, 7, 8, 5, 2, 1, 9, 5, 4};
             var sort = Create();
             sort.Sort(numbers, Comparer<int>.Default);

@@ -12,7 +12,7 @@ namespace NCollection
     public interface ICollection<T> : System.Collections.Generic.ICollection<T>
     {
         /// <summary>
-        /// Returns true If this collection contains no elements
+        /// Returns <see langword="true"/>  If this collection contains no elements
         /// </summary>
         bool IsEmpty => Count == 0;
 
@@ -29,26 +29,49 @@ namespace NCollection
         /// Try adds an item to the <see cref="ICollection{T}"/>
         /// </summary>
         /// <param name="item">The object to add to the <see cref="ICollection{T}"/></param>
-        /// <returns>true if could insert <see cref="item"/> in <see cref="ICollection{T}"/></returns>
+        /// <returns><see langword="true"/> if could insert <paramref name="item"/> in <see cref="ICollection{T}"/></returns>
         bool TryAdd(T item);
-        
+
+
+        /// <summary>Determines whether the <see cref="System.Collections.Generic.ICollection{T}" /> contains a specific value.</summary>
+        /// <param name="item">The object to locate in the <see cref="System.Collections.Generic.ICollection{T}" /> .</param>
+        /// <param name="comparer">The <see cref="IEqualityComparer{T}"/>.</param>
+        /// <returns>
+        /// <see langword="true" /> if <paramref name="item" /> is found in the <see cref="System.Collections.Generic.ICollection{T}" /> ; otherwise, <see langword="false" />.</returns>
+        bool Contains(T item, [NotNull]IEqualityComparer<T> comparer);
+
         /// <summary>
-        /// Return true if this if this collection contains all of the elements in the specified collection.
+        /// Return <see langword="true"/> if this if this collection contains all of the elements in the specified collection.
         /// </summary>
         /// <param name="source">The collection to be checked for containment in this collection</param>
         /// <returns>Return true if this if this collection contains all of the elements in the specified collection.</returns>
         /// <exception cref="ArgumentNullException">If the collection is null</exception>
         /// <exception cref="NullReferenceException">if the specified collection contains one or more null elements and this collection does not permit null elements</exception>
-        bool ContainsAll([NotNull] IEnumerable<T> source)
+        bool ContainsAll([NotNull] IEnumerable<T> source) => ContainsAll(source, EqualityComparer<T>.Default);
+
+        /// <summary>
+        /// Return <see langword="true"/> if this if this collection contains all of the elements in the specified collection.
+        /// </summary>
+        /// <param name="source">The collection to be checked for containment in this collection</param>
+        /// <param name="comparer">The <see cref="IEqualityComparer{T}"/>.</param>
+        /// <returns>Return true if this if this collection contains all of the elements in the specified collection.</returns>
+        /// <exception cref="ArgumentNullException">If the collection is null</exception>
+        /// <exception cref="NullReferenceException">if the specified collection contains one or more null elements and this collection does not permit null elements</exception>
+        bool ContainsAll([NotNull] IEnumerable<T> source, [NotNull]IEqualityComparer<T> comparer)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
-            
+
+            if (comparer == null)
+            {
+                throw new ArgumentNullException(nameof(comparer));
+            }
+
             foreach (var item in source)
             {
-                if (Contains(item))
+                if (!Contains(item, comparer))
                 {
                     return false;
                 }
@@ -182,28 +205,7 @@ namespace NCollection
         #region ICollection
         bool System.Collections.Generic.ICollection<T>.Contains(T item)
         {
-            if (item == null)
-            {
-                foreach (var value in this)
-                {
-                    if (value == null)
-                    {
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                foreach (var value in this)
-                {
-                    if (item.Equals(value))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
+            return Contains(item, EqualityComparer<T>.Default);
         }
 
         #endregion

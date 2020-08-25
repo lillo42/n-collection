@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NCollection
 {
@@ -49,7 +50,7 @@ namespace NCollection
         /// </summary>
         /// <param name="item">The item in the head of this stack</param>
         /// <returns>true if could retrieves and remove the item in head of this stack</returns>
-        bool TryPop(out T item);
+        bool TryPop([MaybeNull]out T item);
         
         /// <summary>
         /// Retrieves, but does not remove, the head of this stack. This method
@@ -74,6 +75,6 @@ namespace NCollection
         /// </summary>
         /// <param name="item">The item in the stack of this queue</param>
         /// <returns>true if could retrieves the item in stack of this queue</returns>
-        bool TryPeek(out T item);
+        bool TryPeek([MaybeNull]out T item);
     }
 }

@@ -1,7 +1,13 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NCollection
 {
+    /// <summary>
+    ///  This class provides a skeletal implementation of the <see cref="IStack{T}"/>
+    /// interface, to minimize the effort required to implement this interface. 
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the collection.</typeparam>
     public abstract class AbstractStack<T> : AbstractCollection<T>, IStack<T>
     {
         /// <inheritdoc cref="ICollection{T}"/>
@@ -40,7 +46,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="IStack{T}"/>
-        public abstract bool TryPop(out T item);
+        public abstract bool TryPop([MaybeNull]out T item);
         
         /// <inheritdoc cref="IStack{T}"/>
         public virtual T Peek()
@@ -54,7 +60,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="IStack{T}"/>
-        public abstract bool TryPeek(out T item);
+        public abstract bool TryPeek([MaybeNull]out T item);
 
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public override bool Remove(T item)
