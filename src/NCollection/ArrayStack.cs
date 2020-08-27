@@ -28,12 +28,26 @@ namespace NCollection
         {
             _elements = ArrayPool<T>.Shared.Rent(16);
         }
+        
+        /// <summary>
+        /// Initialize <see cref="ArrayQueue{T}"/>
+        /// </summary>
+        /// <param name="initialCapacity">The initial capacity of the array</param>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
+        public ArrayStack(int initialCapacity)
+        {
+            if (initialCapacity < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(initialCapacity), "The value should be greater or equal than 1");
+            }
+            _elements = ArrayPool<T>.Shared.Rent(initialCapacity);
+        }
 
         /// <summary>
         /// Initialize <see cref="ArrayStack{T}"/> copying the element in <see cref="IEnumerable{T}"/>
         /// </summary>
         /// <param name="source">The elements to be copy</param>
-        /// <exception cref="ArgumentNullException">if the <see cref="source"/> is null </exception>
+        /// <exception cref="ArgumentNullException">if the <paramref cref="source"/> is null </exception>
         public ArrayStack([JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {
             if (source == null)
@@ -45,11 +59,13 @@ namespace NCollection
             {
                 _elements = ArrayPool<T>.Shared.Rent(stack._elements.Length);
                 Array.Copy(stack._elements, _elements, stack._count);
+                _count = stack._count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
                 _elements = ArrayPool<T>.Shared.Rent(collection.Count);
                 collection.CopyTo(_elements, 0);
+                _count = collection.Count;
             }
             else
             {
@@ -62,12 +78,57 @@ namespace NCollection
             }
         }
 
+        /// <summary>
+        /// Initialize <see cref="ArrayStack{T}"/> copying the element in <see cref="IEnumerable{T}"/>
+        /// </summary>
+        /// <param name="source">The elements to be copy</param>
+        /// <param name="initialCapacity">The initial capacity of the array</param>
+        /// <exception cref="ArgumentNullException">if the <paramref cref="source"/> is null </exception>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
+        public ArrayStack(int initialCapacity, [JetBrains.Annotations.NotNull] IEnumerable<T> source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (source is ArrayStack<T> stack)
+            {
+                _elements = ArrayPool<T>.Shared.Rent(stack._elements.Length);
+                Array.Copy(stack._elements, _elements, stack._count);
+                _count = stack._count;
+            }
+            else if (source is System.Collections.Generic.ICollection<T> collection)
+            {
+                _elements = ArrayPool<T>.Shared.Rent(collection.Count);
+                collection.CopyTo(_elements, 0);
+                _count = collection.Count;
+            }
+            else
+            {
+                _elements = ArrayPool<T>.Shared.Rent(initialCapacity);
+                foreach (var item in source)
+                {
+                    // ReSharper disable once VirtualMemberCallInConstructor
+                    TryPush(item);
+                }
+            }
+        }
+
+        
         /// <inheritdoc cref="ICollection{T}"/>
         public override T[] ToArray()
         {
             var result = new T[_count];
             Array.Copy(_elements, result, result.Length);
             return result;
+        }
+
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
+        public override void Clear()
+        {
+            Array.Clear(_elements, 0, _count);
+            _count = 0;
         }
 
         /// <inheritdoc cref="IStack{T}"/>

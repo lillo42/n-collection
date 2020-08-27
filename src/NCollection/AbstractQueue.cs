@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NCollection
 {
@@ -40,6 +41,7 @@ namespace NCollection
         public abstract bool TryEnqueue(T item);
 
         /// <inheritdoc cref="IQueue{T}"/>
+        [return: MaybeNull]
         public virtual T Peek()
         {
             if (TryPeek(out var item))
@@ -51,9 +53,10 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="IQueue{T}"/>
-        public abstract bool TryPeek(out T item);
+        public abstract bool TryPeek([MaybeNull]out T item);
 
         /// <inheritdoc cref="IQueue{T}"/>
+        [return: MaybeNull]
         public virtual T Dequeue()
         {
             if (TryDequeue(out var item))
@@ -65,7 +68,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="IQueue{T}"/>
-        public abstract bool TryDequeue(out T item);
+        public abstract bool TryDequeue([MaybeNull]out T item);
 
         /// <inheritdoc cref="ICollection{T}"/>
         public override void Clear()

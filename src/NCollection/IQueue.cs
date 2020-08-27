@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NCollection
 {
@@ -7,10 +8,10 @@ namespace NCollection
     /// Besides basic <see cref="ICollection{T}"/> operations, queues provide
     /// additional insertion, extraction, and inspection operations.
     /// Each of these methods exists in two forms: one throws an exception
-     /// if the operation fails, the other returns a special value (either
+    /// if the operation fails, the other returns a special value (either
     /// null or false, depending on the operation).  The
     /// latter form of the insert operation is designed specifically for
-     /// use with capacity-restricted {@code Queue} implementations; in most
+    ///  use with capacity-restricted {@code Queue} implementations; in most
      /// implementations, insert operations cannot fail.
      ///
      /// <table class="striped">
@@ -126,6 +127,7 @@ namespace NCollection
         /// </summary>
         /// <returns>The head of this queue</returns>
         /// <exception cref="InvalidOperationException">if this queue is empty</exception>
+        [return: MaybeNull]
         T Peek()
         {
             if (TryPeek(out var item))
@@ -142,13 +144,14 @@ namespace NCollection
         /// </summary>
         /// <param name="item">The item in the head of this queue</param>
         /// <returns>true if could retrieves the item in head of this queue</returns>
-        bool TryPeek(out T item);
+        bool TryPeek([MaybeNull]out T item);
 
         /// <summary>
         /// Retrieves and remove, the head of this queue.
         /// </summary>
         /// <returns>The remove item in head of this queue</returns>
         /// <exception cref="InvalidOperationException">if this queue is empty</exception>
+        [return: MaybeNull]
         T Dequeue()
         {
             if (TryDequeue(out var item))
@@ -165,6 +168,6 @@ namespace NCollection
         /// </summary>
         /// <param name="item">The item in the head of this queue</param>
         /// <returns>true if could retrieves and remove the item in head of this queue</returns>
-        bool TryDequeue(out T item);
+        bool TryDequeue([MaybeNull]out T item);
     }
 }
