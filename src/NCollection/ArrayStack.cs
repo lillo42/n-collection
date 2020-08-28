@@ -16,10 +16,7 @@ namespace NCollection
     public class ArrayStack<T> : AbstractStack<T>, ICloneable
     {
         private T[] _elements;
-        private int _count;
         
-        /// <inheritdoc cref="ICollection{T}"/>
-        public override int Count => _count;
 
         /// <summary>
         /// Initialize <see cref="ArrayStack{T}"/>
@@ -58,14 +55,16 @@ namespace NCollection
             if (source is ArrayStack<T> stack)
             {
                 _elements = ArrayPool<T>.Shared.Rent(stack._elements.Length);
-                Array.Copy(stack._elements, _elements, stack._count);
-                _count = stack._count;
+                Array.Copy(stack._elements, _elements, stack.Count);
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Count = stack.Count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
                 _elements = ArrayPool<T>.Shared.Rent(collection.Count);
                 collection.CopyTo(_elements, 0);
-                _count = collection.Count;
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Count = collection.Count;
             }
             else
             {
@@ -95,14 +94,16 @@ namespace NCollection
             if (source is ArrayStack<T> stack)
             {
                 _elements = ArrayPool<T>.Shared.Rent(stack._elements.Length);
-                Array.Copy(stack._elements, _elements, stack._count);
-                _count = stack._count;
+                Array.Copy(stack._elements, _elements, stack.Count);
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Count = stack.Count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
                 _elements = ArrayPool<T>.Shared.Rent(collection.Count);
                 collection.CopyTo(_elements, 0);
-                _count = collection.Count;
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Count = collection.Count;
             }
             else
             {
@@ -119,7 +120,7 @@ namespace NCollection
         /// <inheritdoc cref="ICollection{T}"/>
         public override T[] ToArray()
         {
-            var result = new T[_count];
+            var result = new T[Count];
             Array.Copy(_elements, result, result.Length);
             return result;
         }
@@ -127,49 +128,51 @@ namespace NCollection
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public override void Clear()
         {
-            Array.Clear(_elements, 0, _count);
-            _count = 0;
+            Array.Clear(_elements, 0, Count);
+            Count = 0;
         }
 
         /// <inheritdoc cref="IStack{T}"/>
         public override bool TryPush(T item)
         {
-            if (_count == _elements.Length)
+            if (Count == _elements.Length)
             {
-                var tmp = ArrayPool<T>.Shared.Rent(_elements.Length >> 1);
+                var tmp = ArrayPool<T>.Shared.Rent(_elements.Length << 1);
                 Array.Copy(_elements, tmp, _elements.Length);
                 ArrayPool<T>.Shared.Return(_elements, true);
                 _elements = tmp;
             }
 
-            _elements[_count++] = item;
+            _elements[Count] = item;
+            Count++;
             return true;
         }
 
         /// <inheritdoc cref="IStack{T}"/>
         public override bool TryPop([MaybeNull]out T item)
         {
-            if (_count == 0)
+            if (Count == 0)
             {
                 item = default!;
                 return false;
             }
 
-            item = _elements[_count];
-            _elements[_count--] = default!;
+            item = _elements[Count - 1];
+            _elements[Count - 1] = default!;
+            Count--;
             return true;
         }
 
         /// <inheritdoc cref="IStack{T}"/>
         public override bool TryPeek([MaybeNull]out T item)
         {
-            if (_count == 0)
+            if (Count == 0)
             {
                 item = default!;
                 return false;
             }
 
-            item = _elements[_count];
+            item = _elements[Count - 1];
             return true;
         }
         
@@ -181,51 +184,55 @@ namespace NCollection
         
         private struct ArrayStackEnumerator : IEnumerator<T>
         {
-            private int _head;
-            private int _state;
+            private int _index;
+            private T _current;
             private readonly ArrayStack<T> _stack;
 
             public ArrayStackEnumerator(ArrayStack<T> stack)
             {
                 _stack = stack;
-                _head = 0;
-                _state = -1;
-                Current = default!;
+                _index = -2;
+                _current = default!;
             }
 
 
             public bool MoveNext()
             {
-                switch (_state)
+                bool returnValue;
+                switch (_index)
                 {
-                    case  -1:
-                        _head = _stack._count;
-                        _state = 0;
-                        break;
-                    case 0:
-                        _head--;
-                        if (_head == -1)
-                        {
-                            _state = -2;
-                            goto case -2;
-                        }
-                        break;
                     case -2:
+                    {
+                        _index = _stack.Count - 1;
+                        returnValue = _index >= 0;
+                        if (returnValue)
+                        {
+                            _current = _stack._elements[_index];
+                        }
+
+                        return returnValue;
+                    }
+                    case -1:
                         return false;
-                    
                 }
 
-                Current = _stack._elements[_head];
-                return true;
+                returnValue = --_index >= 0;
+                _current = returnValue ? _stack._elements[_index] : default!;
+                return returnValue;
             }
 
             public void Reset()
             {
-                _state = -1;
-                Current = default!;
+                _index = -2;
+                _current = default!;
             }
 
-            public T Current { get; private set; }
+            public T Current => _index switch
+            {
+                -2 => throw new InvalidOperationException("Enumerable not started"),
+                -1 => throw new InvalidOperationException("Enumerable end"),
+                _ => _current
+            };
 
             object IEnumerator.Current => Current!;
 

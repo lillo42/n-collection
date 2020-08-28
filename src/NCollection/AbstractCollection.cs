@@ -26,7 +26,7 @@ namespace NCollection
         #region Properties
         
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
-        public abstract int Count { get; }
+        public virtual int Count { get; protected set; }
 
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public virtual bool IsReadOnly { get; } = false;
@@ -41,50 +41,22 @@ namespace NCollection
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public virtual bool Contains(T item)
         {
-            if (item == null)
-            {
-                foreach (var value in this)
-                {
-                    if (value == null)
-                    {
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                foreach (var value in this)
-                {
-                    if (item.Equals(value))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            return false;
+            return Contains(item, EqualityComparer<T>.Default);
         }
         
+        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public virtual bool Contains(T item, [NotNull]IEqualityComparer<T> comparer)
         {
-            if (item == null)
+            if (comparer == null)
             {
-                foreach (var value in this)
-                {
-                    if (value == null)
-                    {
-                        return true;
-                    }
-                }
+                throw new ArgumentNullException(nameof(comparer));
             }
-            else
+            
+            foreach (var value in this)
             {
-                foreach (var value in this)
+                if (comparer.Equals(item, value))
                 {
-                    if (item.Equals(value))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -94,14 +66,25 @@ namespace NCollection
         /// <inheritdoc cref="ICollection{T}"/>
         public virtual bool ContainsAll(IEnumerable<T> source)
         {
+            return ContainsAll(source, EqualityComparer<T>.Default);
+        }
+        
+        /// <inheritdoc cref="ICollection{T}"/>
+        public virtual bool ContainsAll([NotNull] IEnumerable<T> source, [NotNull]IEqualityComparer<T> comparer)
+        {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
-            
+
+            if (comparer == null)
+            {
+                throw new ArgumentNullException(nameof(comparer));
+            }
+
             foreach (var item in source)
             {
-                if (Contains(item))
+                if (!Contains(item, comparer))
                 {
                     return false;
                 }
@@ -143,8 +126,9 @@ namespace NCollection
                         r = tmp;
                     }
 
-                    r[i++] = enumerator.Current;
-                    
+                    r[i] = enumerator.Current;
+                    i++;
+
                 } while (enumerator.MoveNext());
 
                 return r;
@@ -164,7 +148,7 @@ namespace NCollection
         }
 
         /// <inheritdoc cref="ICollection{T}"/>
-        public virtual bool AddRange(IEnumerable<T> source)
+        public virtual bool AddAll(IEnumerable<T> source)
         {
             if (source == null)
             {
@@ -182,11 +166,12 @@ namespace NCollection
 
             return modified;
         }
+        
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public abstract bool Remove(T item);
         
         /// <inheritdoc cref="ICollection{T}"/>
-        public virtual bool RemoveRange(IEnumerable<T> source)
+        public virtual bool RemoveAll(IEnumerable<T> source)
         {
             if (source == null)
             {
@@ -206,7 +191,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="ICollection{T}"/>
-        public virtual bool RetainRange(IEnumerable<T> source)
+        public virtual bool RetainAll(IEnumerable<T> source)
         {
             if (source == null)
             {

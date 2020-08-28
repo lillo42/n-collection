@@ -91,10 +91,10 @@ namespace NCollection
         /// <param name="source">The collection containing elements to be added to this collection</param>
         /// <returns> if this collection changed as a result of the call</returns>
         /// <exception cref="ArgumentNullException">if the specified collection contains a null element and this collection does not permit null elements, or if the specified collection is null</exception>
-        /// <exception cref="UnsupportedOperationException">If the <see cref="AddRange"/>  operation is not supported by this collection</exception>
+        /// <exception cref="UnsupportedOperationException">If the <see cref="AddAll"/>  operation is not supported by this collection</exception>
         /// <exception cref="ArgumentException">if some property of an element of the specified collection prevents it from being added to this collection</exception>
         /// <exception cref="InvalidOperationException">if not all the elements can be added at this time due to insertion restrictions</exception>
-        bool AddRange([NotNull] IEnumerable<T> source)
+        bool AddAll([NotNull] IEnumerable<T> source)
         {
             if (source == null)
             {
@@ -120,9 +120,9 @@ namespace NCollection
         /// </summary>
         /// <param name="source">The collection containing elements to be removed from this collection</param>
         /// <returns>true if this collection changed as a result of the call</returns>
-        /// <exception cref="UnsupportedOperationException">if the <see cref="RemoveRange"/> method is not supported by this collection</exception>
+        /// <exception cref="UnsupportedOperationException">if the <see cref="RemoveAll"/> method is not supported by this collection</exception>
         /// <exception cref="NullReferenceException">if this collection contains one or more null elements and the specified collection does not support null elements or if the specified collection is null</exception>
-        bool RemoveRange([NotNull] IEnumerable<T> source)
+        bool RemoveAll([NotNull] IEnumerable<T> source)
         {
             if (source == null)
             {
@@ -182,7 +182,7 @@ namespace NCollection
         /// <param name="source">The collection containing elements to be retained in this collection</param>
         /// <returns>true if this collection changed as a result of the call</returns>
         /// <exception cref="NullReferenceException">if this collection contains one or more null elements and the specified collection does not permit null elements or if the specified collection is null</exception>
-        bool RetainRange([NotNull] IEnumerable<T> source)
+        bool RetainAll([NotNull] IEnumerable<T> source)
         {
             if (source == null)
             {

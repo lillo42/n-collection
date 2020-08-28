@@ -43,17 +43,13 @@ namespace NCollection
         
         
         private Node? _head;
-        private int _count;
-        
-        /// <inheritdoc cref="ICollection{T}"/>
-        public override int Count => _count;
 
         /// <inheritdoc cref="IStack{T}"/>
         public override bool TryPush(T item)
         {
             var head = new Node(item, _head);
             _head = head;
-            _count++;
+            Count++;
             return true;
         }
         
@@ -69,7 +65,7 @@ namespace NCollection
 
             item = _head.Value;
             _head = _head.Previous;
-            _count--;
+            Count--;
             return true;
         }
 
@@ -95,59 +91,45 @@ namespace NCollection
         private struct StackEnumerator : IEnumerator<T>
         {
             private readonly LinkedStack<T> _stack;
-            private int _state;
             private Node? _current;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="StackEnumerator"/>.
+            /// </summary>
+            /// <param name="stack">The <see cref="LinkedStack{T}"/>.</param>
             public StackEnumerator(LinkedStack<T> stack)
             {
                 _stack = stack;
-                _state = -1;
-                _current = null;
+                _current = _stack._head;
                 Current = default!;
             }
-
+            
+            /// <inheritdoc />
             public bool MoveNext()
             {
-                switch (_state)
+                if (_current == null)
                 {
-                    case -2:
-                        return false;
-                    case -1:
-                        _state = 0;
-                        _current = _stack._head;
-                        return true;
-                    case 0:
-                        _current = _current?.Previous;
-                        if (_current == null)
-                        {
-                            Current = default!;
-                            _state = -2;
-                            return false;
-                        }
-                        else
-                        {
-                            Current = _current.Value;
-                        }
-                        
-                        return true;
+                    Current = default!;
+                    return false;
                 }
 
-                return false;
+                Current = _current.Value;
+                _current = _current.Previous;
+                return true;
             }
 
-            public void Reset()
-            {
-                _current = null;
-                Current = default!;
-                _state = -1;
-            }
+            /// <inheritdoc />
+            public void Reset() 
+                => _current = _stack._head;
+            
+            object? IEnumerator.Current => Current;
 
+            /// <inheritdoc />
             public T Current { get; private set; }
-
-            object IEnumerator.Current => Current!;
-
+            
+            /// <inheritdoc />
             public void Dispose()
             {
-                
             }
         }
         

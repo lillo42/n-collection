@@ -16,7 +16,6 @@ namespace NCollection
     {
         private Node? _head;
         private Node? _tail;
-        private int _count;
 
         /// <summary>
         /// Initialize <see cref="LinkedQueue{T}"/>
@@ -44,10 +43,6 @@ namespace NCollection
                 TryEnqueue(item);
             }
         }
-        
-        /// <inheritdoc cref="ICollection{T}"/>
-        public override int Count => _count;
-        
 
         /// <inheritdoc cref="IQueue{T}"/>
         public override bool TryEnqueue(T item)
@@ -62,7 +57,7 @@ namespace NCollection
                 _tail = _tail.Next;
             }
 
-            _count++;
+            Count++;
             return true;
         }
 
@@ -90,7 +85,7 @@ namespace NCollection
 
             item = _head.Value;
             _head = _head.Next;
-            _count--;
+            Count--;
             return true;
         }
 

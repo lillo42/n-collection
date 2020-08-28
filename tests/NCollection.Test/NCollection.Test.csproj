@@ -22,8 +22,4 @@
     <ProjectReference Include="..\..\src\NCollection\NCollection.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Stack" />
-  </ItemGroup>
-
 </Project>

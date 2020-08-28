@@ -53,7 +53,7 @@ namespace NCollection
         {
             if (TryPeek(out var item))
             {
-                return item;
+                return item!;
             }
             
             throw new InvalidOperationException("The stack is empty");
@@ -65,7 +65,7 @@ namespace NCollection
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public override bool Remove(T item)
         {
-            if (TryPeek(out var peek))
+            if (!TryPeek(out var peek))
             {
                 return false;
             }
@@ -74,8 +74,7 @@ namespace NCollection
             {
                 if (peek == null)
                 {
-                    Pop();
-                    return true;
+                    return TryPop(out _);
                 }
 
                 return false;
@@ -83,10 +82,9 @@ namespace NCollection
 
             if (item.Equals(peek))
             {
-                Pop();
-                return true;
+                return TryPop(out _);
             }
-
+            
             return false;
         }
     }
