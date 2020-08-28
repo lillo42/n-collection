@@ -22,6 +22,9 @@ namespace NCollection
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public virtual bool IsReadOnly { get; } = false;
 
+        /// <inheritdoc cref="ICollection{T}"/>
+        public virtual bool IsEmpty => Count == 0;
+
         #endregion
         
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
