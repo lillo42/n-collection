@@ -29,7 +29,7 @@ namespace NCollection
         /// Initialize <see cref="LinkedQueue{T}"/> copying the element in <see cref="IEnumerable{T}"/>
         /// </summary>
         /// <param name="source">The elements to be copy</param>
-        /// <exception cref="ArgumentNullException">if the <see cref="source"/> is null </exception>
+        /// <exception cref="ArgumentNullException">if the <see cref="source"/> is <see langword="null"/></exception>
         public LinkedQueue([JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {
             if (source == null)
@@ -111,62 +111,47 @@ namespace NCollection
 
         private struct QueueEnumerator : IEnumerator<T>
         {
-            private Node? _head;
-            private int _state;
             private readonly LinkedQueue<T> _queue;
+            private Node? _current;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="QueueEnumerator"/>.
+            /// </summary>
+            /// <param name="queue">The <see cref="LinkedQueue{T}"/>.</param>
             public QueueEnumerator(LinkedQueue<T> queue)
             {
                 _queue = queue;
-                _head = null;
-                _state = -1;
+                _current = _queue._head;
                 Current = default!;
             }
 
+            /// <inheritdoc />
             public bool MoveNext()
             {
-                switch (_state)
+                if (_current == null)
                 {
-                    case -1:
-                        _head = _queue._head;
-                        _state = 0;
-                        if (_head == null)
-                        {
-                            _state = -2;
-                            goto case -2;
-                        }
-                        break;
-                    case 0:
-                        _head = _head?.Next;
-                        if (_head == null)
-                        {
-                            _state = -2;
-                            goto case -2;
-                        }
-                        break;
-                    case -2:
-                        Current = default!;
-                        return false;
+                    Current = default!;
+                    return false;
                 }
 
-                Current = _head!.Value;
+                Current = _current.Value;
+                _current = _current.Next;
                 return true;
             }
 
+            /// <inheritdoc />
             public void Reset()
             {
-                _head = null;
-                _state = -1;
-                Current = default!;
+                _current = _queue._head;
             }
 
+            object? IEnumerator.Current => Current;
+
+            /// <inheritdoc />
             public T Current { get; private set; }
-
-            object IEnumerator.Current => Current;
-
-            public void Dispose()
-            {
-            }
+            
+            /// <inheritdoc />
+            public void Dispose() { }
         }
         
         private class Node

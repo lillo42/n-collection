@@ -4,8 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace NCollection
 {
     /// <summary>
-    /// The <see cref="IStack{T}"/> interface represents a last-in-first-out
-    /// (LIFO) stack of <see cref="T"/>.
+    /// The <see cref="IStack{T}"/> interface represents a last-in-first-out (LIFO) of <see cref="T"/>.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the collection.</typeparam>
     public interface IStack<T> : ICollection<T>

@@ -17,11 +17,7 @@ namespace NCollection
         private int _head;
         private int _tail;
         private T[] _elements;
-        private int _count;
-        
-        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
-        public override int Count => _count;
-        
+
         /// <summary>
         /// Initialize <see cref="ArrayQueue{T}"/>
         /// </summary>
@@ -48,7 +44,7 @@ namespace NCollection
         /// Initialize <see cref="ArrayQueue{T}"/> copying the element in <see cref="IEnumerable{T}"/>
         /// </summary>
         /// <param name="source">The elements to be copy</param>
-        /// <exception cref="ArgumentNullException">if the <paramref cref="source"/> is null </exception>
+        /// <exception cref="ArgumentNullException">if the <paramref cref="source"/> is <see langword="null"/></exception>
         public ArrayQueue([JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {
             if (source == null)
@@ -59,16 +55,20 @@ namespace NCollection
             if (source is ArrayQueue<T> queue)
             {
                 _elements = ArrayPool<T>.Shared.Rent(queue._elements.Length);
-                Array.Copy(queue._elements, _elements, queue._count);
+                Array.Copy(queue._elements, _elements, queue.Count);
                 _head = queue._head;
                 _tail = queue._tail;
-                _count = queue._count;
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Count = queue.Count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
                 _elements = ArrayPool<T>.Shared.Rent(collection.Count);
                 collection.CopyTo(_elements, 0);
-                _count = collection.Count;
+                _head = 0;
+                _tail = collection.Count;
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Count = collection.Count;
             }
             else
             {
@@ -86,7 +86,7 @@ namespace NCollection
         /// </summary>
         /// <param name="source">The elements to be copy</param>
         /// <param name="initialCapacity">The initial capacity of the array</param>
-        /// <exception cref="ArgumentNullException">if the <paramref cref="source"/> is null </exception>
+        /// <exception cref="ArgumentNullException">if the <paramref cref="source"/> is <see langword="null"/></exception>
         /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
         public ArrayQueue(int initialCapacity, [JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {
@@ -98,16 +98,18 @@ namespace NCollection
             if (source is ArrayQueue<T> queue)
             {
                 _elements = ArrayPool<T>.Shared.Rent(queue._elements.Length);
-                Array.Copy(queue._elements, _elements, queue._count);
+                Array.Copy(queue._elements, _elements, queue.Count);
                 _head = queue._head;
                 _tail = queue._tail;
-                _count = queue._count;
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Count = queue.Count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
                 _elements = ArrayPool<T>.Shared.Rent(collection.Count);
                 collection.CopyTo(_elements, 0);
-                _count = collection.Count;
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Count = collection.Count;
             }
             else
             {
@@ -125,13 +127,13 @@ namespace NCollection
         /// <inheritdoc cref="IQueue{T}"/>
         public override bool TryEnqueue(T item)
         {
-            if (_count == _elements.Length)
+            if (Count == _elements.Length)
             {
-                var tmp = ArrayPool<T>.Shared.Rent(_elements.Length >> 1);
+                var tmp = ArrayPool<T>.Shared.Rent(_elements.Length << 1);
                 
                 if (_tail > _head)
                 {
-                    Array.Copy(_elements, tmp, _count);
+                    Array.Copy(_elements, tmp, Count);
                 }
                 else
                 {
@@ -140,7 +142,7 @@ namespace NCollection
                 }
                 
                 _head = 0;
-                _tail = _count;
+                _tail = Count;
                 
                 ArrayPool<T>.Shared.Return(_elements, true);
                 _elements = tmp;
@@ -148,14 +150,14 @@ namespace NCollection
             
             _elements[_tail] = item;
             _tail = (_tail + 1) % _elements.Length;
-            _count++;
+            Count++;
             return true;
         }
         
         /// <inheritdoc cref="IQueue{T}"/>
         public override bool TryPeek(out T item)
         {
-            if (_count == 0)
+            if (Count == 0)
             {
                 item = default!;
                 return false;
@@ -168,14 +170,14 @@ namespace NCollection
         /// <inheritdoc cref="IQueue{T}"/>
         public override bool TryDequeue(out T item)
         {
-            if (_count == 0)
+            if (Count == 0)
             {
                 item = default!;
                 return false;
             }
 
             item = _elements[_head];
-            _count--;
+            Count--;
             _head = (_head + 1) % _elements.Length;
             return true;
         }
@@ -183,20 +185,20 @@ namespace NCollection
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public override void Clear()
         {
-            Array.Clear(_elements, 0, _count);
+            Array.Clear(_elements, 0, Count);
             _head = 0;
             _tail = 0;
-            _count = 0;
+            Count = 0;
         }
 
         /// <inheritdoc cref="ICollection{T}"/>
         public override T[] ToArray()
         {
-            var result = new T[_count];
+            var result = new T[Count];
             
             if (_tail > _head)
             {
-                Array.Copy(_elements, result, _count);
+                Array.Copy(_elements, result, Count);
             }
             else
             {
