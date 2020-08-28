@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using JetBrains.Annotations;
-using NCollection.Exceptions;
 
 namespace NCollection
 { 
@@ -22,41 +22,38 @@ namespace NCollection
         /// are returned by its iterator, this method must return the elements in
         /// the same order.
         /// </summary>
-        /// <returns>An array containing all of the elements in this collection</returns>
+        /// <returns>An <see cref="T:[]"/> containing all of the elements in this collection</returns>
         T[] ToArray();
 
         /// <summary>
         /// Try adds an item to the <see cref="ICollection{T}"/>
         /// </summary>
-        /// <param name="item">The object to add to the <see cref="ICollection{T}"/></param>
+        /// <param name="item">The <see cref="T"/> to add to the <see cref="ICollection{T}"/></param>
         /// <returns><see langword="true"/> if could insert <paramref name="item"/> in <see cref="ICollection{T}"/></returns>
         bool TryAdd(T item);
 
 
         /// <summary>Determines whether the <see cref="System.Collections.Generic.ICollection{T}" /> contains a specific value.</summary>
-        /// <param name="item">The object to locate in the <see cref="System.Collections.Generic.ICollection{T}" /> .</param>
+        /// <param name="item">The <see cref="T"/> to locate in the <see cref="System.Collections.Generic.ICollection{T}" />.</param>
         /// <param name="comparer">The <see cref="IEqualityComparer{T}"/>.</param>
-        /// <returns>
-        /// <see langword="true" /> if <paramref name="item" /> is found in the <see cref="System.Collections.Generic.ICollection{T}" /> ; otherwise, <see langword="false" />.</returns>
+        /// <returns><see langword="true" /> if <paramref name="item" /> is found in the <see cref="System.Collections.Generic.ICollection{T}" /> ; otherwise, <see langword="false" />.</returns>
         bool Contains(T item, [NotNull]IEqualityComparer<T> comparer);
 
         /// <summary>
         /// Return <see langword="true"/> if this if this collection contains all of the elements in the specified collection.
         /// </summary>
-        /// <param name="source">The collection to be checked for containment in this collection</param>
-        /// <returns>Return true if this if this collection contains all of the elements in the specified collection.</returns>
-        /// <exception cref="ArgumentNullException">If the collection is null</exception>
-        /// <exception cref="NullReferenceException">if the specified collection contains one or more null elements and this collection does not permit null elements</exception>
+        /// <param name="source">The <see cref="IEnumerable{T}"/> to be checked for containment in this collection</param>
+        /// <returns>Return <see langword="true"/> if this if this collection contains all of the elements in the specified collection.</returns>
+        /// <exception cref="ArgumentNullException">If the <paramref name="source"/> is <see langword="null"/></exception>
         bool ContainsAll([NotNull] IEnumerable<T> source) => ContainsAll(source, EqualityComparer<T>.Default);
 
         /// <summary>
-        /// Return <see langword="true"/> if this if this collection contains all of the elements in the specified collection.
+        /// Check if this collections contains all of the elements in the specified collection.
         /// </summary>
-        /// <param name="source">The collection to be checked for containment in this collection</param>
+        /// <param name="source">The <see cref="IEnumerable{T}"/> to be checked for containment in this collection</param>
         /// <param name="comparer">The <see cref="IEqualityComparer{T}"/>.</param>
-        /// <returns>Return true if this if this collection contains all of the elements in the specified collection.</returns>
-        /// <exception cref="ArgumentNullException">If the collection is null</exception>
-        /// <exception cref="NullReferenceException">if the specified collection contains one or more null elements and this collection does not permit null elements</exception>
+        /// <returns>Return <see langword="true"/> if this if this collection contains all of the elements in the specified in <paramref name="source"/>.</returns>
+        /// <exception cref="ArgumentNullException">When <paramref name="source"/> or <paramref name="comparer"/> is <see langword="null"/></exception>
         bool ContainsAll([NotNull] IEnumerable<T> source, [NotNull]IEqualityComparer<T> comparer)
         {
             if (source == null)
@@ -88,12 +85,9 @@ namespace NCollection
         /// specified collection is this collection, and this collection is
         /// nonempty.)
         /// </summary>
-        /// <param name="source">The collection containing elements to be added to this collection</param>
-        /// <returns> if this collection changed as a result of the call</returns>
-        /// <exception cref="ArgumentNullException">if the specified collection contains a null element and this collection does not permit null elements, or if the specified collection is null</exception>
-        /// <exception cref="UnsupportedOperationException">If the <see cref="AddAll"/>  operation is not supported by this collection</exception>
-        /// <exception cref="ArgumentException">if some property of an element of the specified collection prevents it from being added to this collection</exception>
-        /// <exception cref="InvalidOperationException">if not all the elements can be added at this time due to insertion restrictions</exception>
+        /// <param name="source">The <see cref="IEnumerable{T}"/> containing elements to be added to this collection</param>
+        /// <returns> <see langword="true"/> if this collection changed as a result of the call</returns>
+        /// <exception cref="ArgumentNullException">When <paramref name="source"/> is <see langword="true"/></exception>
         bool AddAll([NotNull] IEnumerable<T> source)
         {
             if (source == null)
@@ -118,10 +112,10 @@ namespace NCollection
         /// specified collection (optional operation).  After this call returns,
         /// this collection will contain no elements in common with the specified collection.
         /// </summary>
-        /// <param name="source">The collection containing elements to be removed from this collection</param>
+        /// <param name="source">The <see cref="IEnumerable{T}"/> containing elements to be removed from this collection</param>
         /// <returns>true if this collection changed as a result of the call</returns>
-        /// <exception cref="UnsupportedOperationException">if the <see cref="RemoveAll"/> method is not supported by this collection</exception>
-        /// <exception cref="NullReferenceException">if this collection contains one or more null elements and the specified collection does not support null elements or if the specified collection is null</exception>
+        /// <exception cref="ArgumentNullException">When <paramref name="source"/> is <see langword="null"/></exception>
+        /// <exception cref="InvalidOperationException">if the <see cref="RemoveAll"/> method is not supported by this collection or if could remove elemet</exception>
         bool RemoveAll([NotNull] IEnumerable<T> source)
         {
             if (source == null)
@@ -146,12 +140,11 @@ namespace NCollection
         /// Removes all of the elements of this collection that satisfy the given
         /// predicate.  Errors or runtime exceptions thrown during iteration or by
         /// the predicate are relayed to the caller.
-        /// 
         /// </summary>
-        /// <param name="filter">a predicate which returns true for elements to be removed</param>
+        /// <param name="filter">The <see cref="Predicate{T}"/> which returns <see langword="true"/> for elements to be removed</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException"> if the specified filter is null</exception>
-        /// <exception cref="UnsupportedOperationException">if elements cannot be removed from this collection.  Implementations may throw this exception if a matching element cannot be removed or if, in general, removal is not supported.</exception>
+        /// <exception cref="ArgumentNullException"> if the specified <paramref name="filter"/> is <see langword="null"/></exception>
+        /// <exception cref="InvalidOperationException">if elements cannot be removed from this collection.</exception>
         bool RemoveIf(Predicate<T> filter)
         {
             if (filter == null)
@@ -179,9 +172,9 @@ namespace NCollection
         /// this collection all of its elements that are not contained in the
         /// specified collection.
         /// </summary>
-        /// <param name="source">The collection containing elements to be retained in this collection</param>
-        /// <returns>true if this collection changed as a result of the call</returns>
-        /// <exception cref="NullReferenceException">if this collection contains one or more null elements and the specified collection does not permit null elements or if the specified collection is null</exception>
+        /// <param name="source">The <see cref="IEnumerable{T}"/> containing elements to be retained in this collection</param>
+        /// <returns><see langword="true"/> if this collection changed as a result of the call</returns>
+        /// <exception cref="ArgumentNullException">When <paramref name="source"/> is <see langword="null"/></exception>
         bool RetainAll([NotNull] IEnumerable<T> source)
         {
             if (source == null)
@@ -190,9 +183,11 @@ namespace NCollection
             }
             
             var modified = false;
-            foreach (var item in source)
+
+            var array = source.ToArray();
+            foreach (var item in ToArray())
             {
-                if (!Contains(item))
+                if (!array.Contains(item))
                 {
                     Remove(item);
                     modified = true;

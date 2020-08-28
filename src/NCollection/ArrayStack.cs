@@ -44,7 +44,7 @@ namespace NCollection
         /// Initialize <see cref="ArrayStack{T}"/> copying the element in <see cref="IEnumerable{T}"/>
         /// </summary>
         /// <param name="source">The elements to be copy</param>
-        /// <exception cref="ArgumentNullException">if the <paramref cref="source"/> is null </exception>
+        /// <exception cref="ArgumentNullException">if the  <paramref name="source"/> is <see langword="null"/></exception>
         public ArrayStack([JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {
             if (source == null)
@@ -82,7 +82,7 @@ namespace NCollection
         /// </summary>
         /// <param name="source">The elements to be copy</param>
         /// <param name="initialCapacity">The initial capacity of the array</param>
-        /// <exception cref="ArgumentNullException">if the <paramref cref="source"/> is null </exception>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is null </exception>
         /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
         public ArrayStack(int initialCapacity, [JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {

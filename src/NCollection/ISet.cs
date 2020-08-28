@@ -1,5 +1,4 @@
 using System;
-using NCollection.Exceptions;
 
 namespace NCollection
 {

@@ -2,8 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using JetBrains.Annotations;
-using NCollection.Exceptions;
+using System.Linq;
 
 namespace NCollection
 {
@@ -15,14 +14,6 @@ namespace NCollection
     [DebuggerDisplay("Count = {Count}")]
     public abstract class AbstractCollection<T> : ICollection<T>
     {
-        /// <summary>
-        /// Sole constructor.
-        /// </summary>
-        protected AbstractCollection()
-        {
-            
-        }
-
         #region Properties
         
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
@@ -45,13 +36,14 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
-        public virtual bool Contains(T item, [NotNull]IEqualityComparer<T> comparer)
+        public virtual bool Contains(T item, IEqualityComparer<T> comparer)
         {
             if (comparer == null)
             {
                 throw new ArgumentNullException(nameof(comparer));
             }
             
+            // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var value in this)
             {
                 if (comparer.Equals(item, value))
@@ -70,7 +62,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="ICollection{T}"/>
-        public virtual bool ContainsAll([NotNull] IEnumerable<T> source, [NotNull]IEqualityComparer<T> comparer)
+        public virtual bool ContainsAll(IEnumerable<T> source, IEqualityComparer<T> comparer)
         {
             if (source == null)
             {
@@ -189,7 +181,29 @@ namespace NCollection
 
             return modified;
         }
-        
+
+        /// <inheritdoc cref="ICollection{T}"/>
+        public bool RemoveIf(Predicate<T> filter)
+        {
+            if (filter == null)
+            {
+                throw new ArgumentNullException(nameof(filter));
+            }
+
+            var removed = false;
+            
+            foreach (var item in ToArray())
+            {
+                if (filter(item))
+                {
+                    Remove(item);
+                    removed = true;
+                }
+            }
+
+            return removed;
+        }
+
         /// <inheritdoc cref="ICollection{T}"/>
         public virtual bool RetainAll(IEnumerable<T> source)
         {
@@ -199,9 +213,11 @@ namespace NCollection
             }
             
             var modified = false;
-            foreach (var item in source)
+
+            var array = source.ToArray();
+            foreach (var item in ToArray())
             {
-                if (!Contains(item))
+                if (!array.Contains(item))
                 {
                     Remove(item);
                     modified = true;
