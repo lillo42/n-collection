@@ -121,7 +121,12 @@ namespace NCollection
         public override T[] ToArray()
         {
             var result = new T[Count];
-            Array.Copy(_elements, result, result.Length);
+            
+            for (var i = 0; i < Count; i++)
+            {
+                result[i] = _elements[Count - i - 1];
+            }
+            
             return result;
         }
 

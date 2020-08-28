@@ -21,7 +21,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public override void AbstractionCollectionTest_Remove_Validity(int size)
         {
-            var array = CreateArray(size);
+            var array = CreateAValidArray(size);
             var collection = CreateCollection();
 
             foreach (var item in array)
@@ -50,7 +50,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public override void AbstractionCollectionTest_RemoveAll_Validity(int size)
         {
-            var array = CreateArray(size);
+            var array = CreateAValidArray(size);
             var collection = CreateCollection();
 
             foreach (var item in array)
@@ -73,7 +73,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public override void AbstractionCollectionTest_ToArray(int size)
         {
-            var array = CreateArray(size);
+            var array = CreateAValidArray(size);
             var collection = CreateCollection(array);
 
             collection.ToArray().Should().BeEquivalentTo(array.Reverse());

@@ -10,12 +10,7 @@ namespace NCollection
     /// <typeparam name="T">The type of the elements in the collection.</typeparam>
     public abstract class AbstractStack<T> : AbstractCollection<T>, IStack<T>
     {
-        /// <inheritdoc cref="ICollection{T}"/>
-        public override void Add(T item)
-        {
-            Push(item);
-        }
-
+        
         /// <inheritdoc cref="ICollection{T}"/>
         public override bool TryAdd(T item)
         {
@@ -39,7 +34,7 @@ namespace NCollection
         {
             if (TryPop(out var item))
             {
-                return item;
+                return item!;
             }
             
             throw new InvalidOperationException("The stack is empty");

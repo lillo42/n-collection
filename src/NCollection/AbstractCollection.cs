@@ -136,7 +136,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="ICollection{T}"/>
-        public virtual bool TryAdd(T item) => throw new UnsupportedOperationException();
+        public abstract bool TryAdd(T item);
 
         /// <inheritdoc cref="ICollection{T}"/>
         public virtual void Add(T item)
@@ -242,9 +242,14 @@ namespace NCollection
             {
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex), arrayIndex, "Index out  of range");
             }
+            
+            if (array.Length - arrayIndex < Count)
+            {
+                throw new ArgumentException("Invalid  length");
+            }
 
             var current = ToArray();
-            Array.Copy(array, 0, current, arrayIndex, Count -  arrayIndex );
+            Array.Copy(current, 0, array, arrayIndex, Count -  arrayIndex );
         }
     }
 }
