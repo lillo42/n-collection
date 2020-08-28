@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
 using Xunit;
@@ -9,7 +10,8 @@ namespace NCollection.Test
     {
         protected Fixture Fixture { get; } = new Fixture();
         protected virtual bool IsReadOnly => false;
-        
+        protected virtual bool ContainsInitialCapacity => false;
+
         protected virtual T Create()
         {
             return Fixture.Create<T>();
@@ -27,8 +29,10 @@ namespace NCollection.Test
         }
         
         protected abstract AbstractCollection<T> CreateCollection();
+        protected abstract AbstractCollection<T> CreateCollection(int size);
+        protected abstract AbstractCollection<T> CreateCollection(int size, IEnumerable<T> enumerable);
         
-        protected virtual AbstractCollection<T> CreateCollection(T[] array)
+        protected virtual AbstractCollection<T> CreateCollection(IEnumerable<T> array)
         {
             var collection = CreateCollection();
             collection.AddAll(array);
@@ -393,13 +397,35 @@ namespace NCollection.Test
             collection.Should().BeEmpty();
         }
         
+        [Fact]
+        public virtual void AbstractionCollectionTest_Remove_Invalidity()
+        {
+            var collection = CreateCollection();
+            collection.Remove(Create()).Should().BeFalse();
+            collection.Add(Create());
+            collection.Remove(default).Should().BeFalse();
+        }
+        
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(10)]
         [InlineData(75)]
         [InlineData(100)]
-        public void AbstractionCollectionTest_Remove_Invalidity(int size)
+        public virtual void AbstractionCollectionTest_Remove_AfterClear_Invalidity(int size)
+        {
+            var collection = CreateCollection(CreateAValidArray(size));
+            collection.Clear();
+            collection.Remove(Create()).Should().BeFalse();
+        }
+        
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(10)]
+        [InlineData(75)]
+        [InlineData(100)]
+        public void AbstractionCollectionTest_Remove_ItemNotExist(int size)
         {
             var array = CreateAValidArray(size);
             var collection = CreateCollection();
@@ -489,7 +515,7 @@ namespace NCollection.Test
         
         #endregion
         
-        #region ToArray
+        #region Copy To
 
         [Theory]
         [InlineData(0)]
@@ -531,6 +557,157 @@ namespace NCollection.Test
             Assert.Throws<ArgumentOutOfRangeException>(() => collection.CopyTo(ret, collection.Count + 1));
         }
         
+        #endregion
+
+        #region Constructor
+        
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void AbstractionCollectionTest_Constructor_Invalid_InitialCapacity(int size)
+        {
+            if (ContainsInitialCapacity)
+            {
+                Assert.Throws<ArgumentOutOfRangeException>(() => CreateCollection(size));
+            }
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(10)]
+        [InlineData(75)]
+        [InlineData(100)]
+        public void AbstractionCollectionTest_Constructor_Valid_InitialCapacity(int size)
+        {
+            if (ContainsInitialCapacity)
+            {
+                var stack = CreateCollection(size);
+                stack.Add(Create());
+            }
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void AbstractionCollectionTest_Constructor_Invalid_InitialCapacity_Valid_Source(int size)
+        {
+            if (ContainsInitialCapacity)
+            {
+                Assert.Throws<ArgumentOutOfRangeException>(() => CreateCollection(size, new T[0]));
+            }
+        }
+        
+        [Fact]
+        public void AbstractionCollectionTest_Constructor_Valid_InitialCapacity_Valid_Source()
+        {
+            if (ContainsInitialCapacity)
+            {
+                Assert.Throws<ArgumentNullException>(() => CreateCollection(1, null!));
+            }
+        }
+
+        [Fact]
+        public void AbstractionCollectionTest_Constructor_Invalid_InitialCapacity_Valid_Source_Enumerable()
+        {
+            if (ContainsInitialCapacity)
+            {
+                var array = CreateAValidArray(25);
+                var collection = CreateCollection(25, Values());
+                collection.Count.Should().Be(25);
+
+                IEnumerable<T> Values()
+                {
+                    foreach (var item in array)
+                    {
+                        yield return item;
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void AbstractionCollectionTest_Constructor_Invalid_InitialCapacity_Valid_Source_Collection()
+        {
+            if (ContainsInitialCapacity)
+            {
+                var array = CreateAValidArray(25);
+                var collection = CreateCollection(25, array);
+                collection.Count.Should().Be(25);
+            }
+        }
+        
+        [Fact]
+        public void AbstractionCollectionTest_Constructor_Invalid_InitialCapacity_Valid_Source_AbstractionCollection()
+        {
+            if (ContainsInitialCapacity)
+            {
+                var array = CreateAValidArray(25);
+                var collection1 = CreateCollection(array);
+                var collection2 = CreateCollection(25, collection1);
+                collection2.Count.Should().Be(25);
+            }
+        }
+
+        [Fact]
+        public void AbstractionCollectionTest_Constructor_Valid_Source_Enumerable()
+        {
+            var array = CreateAValidArray(25);
+            var collection = CreateCollection(Values());
+            collection.Count.Should().Be(25);
+
+            IEnumerable<T> Values()
+            {
+                foreach (var item in array)
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        [Fact]
+        public void AbstractionCollectionTest_Constructor_Valid_Source_Collection()
+        {
+            var array = CreateAValidArray(25);
+            var collection = CreateCollection(array);
+            collection.Count.Should().Be(25);
+        }
+        
+        [Fact]
+        public void AbstractionCollectionTest_Constructor_Valid_Source_AbstractCollection()
+        {
+            var array = CreateAValidArray(25);
+            var collection1 = CreateCollection(array);
+            var collection2 = CreateCollection(collection1);
+            collection2.Count.Should().Be(25);
+        }
+        
+        [Fact]
+        public void AbstractionCollectionTest_Constructor_Invalid_Source()
+        {
+            Assert.Throws<ArgumentNullException>(() => CreateCollection(null!));
+        }
+
+        #endregion
+
+        #region Clone
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(10)]
+        [InlineData(75)]
+        [InlineData(100)]
+        public void AbstractionCollectionTest_Clone(int size)
+        {
+            var collection = CreateCollection(CreateAValidArray(size));
+            if (collection is ICloneable cloneable)
+            {
+                var clone =  (AbstractCollection<T>)cloneable.Clone();
+                clone.Count.Should().Be(collection.Count);
+                clone.Should().BeEquivalentTo(collection);
+            }
+        }
+
         #endregion
     }
 }

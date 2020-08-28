@@ -86,6 +86,11 @@ namespace NCollection
         /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
         public ArrayStack(int initialCapacity, [JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {
+            if (initialCapacity < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(initialCapacity), "The value should be greater or equal than 1");
+            }
+            
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
