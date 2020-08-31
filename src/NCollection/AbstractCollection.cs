@@ -38,7 +38,7 @@ namespace NCollection
             return Contains(item, EqualityComparer<T>.Default);
         }
         
-        /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
+        /// <inheritdoc cref="ICollection{T}"/>
         public virtual bool Contains(T item, IEqualityComparer<T> comparer)
         {
             if (comparer == null)

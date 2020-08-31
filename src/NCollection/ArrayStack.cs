@@ -10,7 +10,7 @@ namespace NCollection
     /// <summary>
     /// The implementation of <see cref="IStack{T}"/> using array.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the elements in the collection.</typeparam>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
     public class ArrayStack<T> : AbstractStack<T>, ICloneable

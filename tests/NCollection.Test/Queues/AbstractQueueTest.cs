@@ -145,7 +145,7 @@ namespace NCollection.Test.Queues
             var queue = CreateQueue(array);
 
             queue.Should().HaveCount(size);
-            queue.Peek().Should().Be(array[0]);
+            queue.Peek().Should().Be(GetPeekValue(array));
             queue.Should().HaveCount(size);
         }
         
@@ -177,7 +177,7 @@ namespace NCollection.Test.Queues
             }
             
             queue.Should().HaveCount(size);
-            queue.Peek().Should().Be(array[0]);
+            queue.Peek().Should().Be(GetPeekValue(array));
         }
         
         
@@ -211,7 +211,12 @@ namespace NCollection.Test.Queues
 
             stack.Should().HaveCount(size);
             stack.TryPeek(out var peek).Should().BeTrue();
-            peek.Should().Be(array[0]);
+            peek.Should().Be(GetPeekValue(array));
+        }
+
+        protected virtual T GetPeekValue(T[] array)
+        {
+            return array[0];
         }
         
         [Fact]
@@ -244,7 +249,7 @@ namespace NCollection.Test.Queues
             
             queue.Should().HaveCount(size);
             queue.TryPeek(out var peek).Should().BeTrue();
-            peek.Should().Be(array[0]);
+            peek.Should().Be(GetPeekValue(array));
             queue.Should().HaveCount(size);
         }
         
@@ -273,8 +278,9 @@ namespace NCollection.Test.Queues
             var stack = CreateQueue(array);
 
             stack.Should().HaveCount(size);
-            stack.Dequeue().Should().Be(array[0]);
+            stack.Dequeue().Should().Be(GetPeekValue(array));
             stack.Should().HaveCount(size - 1);
+            
         }
         
         [Fact]
@@ -301,7 +307,7 @@ namespace NCollection.Test.Queues
             stack.AddAll(array);
             
             stack.Should().HaveCount(size);
-            stack.Dequeue().Should().Be(array[0]);
+            stack.Dequeue().Should().Be(GetPeekValue(array));
             stack.Should().HaveCount(size - 1);
         }
         
@@ -331,7 +337,7 @@ namespace NCollection.Test.Queues
 
             stack.Should().HaveCount(size);
             stack.TryDequeue(out var peek).Should().BeTrue();
-            peek.Should().Be(array[0]);
+            peek.Should().Be(GetPeekValue(array));
             stack.Should().HaveCount(size - 1);
         }
         
@@ -362,7 +368,7 @@ namespace NCollection.Test.Queues
             
             stack.Should().HaveCount(size);
             stack.TryDequeue(out var peek).Should().BeTrue();
-            peek.Should().Be(array[0]);
+            peek.Should().Be(GetPeekValue(array));
             stack.Should().HaveCount(size -1);
         }
         

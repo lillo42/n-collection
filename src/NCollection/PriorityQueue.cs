@@ -2,18 +2,55 @@
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace NCollection
 {
-    public class PriorityQueue<T> : AbstractQueue<T>
+    /// <summary>
+    /// An unbounded priority <see cref="IQueue{T}"/> based on a priority heap.
+    /// The elements of the priority queue are ordered according to their <see cref="IComparer{T}"/>
+    /// provided at queue construction time, depending on which constructor is
+    /// used.  A priority queue does not permit null elements.
+    /// A priority queue relying on natural ordering also does not permit
+    /// insertion of non-comparable objects.
+    /// 
+    /// The head of this queue is the least element
+    /// with respect to the specified ordering.  If multiple elements are
+    /// tied for least value, the head is one of those elements -- ties are
+    /// broken arbitrarily.  The queue retrieval operations <see cref="AbstractQueue{T}.Dequeue"/>,
+    /// <see cref="Remove"/> and <see cref="AbstractQueue{T}.Peek"/> access the
+    /// element at the head of the queue.
+    /// 
+    /// A priority queue is unbounded, but has an internal
+    /// capacity governing the size of an array used to store the
+    /// elements on the queue.  It is always at least as large as the queue
+    /// size.  As elements are added to a priority queue, its capacity
+    /// grows automatically.  The details of the growth policy are not
+    /// specified.
+    /// 
+    /// Note that this implementation is not synchronized.
+    /// Multiple threads should not access a <see cref="PriorityQueue{T}"/>
+    /// instance concurrently if any of the threads modifies the queue.
+    /// 
+    /// Implementation note: this implementation provides
+    /// O(log(n)) time for the enqueuing and dequeuing methods
+    /// (<see cref="AbstractQueue{T}.Enqueue"/> and <see cref="AbstractQueue{T}.Dequeue"/>);
+    /// linear time for the <see cref="Remove"/> and <see cref="Contains"/>
+    /// methods; and constant time for the retrieval methods
+    /// (<see cref="AbstractQueue{T}.Peek"/> and <see cref="AbstractCollection{T}.Count"/>).
+    /// </summary>
+    /// <typeparam name="T">The type of the elements in the collection.</typeparam>
+    [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
+    [DebuggerDisplay("Count = {Count}")]
+    public class PriorityQueue<T> : AbstractQueue<T>, ICloneable
     {
         /// <summary>
         /// The <see cref="IComparer{T}"/>
         /// </summary>
         public IComparer<T> Comparer { get; }
 
-        private Node[] _elements;
+        private Node?[] _elements;
         private int _version = int.MinValue;
 
         #region Constructor
@@ -24,7 +61,7 @@ namespace NCollection
         public PriorityQueue()
         {
             Comparer = Comparer<T>.Default;
-            _elements = ArrayPool<Node>.Shared.Rent(16);
+            _elements = ArrayPool<Node?>.Shared.Rent(16);
         }
 
         /// <summary>
@@ -40,7 +77,7 @@ namespace NCollection
             }
 
             Comparer = Comparer<T>.Default;
-            _elements = ArrayPool<Node>.Shared.Rent(initialCapacity);
+            _elements = ArrayPool<Node?>.Shared.Rent(initialCapacity);
         }
 
         /// <summary>
@@ -58,7 +95,7 @@ namespace NCollection
             }
 
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
-            _elements = ArrayPool<Node>.Shared.Rent(initialCapacity);
+            _elements = ArrayPool<Node?>.Shared.Rent(initialCapacity);
         }
 
         /// <summary>
@@ -77,13 +114,13 @@ namespace NCollection
                     // ReSharper disable once VirtualMemberCallInConstructor
                     Count = priorityQueue.Count;
 
-                    _elements = ArrayPool<Node>.Shared.Rent(priorityQueue._elements.Length);
+                    _elements = ArrayPool<Node?>.Shared.Rent(priorityQueue._elements.Length);
                     Array.Copy(priorityQueue._elements, _elements, priorityQueue.Count);
                     break;
                 default:
                 {
                     Comparer = Comparer<T>.Default;
-                    _elements = ArrayPool<Node>.Shared.Rent(16);
+                    _elements = ArrayPool<Node?>.Shared.Rent(16);
 
                     foreach (var item in source)
                     {
@@ -116,12 +153,12 @@ namespace NCollection
                 Count = priorityQueue.Count;
                 _version = priorityQueue._version;
 
-                _elements = ArrayPool<Node>.Shared.Rent(priorityQueue._elements.Length);
+                _elements = ArrayPool<Node?>.Shared.Rent(priorityQueue._elements.Length);
                 Array.Copy(priorityQueue._elements, _elements, priorityQueue.Count);
             }
             else
             {
-                _elements = ArrayPool<Node>.Shared.Rent(16);
+                _elements = ArrayPool<Node?>.Shared.Rent(16);
 
                 foreach (var item in source)
                 {
@@ -155,14 +192,14 @@ namespace NCollection
         {
             if (Count == _elements.Length)
             {
-                var tmp = ArrayPool<Node>.Shared.Rent(_elements.Length << 1);
+                var tmp = ArrayPool<Node?>.Shared.Rent(_elements.Length << 1);
                 Array.Copy(_elements, tmp, Count);
-                ArrayPool<Node>.Shared.Return(_elements, true);
+                ArrayPool<Node?>.Shared.Return(_elements, true);
                 _elements = tmp;
             }
 
 
-            SiftUp(Count, new Node(item, Comparer));
+            SiftUp(Count, new Node(item));
             _version++;
             Count++;
             return true;
@@ -172,10 +209,10 @@ namespace NCollection
         {
             while (position > 0)
             {
-                var parentPosition = (position - 1) >> 1;
-                var parent = _elements[parentPosition];
+                var parentPosition = (int)((uint)(position - 1) >> 1);
+                var parent = _elements[parentPosition]!;
 
-                if (Comparer.Compare(parent.Value, item.Value) >= 0)
+                if (Comparer.Compare(item.Value, parent.Value) >= 0)
                 {
                     break;
                 }
@@ -196,7 +233,7 @@ namespace NCollection
                 return false;
             }
 
-            item = _elements[0].Value;
+            item = _elements[0]!.Value;
             return true;
         }
 
@@ -216,25 +253,27 @@ namespace NCollection
         }
 
         [return: MaybeNull]
-        private static T Dequeue(Node[] queue, int size, IComparer<T> comparer)
+        private static T Dequeue(Node?[] queue, int size, IComparer<T> comparer)
         {
             if (size >= 0)
             {
                 var root = queue[0];
                 var position = --size;
 
-                var temp = queue[position];
+                var temp = queue[position]!;
                 queue[position] = default!;
                 if (position > 0)
                 {
                     SiftDown(0, temp, position, queue, comparer);
                 }
+
+                return root!.Value;
             }
 
             return default;
         }
 
-        private static void SiftDown(int position, Node item, int n, Node[] queue, IComparer<T> comparer)
+        private static void SiftDown(int position, Node item, int n, Node?[] queue, IComparer<T> comparer)
         {
             var half = n >> 1;
             while (position < half)
@@ -242,13 +281,13 @@ namespace NCollection
                 var childPosition = (position << 1) + 1;
                 var child = queue[childPosition];
                 var right = childPosition + 1;
-                if (right < n && comparer.Compare(child.Value, queue[right].Value) > 0)
+                if (right < n && comparer.Compare(child!.Value, queue[right]!.Value) > 0)
                 {
                     childPosition = right;
                     child = queue[right];
                 }
 
-                if (comparer.Compare(item.Value, child.Value) <= 0)
+                if (comparer.Compare(item.Value, child!.Value) <= 0)
                 {
                     break;
                 }
@@ -260,68 +299,80 @@ namespace NCollection
             queue[position] = item;
         }
 
-        private class Node : IEquatable<Node>
+        /// <inheritdoc cref="ICollection{T}"/>
+        public override bool Contains(T item, IEqualityComparer<T> comparer)
         {
-            public Node(T value, IComparer<T> comparer)
+            if (comparer == null)
+            {
+                throw new ArgumentNullException(nameof(comparer));
+            }
+
+            return IndexOf(item, comparer) > -1;
+        }
+
+        /// <inheritdoc />
+        public override bool Remove(T item)
+        {
+            var index = IndexOf(item, EqualityComparer<T>.Default);
+
+            if (index == -1)
+            {
+                return false;
+            }
+
+            Count--;
+            _version++;
+            if (Count == index)
+            {
+                _elements[index] = default!;
+            }
+            else
+            {
+                var moved = _elements[Count]!;
+                SiftDown(index, moved, Count, _elements, Comparer);
+                if (Comparer.Compare(_elements[index]!.Value, moved.Value) == 0)
+                {
+                    SiftUp(index, moved);
+                }
+            }
+
+            return true;
+        }
+
+        private int IndexOf(T item, IEqualityComparer<T> comparer)
+        {
+            for(var i = 0; i < _elements.Length; i++)
+            {
+                var node = _elements[i];
+                if (node == null)
+                {
+                    break;
+                }
+                
+                if (comparer.Equals(item, node.Value))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Creates a shallow copy of the <see cref="PriorityQueue{T}"/>.
+        /// </summary>
+        /// <returns>A shallow copy of the <see cref="PriorityQueue{T}"/>.</returns>
+        public PriorityQueue<T> Clone() => new PriorityQueue<T>(this);
+        object ICloneable.Clone() => Clone();
+        
+        private class Node
+        {
+            public Node(T value)
             {
                 Value = value;
-                Comparer = comparer;
             }
 
             public T Value { get; }
-
-            public IComparer<T> Comparer { get; }
-
-
-            public bool Equals(Node? other)
-            {
-                if (ReferenceEquals(null, other))
-                {
-                    return false;
-                }
-
-                if (ReferenceEquals(this, other))
-                {
-                    return true;
-                }
-
-                return Comparer.Compare(Value, other.Value) == 0;
-            }
-
-            public override bool Equals(object? obj)
-            {
-                if (ReferenceEquals(null, obj))
-                {
-                    return false;
-                }
-
-                if (ReferenceEquals(this, obj))
-                {
-                    return true;
-                }
-
-                if (obj.GetType() != this.GetType())
-                {
-                    return false;
-                }
-
-                return Equals((Node) obj);
-            }
-
-            public override int GetHashCode()
-            {
-                return EqualityComparer<T>.Default.GetHashCode(Value);
-            }
-
-            public static bool operator ==(Node? left, Node? right)
-            {
-                return Equals(left, right);
-            }
-
-            public static bool operator !=(Node? left, Node? right)
-            {
-                return !Equals(left, right);
-            }
         }
 
         private struct PriorityQueueEnumerator : IEnumerator<T>
