@@ -289,7 +289,7 @@ namespace NCollection.Test.List
         [InlineData(10)]
         [InlineData(75)]
         [InlineData(100)]
-        public void AbstractListTest_Range_0_To_Hald(int size)
+        public void AbstractListTest_Range_0_To_Half(int size)
         {
             var array = CreateAValidArray(size);
             var collection = CreateList(array);
