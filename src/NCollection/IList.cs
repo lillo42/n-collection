@@ -4,10 +4,20 @@ using JetBrains.Annotations;
 
 namespace NCollection
 {
+    /// <summary>
+    /// Represents a collection of objects that can be individually accessed by index.
+    /// </summary>
+    /// <typeparam name="T">The type of elements in the list.</typeparam>
     public interface IList<T> : ICollection<T>, System.Collections.Generic.IList<T>
     {
         /// <summary>
-        ///  Inserts all of the elements in the specified collection into this
+        /// 
+        /// </summary>
+        /// <param name="range"></param>
+        IList<T> this[Range range] { get; }
+        
+        /// <summary>
+        /// Inserts all of the elements in the specified collection into this
         /// list at the specified position (optional operation).  Shifts the
         /// element currently at that position (if any) and any subsequent
         /// elements to the right (increases their indices).  The new elements
@@ -20,57 +30,43 @@ namespace NCollection
         /// <param name="index">index at which to insert the first element from the specified collection</param>
         /// <param name="source">The source containing elements to be added to this list</param>
         /// <returns>true if this list changed as a result of the call</returns>
-        /// <exception cref="ArgumentException">if some property of an element of the specified collection prevents it from being added to this list</exception>
-        /// <exception cref="ArgumentNullException">if <see cref="source"/> is null</exception>
-        /// <exception cref="NullReferenceException">if the specified collection contains one or more null elements and this list does not permit null elements, or if the specified collection is null</exception>
         /// <exception cref="ArgumentOutOfRangeException">if the index is out of range
-        /// <see cref="index"/> < 0 || <see cref="index"/> > <see cref="ICollection{T}.Count"/>
+        /// <paramref name="index"/> is less than 0 or  <paramref name="index"/> greater than <see cref="ICollection{T}.Count"/>
         /// </exception>
-        bool AddRange(int index, [NotNull]IEnumerable<T> source);
+        bool AddAll(int index, [NotNull]IEnumerable<T> source);
+        
+        
+        /// <summary>Inserts an item to the <see cref="T:System.Collections.Generic.IList{T}" /> at the specified index.</summary>
+        /// <param name="index">The zero-based index at which <paramref name="item" /> should be inserted.</param>
+        /// <param name="item">The object to insert into the <see cref="T:System.Collections.Generic.IList{T}" />.</param>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        /// <paramref name="index" /> is not a valid index in the <see cref="T:System.Collections.Generic.IList{T}" />.</exception>
+        /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.IList{T}" /> is read-only.</exception>
+        void Add(int index, T item);
 
-        /// <summary>
-        /// Returns a view of the portion of this list between the specified
-        /// <see cref="fromIndex"/>, inclusive, and <see cref="toIndex"/>, exclusive.  (If
-        /// <see cref="fromIndex"/> and <see cref="toIndex"/> are equal, the returned list is
-        /// empty.)  The returned list is backed by this list, so non-structural
-        /// changes in the returned list are reflected in this list, and vice-versa.
-        /// The returned list supports all of the optional list operations supported
-        /// by this list.
-        /// 
-        /// This method eliminates the need for explicit range operations (of
-        /// the sort that commonly exist for arrays).  Any operation that expects
-        /// a list can be used as a range operation by passing a subList view
-        /// instead of a whole list.  For example, the following idiom
-        /// removes a range of elements from a list:
-        /// <code>
-        ///     list.SubList(from, to).clear();
-        /// </code>
-        /// Similar idioms may be constructed for <see cref="System.Collections.Generic.IList{T}.IndexOf"/> and
-        /// {@code lastIndexOf}, and all of the algorithms in the
-        /// <see cref="ICollection{T}"/> class can be applied to a subList.
-        /// The semantics of the list returned by this method become undefined if
-        /// the backing list (i.e., this list) is structurally modified  in
-        /// any way other than via the returned list.  (Structural modifications are
-        /// those that change the size of this list, or otherwise perturb it in such
-        /// a fashion that iterations in progress may yield incorrect results.)
-        /// </summary>
-        /// <param name="fromIndex">low endpoint (inclusive) of the subList</param>
-        /// <param name="toIndex">high endpoint (exclusive) of the subList</param>
-        /// <returns>A view of the specified range within this list</returns>
-        /// <exception cref="ArgumentOutOfRangeException">if the index is out of range
-        /// <see cref="index"/> < 0 || <see cref="index"/> > <see cref="ICollection{T}.Count"/>
-        /// </exception>
-        IList<T> SubList(int fromIndex, int toIndex);
 
-        /// <summary>
-        /// Returns the index of the last occurrence of the specified element
-        /// in this list, or -1 if this list does not contain the element.
-        /// More formally, returns the highest index  i such that
-        ///  object.equals(o, this[i]),
-        /// or -1 if there is no such index.
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
+        /// <summary>Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList{T}" />.</summary>
+        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList{T}" />.</param>
+        /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to comparer items </param>
+        /// <returns>The index of <paramref name="item" /> if found in the list; otherwise, -1.</returns>
+        int IndexOf(T item, IEqualityComparer<T> comparer);
+        
+        /// <summary>Determines the last index of a specific item in the <see cref="T:System.Collections.Generic.IList{T}" />.</summary>
+        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList{T}" />.</param>
+        /// <returns>The last index of <paramref name="item" /> if found in the list; otherwise, -1.</returns>
         int LastIndexOf(T item);
+
+        /// <summary>Determines the last index of a specific item in the <see cref="T:System.Collections.Generic.IList{T}" />.</summary>
+        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList{T}" />.</param>
+        /// <param name="comparer">The <see cref="IEqualityComparer{T}"/> to comparer items </param>
+        /// <returns>The last index of <paramref name="item" /> if found in the list; otherwise, -1.</returns>
+        int LastIndexOf(T item, IEqualityComparer<T> comparer);
+
+        #region IList
+
+        void System.Collections.Generic.IList<T>.Insert(int index, T item) => Add(index, item);
+
+        #endregion
+        
     }
 }

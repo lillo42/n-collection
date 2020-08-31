@@ -7,6 +7,7 @@ namespace NCollection.Test.Stack
         protected override bool ContainsInitialCapacity => false;
         protected override AbstractStack<string> CreateStack()
         {
+            var a = new LinkedList<int>();
             return new LinkedStack<string>();
         }
 
