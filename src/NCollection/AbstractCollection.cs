@@ -12,12 +12,18 @@ namespace NCollection
     /// </summary>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    public abstract class AbstractCollection<T> : ICollection<T>
+    public abstract class AbstractCollection<T> : ICollection<T>, ICollection, IReadOnlyCollection<T>
     {
         #region Properties
-        
+
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public virtual int Count { get; protected set; }
+
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual bool IsSynchronized => false;
+
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        public virtual object SyncRoot => this;
 
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public virtual bool IsReadOnly { get; } = false;
@@ -269,6 +275,12 @@ namespace NCollection
 
             var current = ToArray();
             Array.Copy(current, 0, array, arrayIndex, Count -  arrayIndex );
+        }
+        
+        /// <inheritdoc cref="System.Collections.ICollection"/>
+        void ICollection.CopyTo(Array array, int index)
+        {
+           CopyTo((T[])array, index);
         }
     }
 }

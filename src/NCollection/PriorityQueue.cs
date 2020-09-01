@@ -65,7 +65,7 @@ namespace NCollection
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="initialCapacity"/>.
+        /// Initializes a new instance of the <paramref name="initialCapacity"/>.
         /// </summary>
         /// <param name="initialCapacity">The initial number of elements that the <see cref="PriorityQueue{T}"/> can contain.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="initialCapacity"/>is less than zero.</exception>

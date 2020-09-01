@@ -25,7 +25,7 @@ namespace NCollection
         /// <summary>
         /// Copies all of the mappings from the specified map to this map
         /// (optional operation).  The effect of this call is equivalent to that
-        /// of calling <see cref="ICollection{T}.Add"/> on this map once
+        /// of calling <see cref="System.Collections.Generic.ICollection{T}.Add"/> on this map once
         /// for each mapping from key k to value v in the
         /// specified map.  The behavior of this operation is undefined if the
         /// specified map is modified while the operation is in progress.

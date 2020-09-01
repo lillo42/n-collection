@@ -29,7 +29,7 @@ namespace NCollection
         /// Initialize <see cref="LinkedQueue{T}"/> copying the element in <see cref="IEnumerable{T}"/>
         /// </summary>
         /// <param name="source">The elements to be copy</param>
-        /// <exception cref="ArgumentNullException">if the <see cref="source"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is <see langword="null"/></exception>
         public LinkedQueue([JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {
             if (source == null)
