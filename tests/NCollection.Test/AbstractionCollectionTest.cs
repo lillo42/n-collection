@@ -392,6 +392,7 @@ namespace NCollection.Test
             foreach (var item in array)
             {
                 collection.Remove(item).Should().BeTrue();
+                collection.Contains(item).Should().BeFalse();
             }
             
             collection.Should().BeEmpty();

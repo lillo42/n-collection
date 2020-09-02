@@ -109,6 +109,42 @@ namespace NCollection
             return new QueueEnumerator(this);
         }
 
+        /// <inheritdoc cref="ICollection{T}"/>
+        public override bool Remove(T item)
+        {
+            var current = _head;
+            Node? prev = null;
+            while (current != null)
+            {
+                if (EqualityComparer<T>.Default.Equals(item, current.Value))
+                {
+                    if (prev != null)
+                    {
+                        prev.Next = current.Next;
+                    }
+
+                    if (current == _head)
+                    {
+                        _head = current.Next;
+                    }
+
+                    if (current == _tail)
+                    {
+                        _tail = prev;
+                    }
+
+                    current.Next = null;
+                    Count--;
+                    return true;
+                }
+
+                prev = current;
+                current = current.Next;
+            }
+
+            return false;
+        }
+
         private struct QueueEnumerator : IEnumerator<T>
         {
             private readonly LinkedQueue<T> _queue;

@@ -81,7 +81,39 @@ namespace NCollection
             item = _head.Value;
             return true;
         }
-        
+
+        /// <inheritdoc cref="ICollection{T}"/>
+        public override bool Remove(T item)
+        {
+            var current = _head;
+            Node? next = null;
+
+            while (current != null)
+            {
+                if (EqualityComparer<T>.Default.Equals(item, current.Value))
+                {
+                    if (next != null)
+                    {
+                        next.Previous = current.Previous;
+                    }
+
+                    if (current == _head)
+                    {
+                        _head = current.Previous;
+                    }
+                    
+                    current.Previous = null;
+                    Count--;
+                    return true;
+                }
+
+                next = current;
+                current = current.Previous;
+            }
+
+            return false;
+        }
+
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public override IEnumerator<T> GetEnumerator()
         {
@@ -143,7 +175,7 @@ namespace NCollection
 
             public T Value { get; }
 
-            public Node? Previous { get; }
+            public Node? Previous { get; set; }
         }
         
         /// <summary>
