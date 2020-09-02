@@ -239,7 +239,8 @@ namespace NCollection
                     _elements[_tail] = default!;    
                 }
             }
-            
+
+            Count--;
             return true;
             
             static int Sub(int i, int j, int modulus) 

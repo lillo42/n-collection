@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace NCollection
 {
@@ -323,14 +324,15 @@ namespace NCollection
             Count--;
             _version++;
             if (Count == index)
-            {
-                _elements[index] = default!;
+            { 
+                _elements[index] = null!;
             }
             else
             {
                 var moved = _elements[Count]!;
+                _elements[Count] = null;
                 SiftDown(index, moved, Count, _elements, Comparer);
-                if (Comparer.Compare(_elements[index]!.Value, moved.Value) == 0)
+                if (_elements[index] == moved)
                 {
                     SiftUp(index, moved);
                 }
