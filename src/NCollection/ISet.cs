@@ -63,7 +63,6 @@ namespace NCollection
         /// <param name="item">Element whose presence in this collection is to be ensured</param>
         /// <returns>True if this collection changed as a result of the call</returns>
         /// <exception cref="ArgumentNullException">f the specified element is null and this collection does not permit null elements</exception>
-        /// <exception cref="UnsupportedOperationException">If the <see cref="Add"/>  operation is not supported by this collection</exception>
         /// <exception cref="ArgumentException">if some property of the element prevents it from being added to this collection</exception>
         /// <exception cref="InvalidOperationException">if the element cannot be added at this time due to insertion restrictions</exception>
         new bool Add(T item);

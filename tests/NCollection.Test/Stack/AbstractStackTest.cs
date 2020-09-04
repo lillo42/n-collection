@@ -357,6 +357,7 @@ namespace NCollection.Test.Stack
         [Fact]
         public void AbstractStackTest_TryPop_Invalid()
         {
+            var queue = new Queue<T>();
             var stack = CreateStack();
             stack.TryPop(out var peek).Should().BeFalse();
             peek.Should().Be(default(T));
@@ -393,51 +394,6 @@ namespace NCollection.Test.Stack
             stack.Clear();
             stack.TryPop(out var peek).Should().BeFalse();
             peek.Should().Be(default(T));
-        }
-
-        #endregion
-
-        #region Remove
-
-        [Theory]
-        [InlineData(1)]
-        [InlineData(10)]
-        [InlineData(75)]
-        [InlineData(100)]
-        public override void AbstractionCollectionTest_Remove_Validity(int size)
-        {
-            var array = CreateAValidArray(size);
-            var collection = CreateCollection(array);
-
-            collection.Should().HaveCount(size);
-            
-            foreach (var item in array.Reverse())
-            {
-                collection.Remove(item).Should().BeTrue();
-            }
-            
-            collection.Should().BeEmpty();
-        }
-        
-        
-
-        #endregion
-
-        #region Remove All
-
-        [Theory]
-        [InlineData(1)]
-        [InlineData(10)]
-        [InlineData(75)]
-        [InlineData(100)]
-        public override void AbstractionCollectionTest_RemoveAll_Validity(int size)
-        {
-            var array = CreateAValidArray(size);
-            var collection = CreateCollection(array);
-
-            collection.Should().HaveCount(size);
-            collection.RemoveAll(array.Reverse()).Should().BeTrue();
-            collection.Should().BeEmpty();
         }
 
         #endregion

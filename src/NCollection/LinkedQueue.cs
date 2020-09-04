@@ -29,7 +29,7 @@ namespace NCollection
         /// Initialize <see cref="LinkedQueue{T}"/> copying the element in <see cref="IEnumerable{T}"/>
         /// </summary>
         /// <param name="source">The elements to be copy</param>
-        /// <exception cref="ArgumentNullException">if the <see cref="source"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is <see langword="null"/></exception>
         public LinkedQueue([JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {
             if (source == null)
@@ -107,6 +107,42 @@ namespace NCollection
         public override IEnumerator<T> GetEnumerator()
         {
             return new QueueEnumerator(this);
+        }
+
+        /// <inheritdoc cref="ICollection{T}"/>
+        public override bool Remove(T item)
+        {
+            var current = _head;
+            Node? prev = null;
+            while (current != null)
+            {
+                if (EqualityComparer<T>.Default.Equals(item, current.Value))
+                {
+                    if (prev != null)
+                    {
+                        prev.Next = current.Next;
+                    }
+
+                    if (current == _head)
+                    {
+                        _head = current.Next;
+                    }
+
+                    if (current == _tail)
+                    {
+                        _tail = prev;
+                    }
+
+                    current.Next = null;
+                    Count--;
+                    return true;
+                }
+
+                prev = current;
+                current = current.Next;
+            }
+
+            return false;
         }
 
         private struct QueueEnumerator : IEnumerator<T>

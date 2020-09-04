@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace NCollection
 {
     /// <summary>
-    /// The <see cref="IQueue{T}"/> interface represents a first-in-first-out (FIFO) of <see cref="T"/>.
+    /// The <see cref="IQueue{T}"/> interface represents a first-in-first-out (FIFO) of <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the collection.</typeparam>
     public interface IQueue<T> : ICollection<T>
@@ -13,7 +13,7 @@ namespace NCollection
         /// Inserts the specified element into this queue if it is possible to do
         /// so immediately without violating capacity restrictions.
         /// When using a capacity-restricted queue, this method is generally
-        /// preferable to <see cref="ICollection{T}.Add"/>.
+        /// preferable to <see cref="System.Collections.Generic.ICollection{T}.Add"/>.
         /// </summary>
         /// <param name="item">the element to add</param>
         void Enqueue(T item)
@@ -29,7 +29,7 @@ namespace NCollection
         /// Try to inserts the specified element into this queue if it is possible to do
         /// so immediately without violating capacity restrictions.
         /// When using a capacity-restricted queue, this method is generally
-        /// preferable to <see cref="ICollection{T}.Add"/>
+        /// preferable to <see cref="System.Collections.Generic.ICollection{T}.Add"/>
         /// </summary>
         /// <param name="item">the element to add</param>
         /// <returns><see langword="true"/> if the element was added to this queue, otherwise <see langword="false"/></returns>

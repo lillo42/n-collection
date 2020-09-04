@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace NCollection
 {
@@ -44,7 +45,7 @@ namespace NCollection
         /// Initialize <see cref="ArrayQueue{T}"/> copying the element in <see cref="IEnumerable{T}"/>
         /// </summary>
         /// <param name="source">The elements to be copy</param>
-        /// <exception cref="ArgumentNullException">if the <paramref cref="source"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is <see langword="null"/></exception>
         public ArrayQueue([JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {
             if (source == null)
@@ -86,7 +87,7 @@ namespace NCollection
         /// </summary>
         /// <param name="source">The elements to be copy</param>
         /// <param name="initialCapacity">The initial capacity of the array</param>
-        /// <exception cref="ArgumentNullException">if the <paramref cref="source"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is <see langword="null"/></exception>
         /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
         public ArrayQueue(int initialCapacity, [JetBrains.Annotations.NotNull] IEnumerable<T> source)
         {
@@ -182,10 +183,125 @@ namespace NCollection
             return true;
         }
         
+        
+        /// <inheritdoc cref="ICollection{T}"/>
+        public override bool Remove(T item)
+        {
+           
+            var index = IndexOf(item);
+            
+            if (index < 0)
+            {
+                return false;
+            }
+            
+            var front = Sub(index, _head, _elements.Length);
+            var back = Sub(_tail, index, _elements.Length);
+
+            if (front < back)
+            {
+                if (_head <= index)
+                {
+                    Array.Copy(_elements, _head, _elements, _head + 1, front);
+                }
+                else
+                {
+                    Array.Copy(_elements, 0, _elements, 1, index);
+                    _elements[0] = _elements[Count - 1];
+                    Array.Copy(_elements, _head, _elements, _head + 1, front - (index + 1));
+                }
+                
+                if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                {
+                    _elements[_head] = default!;    
+                }
+
+                _head = Inc(_head, _elements.Length);
+               
+            }
+            else
+            {
+                var tail = _tail;
+                _tail = Dec(_tail, Count);
+                if (index <= _tail)
+                {
+                    Array.Copy(_elements, index + 1, _elements, index, back);
+                }
+                else
+                {
+                    Array.Copy(_elements, index + 1, _elements, index, Count - (index + 1));
+                     _elements[Count - 1] = _elements[0];
+                     Array.Copy(_elements, 1, _elements, 0, tail - 1);
+                }
+                
+                if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                {
+                    _elements[_tail] = default!;    
+                }
+            }
+
+            Count--;
+            return true;
+            
+            static int Sub(int i, int j, int modulus) 
+            {
+                if ((i -= j) < 0)
+                {
+                    i += modulus;
+                }
+                
+                return i;
+            }
+            
+            static int Inc(int i, int modulus)
+            {
+                if (++i >= modulus)
+                {
+                    i = 0;
+                }
+                return i;
+            }
+            
+            static int Dec(int i, int modulus) {
+                if (--i < 0)
+                {
+                    i = modulus - 1;
+                }
+                
+                return i;
+            }
+        }
+        
+        private int IndexOf(T item)
+        {
+            for (var i = 0; i < Count; i++)
+            {
+                var index = (_head + i) % _elements.Length;
+                if (EqualityComparer<T>.Default.Equals(item, _elements[index]))
+                {
+                    return index;
+                }
+            }
+
+            return -1;
+        }
+        
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public override void Clear()
         {
-            Array.Clear(_elements, 0, Count);
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                if (_head < _tail)
+                {
+                    Array.Clear(_elements, _head, Count);
+                }
+                else
+                {
+                    Array.Clear(_elements, _head, _elements.Length - _head);
+                    Array.Clear(_elements, 0, _tail);
+                }
+            }
+            
             _head = 0;
             _tail = 0;
             Count = 0;

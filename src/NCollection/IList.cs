@@ -31,7 +31,7 @@ namespace NCollection
         /// <param name="source">The source containing elements to be added to this list</param>
         /// <returns>true if this list changed as a result of the call</returns>
         /// <exception cref="ArgumentOutOfRangeException">if the index is out of range
-        /// <paramref name="index"/> is less than 0 or  <paramref name="index"/> greater than <see cref="ICollection{T}.Count"/>
+        /// <paramref name="index"/> is less than 0 or  <paramref name="index"/> greater than <see cref="System.Collections.Generic.ICollection{T}.Count"/>
         /// </exception>
         bool AddAll(int index, [NotNull]IEnumerable<T> source);
         

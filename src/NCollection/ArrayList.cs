@@ -141,7 +141,6 @@ namespace NCollection
             get
             {
                 var length = 0;
-                var count = 0;
                 if (range.End.IsFromEnd)
                 {
                     length = Count - range.Start.Value;
@@ -218,7 +217,6 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(source));
             }
 
-            var modify = false;
             if (source is ICollection<T> collection)
             {
                 EnsureCapacity(Count + collection.Count);
@@ -235,7 +233,6 @@ namespace NCollection
                 foreach (var item in source)
                 {
                     Add(index++, item);
-                    modify = true;
                 }
             }
 
@@ -300,7 +297,15 @@ namespace NCollection
 
             return -1;
         }
-        
+
+        /// <inheritdoc cref="ICollection{T}"/>
+        public override T[] ToArray()
+        {
+            var result = new T[Count];
+            Array.Copy(_elements, result, Count);
+            return result;
+        }
+
         /// <inheritdoc />
         public override IEnumerator<T> GetEnumerator()
         {

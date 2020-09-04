@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace NCollection
 {
@@ -65,7 +66,7 @@ namespace NCollection
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="initialCapacity"/>.
+        /// Initializes a new instance of the <paramref name="initialCapacity"/>.
         /// </summary>
         /// <param name="initialCapacity">The initial number of elements that the <see cref="PriorityQueue{T}"/> can contain.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="initialCapacity"/>is less than zero.</exception>
@@ -323,14 +324,15 @@ namespace NCollection
             Count--;
             _version++;
             if (Count == index)
-            {
-                _elements[index] = default!;
+            { 
+                _elements[index] = null!;
             }
             else
             {
                 var moved = _elements[Count]!;
+                _elements[Count] = null;
                 SiftDown(index, moved, Count, _elements, Comparer);
-                if (Comparer.Compare(_elements[index]!.Value, moved.Value) == 0)
+                if (_elements[index] == moved)
                 {
                     SiftUp(index, moved);
                 }

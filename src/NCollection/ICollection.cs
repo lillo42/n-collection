@@ -28,13 +28,13 @@ namespace NCollection
         /// <summary>
         /// Try adds an item to the <see cref="ICollection{T}"/>
         /// </summary>
-        /// <param name="item">The <see cref="T"/> to add to the <see cref="ICollection{T}"/></param>
+        /// <param name="item">The object to add to the <see cref="ICollection{T}"/></param>
         /// <returns><see langword="true"/> if could insert <paramref name="item"/> in <see cref="ICollection{T}"/></returns>
         bool TryAdd(T item);
 
 
         /// <summary>Determines whether the <see cref="System.Collections.Generic.ICollection{T}" /> contains a specific value.</summary>
-        /// <param name="item">The <see cref="T"/> to locate in the <see cref="System.Collections.Generic.ICollection{T}" />.</param>
+        /// <param name="item">The object to locate in the <see cref="System.Collections.Generic.ICollection{T}" />.</param>
         /// <param name="comparer">The <see cref="IEqualityComparer{T}"/>.</param>
         /// <returns><see langword="true" /> if <paramref name="item" /> is found in the <see cref="System.Collections.Generic.ICollection{T}" /> ; otherwise, <see langword="false" />.</returns>
         bool Contains(T item, [NotNull]IEqualityComparer<T> comparer);

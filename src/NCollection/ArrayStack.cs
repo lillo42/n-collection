@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace NCollection
 {
@@ -135,10 +136,50 @@ namespace NCollection
             return result;
         }
 
+        /// <inheritdoc cref="ICollection{T}"/>
+        public override bool Remove(T item)
+        {
+            var index = IndexOf(item);
+            if (index >= 0)
+            {
+                Count--;
+                if (index < Count)
+                {
+                    Array.Copy(_elements, index + 1, _elements, index, Count - index);
+                }
+
+                if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                {
+                    _elements[Count] = default!;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private int IndexOf(T item)
+        {
+            for (var i = 0; i < Count; i++)
+            {
+                if (EqualityComparer<T>.Default.Equals(item, _elements[i]))
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public override void Clear()
         {
-            Array.Clear(_elements, 0, Count);
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                Array.Clear(_elements, 0, Count);
+            }
+            
             Count = 0;
         }
 
@@ -168,7 +209,12 @@ namespace NCollection
             }
 
             item = _elements[Count - 1];
-            _elements[Count - 1] = default!;
+            
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                _elements[Count - 1] = default!;    
+            }
+            
             Count--;
             return true;
         }
