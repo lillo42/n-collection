@@ -43,7 +43,7 @@ namespace NCollection
     /// <typeparam name="T">The type of the elements in the collection.</typeparam>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    public class PriorityQueue<T> : AbstractQueue<T>, ICloneable
+    public class PriorityQueue<T> : AbstractQueue<T>, ITree<T>, ICloneable
     {
         /// <summary>
         /// The <see cref="IComparer{T}"/>
