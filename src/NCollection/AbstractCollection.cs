@@ -42,21 +42,10 @@ namespace NCollection
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public virtual bool Contains(T item)
         {
-            return Contains(item, EqualityComparer<T>.Default);
-        }
-        
-        /// <inheritdoc cref="ICollection{T}"/>
-        public virtual bool Contains(T item, IEqualityComparer<T> comparer)
-        {
-            if (comparer == null)
-            {
-                throw new ArgumentNullException(nameof(comparer));
-            }
-            
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var value in this)
             {
-                if (comparer.Equals(item, value))
+                if (EqualityComparer<T>.Default.Equals(item, value))
                 {
                     return true;
                 }
@@ -65,28 +54,18 @@ namespace NCollection
             return false;
         }
         
-        /// <inheritdoc cref="ICollection{T}"/>
-        public virtual bool ContainsAll(IEnumerable<T> source)
-        {
-            return ContainsAll(source, EqualityComparer<T>.Default);
-        }
         
         /// <inheritdoc cref="ICollection{T}"/>
-        public virtual bool ContainsAll(IEnumerable<T> source, IEqualityComparer<T> comparer)
+        public virtual bool ContainsAll(IEnumerable<T> source)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
-
-            if (comparer == null)
-            {
-                throw new ArgumentNullException(nameof(comparer));
-            }
-
+            
             foreach (var item in source)
             {
-                if (!Contains(item, comparer))
+                if (!Contains(item))
                 {
                     return false;
                 }

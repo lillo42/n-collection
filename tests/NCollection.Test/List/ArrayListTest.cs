@@ -9,9 +9,9 @@ namespace NCollection.Test.List
             return new ArrayList<string>(size);
         }
 
-        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> enumerable)
+        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> source)
         {
-            return new ArrayList<string>(size, enumerable);
+            return new ArrayList<string>(size, source);
         }
 
         protected override AbstractList<string> CreateList()
@@ -32,9 +32,9 @@ namespace NCollection.Test.List
             return new ArrayList<int>(size);
         }
 
-        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> enumerable)
+        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> source)
         {
-            return new ArrayList<int>(size, enumerable);
+            return new ArrayList<int>(size, source);
         }
 
         protected override AbstractList<int> CreateList()

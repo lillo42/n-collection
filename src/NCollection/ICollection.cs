@@ -31,44 +31,23 @@ namespace NCollection
         /// <param name="item">The object to add to the <see cref="ICollection{T}"/></param>
         /// <returns><see langword="true"/> if could insert <paramref name="item"/> in <see cref="ICollection{T}"/></returns>
         bool TryAdd(T item);
-
-
-        /// <summary>Determines whether the <see cref="System.Collections.Generic.ICollection{T}" /> contains a specific value.</summary>
-        /// <param name="item">The object to locate in the <see cref="System.Collections.Generic.ICollection{T}" />.</param>
-        /// <param name="comparer">The <see cref="IEqualityComparer{T}"/>.</param>
-        /// <returns><see langword="true" /> if <paramref name="item" /> is found in the <see cref="System.Collections.Generic.ICollection{T}" /> ; otherwise, <see langword="false" />.</returns>
-        bool Contains(T item, [NotNull]IEqualityComparer<T> comparer);
-
+        
         /// <summary>
         /// Return <see langword="true"/> if this if this collection contains all of the elements in the specified collection.
         /// </summary>
         /// <param name="source">The <see cref="IEnumerable{T}"/> to be checked for containment in this collection</param>
         /// <returns>Return <see langword="true"/> if this if this collection contains all of the elements in the specified collection.</returns>
         /// <exception cref="ArgumentNullException">If the <paramref name="source"/> is <see langword="null"/></exception>
-        bool ContainsAll([NotNull] IEnumerable<T> source) => ContainsAll(source, EqualityComparer<T>.Default);
-
-        /// <summary>
-        /// Check if this collections contains all of the elements in the specified collection.
-        /// </summary>
-        /// <param name="source">The <see cref="IEnumerable{T}"/> to be checked for containment in this collection</param>
-        /// <param name="comparer">The <see cref="IEqualityComparer{T}"/>.</param>
-        /// <returns>Return <see langword="true"/> if this if this collection contains all of the elements in the specified in <paramref name="source"/>.</returns>
-        /// <exception cref="ArgumentNullException">When <paramref name="source"/> or <paramref name="comparer"/> is <see langword="null"/></exception>
-        bool ContainsAll([NotNull] IEnumerable<T> source, [NotNull]IEqualityComparer<T> comparer)
+        bool ContainsAll([NotNull] IEnumerable<T> source)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            if (comparer == null)
-            {
-                throw new ArgumentNullException(nameof(comparer));
-            }
-
             foreach (var item in source)
             {
-                if (!Contains(item, comparer))
+                if (!Contains(item))
                 {
                     return false;
                 }
@@ -196,13 +175,5 @@ namespace NCollection
 
             return modified;
         }
-
-        #region ICollection
-        bool System.Collections.Generic.ICollection<T>.Contains(T item)
-        {
-            return Contains(item, EqualityComparer<T>.Default);
-        }
-
-        #endregion
     }
 }

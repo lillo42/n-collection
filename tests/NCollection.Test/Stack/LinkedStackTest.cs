@@ -21,7 +21,7 @@ namespace NCollection.Test.Stack
             throw new System.NotImplementedException();
         }
 
-        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> enumerable)
+        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> source)
         {
             throw new System.NotImplementedException();
         }
@@ -46,7 +46,7 @@ namespace NCollection.Test.Stack
             throw new System.NotImplementedException();
         }
 
-        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> enumerable)
+        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> source)
         {
             throw new System.NotImplementedException();
         }

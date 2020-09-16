@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 namespace NCollection
 {
@@ -37,7 +36,7 @@ namespace NCollection
     /// Implementation note: this implementation provides
     /// O(log(n)) time for the enqueuing and dequeuing methods
     /// (<see cref="AbstractQueue{T}.Enqueue"/> and <see cref="AbstractQueue{T}.Dequeue"/>);
-    /// linear time for the <see cref="Remove"/> and <see cref="Contains"/>
+    /// linear time for the <see cref="Remove"/> and <see cref="AbstractCollection{T}.Contains"/>
     /// methods; and constant time for the retrieval methods
     /// (<see cref="AbstractQueue{T}.Peek"/> and <see cref="AbstractCollection{T}.Count"/>).
     /// </summary>
@@ -299,18 +298,7 @@ namespace NCollection
 
             queue[position] = item;
         }
-
-        /// <inheritdoc cref="ICollection{T}"/>
-        public override bool Contains(T item, IEqualityComparer<T> comparer)
-        {
-            if (comparer == null)
-            {
-                throw new ArgumentNullException(nameof(comparer));
-            }
-
-            return IndexOf(item, comparer) > -1;
-        }
-
+        
         /// <inheritdoc />
         public override bool Remove(T item)
         {

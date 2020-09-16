@@ -30,7 +30,7 @@ namespace NCollection.Test
         
         protected abstract AbstractCollection<T> CreateCollection();
         protected abstract AbstractCollection<T> CreateCollection(int size);
-        protected abstract AbstractCollection<T> CreateCollection(int size, IEnumerable<T> enumerable);
+        protected abstract AbstractCollection<T> CreateCollection(int size, IEnumerable<T> source);
         
         protected virtual AbstractCollection<T> CreateCollection(IEnumerable<T> array)
         {
@@ -283,14 +283,6 @@ namespace NCollection.Test
                 collection.Contains(item).Should().BeFalse();
             }
         }
-
-        [Fact]
-        public void AbstractionCollectionTest_Contains_Throw()
-        {
-            var collection = CreateCollection();
-
-            Assert.Throws<ArgumentNullException>(() => collection.Contains(Create(), null!));
-        }
         
         #endregion
         
@@ -358,16 +350,6 @@ namespace NCollection.Test
             collection.ContainsAll(array).Should().BeFalse();
         }
         
-        [Fact]
-        public void AbstractionCollectionTest_ContainsAll_Throw()
-        {
-            var collection = CreateCollection();
-            
-            Assert.Throws<ArgumentNullException>(() => collection.ContainsAll(null!));
-            Assert.Throws<ArgumentNullException>(() => collection.ContainsAll(null!, null!));
-            Assert.Throws<ArgumentNullException>(() => collection.ContainsAll(CreateAValidArray(1), null!));
-        }
-
         #endregion
         
         #region Remove

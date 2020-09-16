@@ -11,7 +11,7 @@ namespace NCollection.Test.List
             throw new System.NotImplementedException();
         }
 
-        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> enumerable)
+        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> source)
         {
             throw new System.NotImplementedException();
         }
@@ -21,9 +21,9 @@ namespace NCollection.Test.List
             return new LinkedList<string>();
         }
 
-        protected override AbstractList<string> CreateList(IEnumerable<string> enumerable)
+        protected override AbstractList<string> CreateList(IEnumerable<string> source)
         {
-            return new LinkedList<string>(enumerable);
+            return new LinkedList<string>(source);
         }
 
     }
@@ -37,7 +37,7 @@ namespace NCollection.Test.List
             throw new System.NotImplementedException();
         }
 
-        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> enumerable)
+        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> source)
         {
             throw new System.NotImplementedException();
         }
@@ -47,9 +47,9 @@ namespace NCollection.Test.List
             return new LinkedList<int>();
         }
 
-        protected override AbstractList<int> CreateList(IEnumerable<int> enumerable)
+        protected override AbstractList<int> CreateList(IEnumerable<int> source)
         {
-            return new LinkedList<int>(enumerable);
+            return new LinkedList<int>(source);
         }
 
     }

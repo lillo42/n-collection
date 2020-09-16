@@ -19,9 +19,9 @@ namespace NCollection.Test.Stack
             return new ArrayStack<string>(size);
         }
 
-        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> enumerable)
+        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> source)
         {
-            return new ArrayStack<string>(size, enumerable);
+            return new ArrayStack<string>(size, source);
         }
     }
     
@@ -42,9 +42,9 @@ namespace NCollection.Test.Stack
             return new ArrayStack<int>(size);
         }
 
-        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> enumerable)
+        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> source)
         {
-            return new ArrayStack<int>(size, enumerable);
+            return new ArrayStack<int>(size, source);
         }
     }
 }

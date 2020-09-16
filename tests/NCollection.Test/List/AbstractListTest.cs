@@ -8,11 +8,11 @@ namespace NCollection.Test.List
     {
         protected abstract AbstractList<T> CreateList();
 
-        protected virtual AbstractList<T> CreateList(IEnumerable<T> enumerable)
+        protected virtual AbstractList<T> CreateList(IEnumerable<T> source)
         {
             var list = CreateList();
          
-            list.AddAll(enumerable);
+            list.AddAll(source);
 
             return list;
         }
@@ -96,7 +96,7 @@ namespace NCollection.Test.List
         [InlineData(10)]
         [InlineData(75)]
         [InlineData(100)]
-        public void AbstractListTest_Add_Validity(int size)
+        public virtual void AbstractListTest_Add_Validity(int size)
         {
             var array = CreateAValidArray(size);
             var collection = CreateList(array);
@@ -113,7 +113,7 @@ namespace NCollection.Test.List
         [InlineData(10)]
         [InlineData(75)]
         [InlineData(100)]
-        public void AbstractListTest_Add_AfterClear(int size)
+        public virtual void AbstractListTest_Add_AfterClear(int size)
         {
             var array = CreateAValidArray(size);
             var collection = CreateList(array);
@@ -140,7 +140,7 @@ namespace NCollection.Test.List
         [InlineData(10)]
         [InlineData(75)]
         [InlineData(100)]
-        public void AbstractListTest_AddAll_Validity(int size)
+        public virtual void AbstractListTest_AddAll_Validity(int size)
         {
             var array = CreateAValidArray(size);
             var collection = CreateList(array);
@@ -160,7 +160,7 @@ namespace NCollection.Test.List
         [InlineData(10)]
         [InlineData(75)]
         [InlineData(100)]
-        public void AbstractListTest_AddAll_AfterClear(int size)
+        public virtual void AbstractListTest_AddAll_AfterClear(int size)
         {
             var array = CreateAValidArray(size);
             var collection = CreateList(array);

@@ -17,9 +17,9 @@ namespace NCollection.Test.Queues
             return new PriorityQueue<string>(size);
         }
 
-        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> enumerable)
+        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> source)
         {
-            return new PriorityQueue<string>(enumerable);
+            return new PriorityQueue<string>(source);
         }
 
         protected override AbstractQueue<string> CreateQueue()
@@ -46,9 +46,9 @@ namespace NCollection.Test.Queues
             return new PriorityQueue<int>(size);
         }
 
-        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> enumerable)
+        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> source)
         {
-            return new PriorityQueue<int>(enumerable);
+            return new PriorityQueue<int>(source);
         }
 
         protected override AbstractQueue<int> CreateQueue()
@@ -75,9 +75,9 @@ namespace NCollection.Test.Queues
             return new PriorityQueue<int>(size, new Reverse());
         }
 
-        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> enumerable)
+        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> source)
         {
-            return new PriorityQueue<int>(enumerable, new Reverse());
+            return new PriorityQueue<int>(source, new Reverse());
         }
 
         protected override AbstractQueue<int> CreateQueue()

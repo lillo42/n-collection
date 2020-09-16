@@ -9,9 +9,9 @@ namespace NCollection.Test.Queues
             return new ArrayQueue<string>(size);
         }
 
-        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> enumerable)
+        protected override AbstractCollection<string> CreateCollection(int size, IEnumerable<string> source)
         {
-            return new ArrayQueue<string>(size, enumerable);
+            return new ArrayQueue<string>(size, source);
         }
 
         protected override AbstractQueue<string> CreateQueue()
@@ -32,9 +32,9 @@ namespace NCollection.Test.Queues
             return new ArrayQueue<int>(size);
         }
 
-        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> enumerable)
+        protected override AbstractCollection<int> CreateCollection(int size, IEnumerable<int> source)
         {
-            return new ArrayQueue<int>(size, enumerable);
+            return new ArrayQueue<int>(size, source);
         }
 
         protected override AbstractQueue<int> CreateQueue()

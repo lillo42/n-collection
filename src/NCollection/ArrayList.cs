@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 
 namespace NCollection
 {
@@ -13,9 +14,15 @@ namespace NCollection
     /// <typeparam name="T">The type of the elements in the collection.</typeparam>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
-    public class ArrayList<T> : AbstractList<T>
+    public class ArrayList<T> : AbstractList<T>, ICloneable
     {
         private T[] _elements;
+
+        /// <summary>
+        /// The array that contains elements
+        /// </summary>
+        [NotNull]
+        public T[] Elements => _elements;
 
         /// <summary>
         /// Initialize <see cref="ArrayList{T}"/>
@@ -51,12 +58,12 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(source));
             }
 
-            if (source is ArrayList<T> stack)
+            if (source is ArrayList<T> list)
             {
-                _elements = ArrayPool<T>.Shared.Rent(stack._elements.Length);
-                Array.Copy(stack._elements, _elements, stack.Count);
+                _elements = ArrayPool<T>.Shared.Rent(list._elements.Length);
+                Array.Copy(list._elements, _elements, list.Count);
                 // ReSharper disable once VirtualMemberCallInConstructor
-                Count = stack.Count;
+                Count = list.Count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
@@ -95,12 +102,12 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(source));
             }
 
-            if (source is ArrayList<T> stack)
+            if (source is ArrayList<T> list)
             {
-                _elements = ArrayPool<T>.Shared.Rent(stack._elements.Length);
-                Array.Copy(stack._elements, _elements, stack.Count);
+                _elements = ArrayPool<T>.Shared.Rent(list._elements.Length);
+                Array.Copy(list._elements, _elements, list.Count);
                 // ReSharper disable once VirtualMemberCallInConstructor
-                Count = stack.Count;
+                Count = list.Count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
@@ -182,7 +189,7 @@ namespace NCollection
             return true;
         }
         
-        private void EnsureCapacity(int min)
+        protected void EnsureCapacity(int min)
         {
             if (_elements.Length < min)
             {
@@ -298,6 +305,13 @@ namespace NCollection
             return -1;
         }
 
+        /// <inheritdoc />
+        public override void Clear()
+        {
+            Array.Clear(Elements, 0, Count);
+            Count = 0;
+        }
+
         /// <inheritdoc cref="ICollection{T}"/>
         public override T[] ToArray()
         {
@@ -351,5 +365,16 @@ namespace NCollection
                 
             }
         }
+
+        /// <summary>
+        /// Creates a new <see cref="ArrayList{T}"/> that is a copy of the current instance.
+        /// </summary>
+        /// <returns>A new <see cref="ArrayList{T}"/> that is a copy of this instance.</returns>
+        public ArrayList<T> Clone()
+        {
+            return new ArrayList<T>(this);
+        }
+        
+        object ICloneable.Clone() => Clone();
     }
 }
