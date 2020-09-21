@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace NCollection
 {
@@ -7,6 +8,8 @@ namespace NCollection
     /// interface, to minimize the effort required to implement this interface.
     /// </summary>
     /// <typeparam name="T">The type of the elements in the collection.</typeparam>
+    [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
+    [DebuggerDisplay("Count = {Count}")]
     public abstract class AbstractTree<T> : AbstractCollection<T>, ITree<T>
     {
         

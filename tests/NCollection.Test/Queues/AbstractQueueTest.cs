@@ -31,13 +31,6 @@ namespace NCollection.Test.Queues
         }
         
         #region Enqueue
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(10)]
-        [InlineData(75)]
-        [InlineData(100)]
         public void AbstractQueueTest_Enqueue_AfterClear(int size)
         {
             var array = CreateAValidArray(size);

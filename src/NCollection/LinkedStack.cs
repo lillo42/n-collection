@@ -114,6 +114,20 @@ namespace NCollection
             return false;
         }
 
+        /// <inheritdoc />
+        public override void Clear()
+        {
+            var current = _head;
+            while (current != null)
+            {
+                var prev = current;
+                current = current.Previous;
+                prev.Previous = null;
+            }
+
+            Count = 0;
+        }
+
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public override IEnumerator<T> GetEnumerator()
         {

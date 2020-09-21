@@ -399,12 +399,7 @@ namespace NCollection.Test.Stack
         #endregion
 
         #region ToArray
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(10)]
-        [InlineData(75)]
+        
         [InlineData(100)]
         public override void AbstractionCollectionTest_ToArray(int size)
         {

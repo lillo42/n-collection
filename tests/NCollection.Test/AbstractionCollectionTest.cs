@@ -86,6 +86,7 @@ namespace NCollection.Test
             }
             
             collection.Should().HaveCount(size);
+            collection.Count.Should().Be(size);
         }
 
         #endregion
@@ -686,9 +687,10 @@ namespace NCollection.Test
             if (collection is ICloneable cloneable)
             {
                 var clone =  (AbstractCollection<T>)cloneable.Clone();
-                clone.Count.Should().Be(collection.Count);
+                clone.Count.Should().Be(size);
                 clone.Should().BeEquivalentTo(collection);
             }
+            
         }
 
         #endregion
