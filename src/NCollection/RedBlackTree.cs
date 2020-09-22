@@ -427,6 +427,124 @@ namespace NCollection
             }
         }
 
+        private static RedBlackNode? Delete(RedBlackNode node)
+        {
+            
+            // https://en.wikipedia.org/wiki/Red%E2%80%93black_tree
+            // https://github.com/Bibeknam/algorithmtutorprograms/blob/master/data-structures/red-black-trees/RedBlackTree.java
+            var child = node.Left ?? node.Right;
+
+            if (child != null)
+            {
+                
+            }
+
+            ReplaceNode(node, child);
+            
+            var current = child;
+            if (child != null)
+            {
+                if (node.Color == Color.Black)
+                {
+                    if (child.Color == Color.Red)
+                    {
+                        child.Color = Color.Black;
+                    }
+                    else
+                    {
+                        FixDelete(child);
+                    }
+                }
+                
+                while (current!.Parent != null)
+                {
+                    current = current.Parent;
+                }
+            }
+
+            Free(node);
+            return current;
+
+            static void Free(RedBlackNode node)
+            {
+                node.Parent = null;
+                node.Left = null;
+                node.Right = null;
+                node.Value = default!;
+            }
+            
+            static void ReplaceNode(RedBlackNode node, RedBlackNode? other)
+            {
+                if (other == null)
+                {
+                    return;
+                }
+            
+                other.Parent = node.Parent;
+
+                if (node.Parent == null)
+                {
+                    return;
+                }
+            
+                if (node == node.Parent.Left)
+                {
+                    node.Parent.Left = other;
+                }
+                else
+                {
+                    node.Parent.Right = other;
+                }
+            }
+
+            static void FixDelete(RedBlackNode node)
+            {
+                if (node.Parent == null)
+                {
+                    return;
+                }
+
+                var sibling = GetSibling(node);
+                
+                if(sibling != null)
+                {
+                    if (sibling.Color == Color.Red)
+                    {
+                        node.Parent.Color = Color.Red;
+                        sibling.Color = Color.Black;
+
+                        if (node == node.Parent.Left)
+                        {
+                            RotateLeft(node.Parent);
+                        }
+                        else
+                        {
+                            RotateRight(node.Parent);
+                        }
+                    }
+                }
+                
+                sibling = GetSibling(node);
+
+                if (sibling != null)
+                {
+                    if (node.Parent.Color == Color.Black 
+                        && sibling.Color == Color.Black
+                        && sibling.Left.Color == Color.Black
+                        && sibling.Right.Color == Color.Black)
+                    {
+                        sibling.Color = Color.Red;
+                        FixDelete(node.Parent);
+                    }
+                    else
+                    {
+                        
+                    }
+                }
+            }
+        }
+        
+        
         /// <summary>
         /// Creates a shallow copy of the <see cref="RedBlackTree{T}"/>.
         /// </summary>
@@ -463,50 +581,42 @@ namespace NCollection
                 {
                     throw new InvalidOperationException("RedBlackTree was changed");
                 }
-                
+
                 if (_state == -1)
                 {
-                    _node = Min(_tree._root, _stack);
+                    _node = _tree._root;
                     _state = 0;
                 }
                 else if (_state == 0)
                 {
-                    _stack.TryPop(out _node);
-                    if (_node?.Right != null)
+                    _node = _node?.Right;
+                }
+               
+                if(_state != -2)
+                {
+                    while (!_stack.IsEmpty || _node != null)
                     {
-                        _state = 1;
+                        if (_node != null)
+                        {
+                            _stack.Push(_node);
+                            _node = _node.Left;
+                        }
+                        else
+                        {
+                            _node = _stack.Pop();
+                            break;
+                        }
                     }
                 }
-                else if(_state == 1)
-                {
-                    _node = Min(_node!.Right, _stack);
-                    _state = 0;
-                }
-                
+
                 if (_state == -2 || _node == null)
                 {
                     _state = -2;
+                    _node = null;
                     return false;
                 }
-                
+
                 return true;
-                
-                static RedBlackNode? Min(RedBlackNode? node, LinkedStack<RedBlackNode> stack)
-                {
-                    if (node == null)
-                    {
-                        return null;
-                    }
-                
-                    var current = node;
-                    while (current.Left != null)
-                    {
-                        stack.Push(current);
-                        current = current.Left;
-                    }
-                
-                    return current;
-                }
             }
 
             public void Reset()
@@ -516,18 +626,7 @@ namespace NCollection
                 _stack.Clear();
             }
 
-            public T Current
-            {
-                get
-                {
-                    if (_node == null)
-                    {
-                        return default!;
-                    }
-
-                    return _node.Value;
-                }
-            }
+            public T Current => _node == null ? default! : _node.Value;
 
             object? IEnumerator.Current => Current;
 
@@ -540,7 +639,7 @@ namespace NCollection
         /// <inheritdoc />
         public override IEnumerator<T> PreorderTraversal()
         {
-            return new PreorderTraversalEnumerator();
+            return new PreorderTraversalEnumerator(this);
         }
         
         private struct PreorderTraversalEnumerator : IEnumerator<T>
