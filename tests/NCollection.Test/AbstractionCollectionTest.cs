@@ -363,13 +363,8 @@ namespace NCollection.Test
         public virtual void AbstractionCollectionTest_Remove_Validity(int size)
         {
             var array = CreateAValidArray(size);
-            var collection = CreateCollection();
-
-            foreach (var item in array)
-            {
-                collection.Add(item);
-            }
-
+            var collection = CreateCollection(array);
+            
             collection.Should().HaveCount(size);
             
             foreach (var item in array)
