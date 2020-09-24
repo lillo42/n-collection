@@ -14,29 +14,30 @@ namespace NCollection
     [DebuggerDisplay("Count = {Count}")]
     public class RedBlackTree<T> : AbstractTree<T>, ICloneable
     {
-        internal enum Color : byte
-        {
-            Black,
-            Red
-        }
+        // internal enum Color : byte
+        // {
+        //     Black,
+        //     Red
+        // }
 
         internal class RedBlackNode
         {
             public T Value { get; set; } = default!;
 
-            public Color Color { get; set; }
+            public int color { get; set; }
             
-            public RedBlackNode? Parent { get; set; }
-            public RedBlackNode? Right { get; set; }
-            public RedBlackNode? Left { get; set; }
-
-            public bool IsOnLeft => Parent?.Left == this;
-            public bool HasRedChild => (Left != null && Left.Color == Color.Red) || (Right != null && Right.Color == Color.Red);
+            public RedBlackNode? parent { get; set; }
+            public RedBlackNode? right { get; set; }
+            public RedBlackNode? left { get; set; }
         }
 
         private int _version = int.MinValue;
         
-        internal RedBlackNode? _root;
+        private RedBlackNode root;
+        private RedBlackNode TNULL = new RedBlackNode
+        {
+            color = 0
+        };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RedBlackTree{T}"/>.
@@ -44,6 +45,7 @@ namespace NCollection
         public RedBlackTree()
         {
             Comparer = Comparer<T>.Default;
+            root = TNULL;
         }
 
         /// <summary>
@@ -54,6 +56,7 @@ namespace NCollection
         public RedBlackTree(IComparer<T> comparer)
         {
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
+            root = TNULL;
         }
 
         /// <summary>
@@ -69,17 +72,15 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(source));
             }
             
+            root = TNULL;
+            
             if (source is RedBlackTree<T> tree)
             {
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = tree.Count;
                 Comparer = tree.Comparer;
-                if(tree._root != null)
-                {
-                    _version++;
-                    _root = new RedBlackNode();
-                    CloneRecursive(tree._root, _root, tree._version, tree);
-                }
+                _version++;
+                CloneRecursive(tree.root, root, tree._version, tree);
             }
             else
             {
@@ -105,17 +106,15 @@ namespace NCollection
             {
                 throw new ArgumentNullException(nameof(source));
             }
+            
+            root = TNULL;
 
             if (source is RedBlackTree<T> tree)
             {
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = tree.Count;
-                if(tree._root != null)
-                {
-                    _version++;
-                    _root = new RedBlackNode();
-                    CloneRecursive(tree._root, _root, tree._version, tree);
-                }
+                _version++;
+                CloneRecursive(tree.root, root, tree._version, tree);
             }
             else
             {
@@ -136,16 +135,16 @@ namespace NCollection
                 
             @new.Value = original.Value;
 
-            if (original.Left != null)
+            if (original.left != null)
             {
-                @new.Left = new RedBlackNode();
-                CloneRecursive(original.Left, @new.Left, version, tree);
+                @new.left = new RedBlackNode();
+                CloneRecursive(original.left, @new.left, version, tree);
             }
                 
-            if (original.Right != null)
+            if (original.right != null)
             {
-                @new.Right = new RedBlackNode();
-                CloneRecursive(original.Right, @new.Right, version, tree);
+                @new.right = new RedBlackNode();
+                CloneRecursive(original.right, @new.right, version, tree);
             }
         }
 
@@ -157,22 +156,17 @@ namespace NCollection
         /// <inheritdoc />
         public override bool TryAdd(T item)
         {
-           _root = Insert(_root, item, Comparer);
-           Count++;
-           _version++;
-           return true;
+            Insert(item);
+            Count++;
+            _version++;
+            return true;
         }
         
         /// <inheritdoc />
         public override bool Remove(T item)
         {
-            var node = Find(item);
-            if (node == null)
-            {
-                return false;
-            }
-            
-            _root = Delete(node);
+            DeleteNodeHelper(root, item);
+            Count--;
             _version++;
             return true;
         }
@@ -186,8 +180,8 @@ namespace NCollection
         /// <inheritdoc />
         public override void Clear()
         {
-            FreeRecursive(_root);
-            _root = null;
+            FreeRecursive(root);
+            root = TNULL;
             Count = 0;
             _version = int.MinValue;
             
@@ -198,19 +192,19 @@ namespace NCollection
                     return;
                 }
                 
-                FreeRecursive(node.Left);
-                FreeRecursive(node.Right);
+                FreeRecursive(node.left);
+                FreeRecursive(node.right);
 
-                node.Left = null;
-                node.Right = null;
-                node.Parent = null;
+                node.left = null;
+                node.right = null;
+                node.parent = null;
                 node.Value = default!;
             }
         }
 
         private RedBlackNode? Find(T item)
         {
-            var current = _root;
+            var current = root;
             while (current != null)
             {
                 var result = Comparer.Compare(item, current.Value);
@@ -220,445 +214,313 @@ namespace NCollection
                 }
                 else if (result > 0)
                 {
-                    current = current.Right;
+                    current = current.right;
                 }
                 else
                 {
-                    current = current.Left;
+                    current = current.left;
                 }
             }
             
             return null;
         }
 
-        private static RedBlackNode? GetGrandParent(RedBlackNode? node) => node?.Parent?.Parent;
-
-        private static RedBlackNode? GetSibling(RedBlackNode? node)
+       
+        private void Insert(T item) 
         {
-            var parent = node?.Parent;
-
-            if (parent == null)
+            var node = new RedBlackNode
             {
-                return null;
+                parent = null,
+                Value = item,
+                left = TNULL,
+                right = TNULL,
+                color = 1
+            };
+
+            RedBlackNode? y = null;
+            RedBlackNode x = root;
+
+            while (x != TNULL) 
+            {
+                y = x;
+                if (Comparer.Compare(node.Value, x.Value) < 0) 
+                {
+                    x = x.left!;
+                } 
+                else 
+                {
+                    x = x.right!;
+                }
             }
 
-            if (node == parent.Left)
+            node.parent = y;
+            if (y == null) 
             {
-                return parent.Right;
+                root = node;
+            } else if (Comparer.Compare(node.Value, y.Value) < 0) 
+            {
+                y.left = node;
+            } else {
+                y.right = node;
+            }
+
+            if (node.parent == null) 
+            {
+                node.color = 0;
+                return;
+            }
+
+            if (node.parent.parent == null) 
+            {
+                return;
+            }
+
+            FixInsert(node);
+        }
+        
+        private void FixInsert(RedBlackNode k) {
+            RedBlackNode u;
+            while (k.parent!.color == 1) {
+                if (k.parent == k.parent.parent!.right) 
+                {
+                    u = k.parent.parent.left!;
+                    if (u.color == 1) 
+                    {
+                        u.color = 0;
+                        k.parent.color = 0;
+                        k.parent.parent.color = 1;
+                        k = k.parent.parent;
+                    } 
+                    else 
+                    {
+                        if (k == k.parent.left) 
+                        {
+                            k = k.parent;
+                            RightRotate(k);
+                        }
+                        k.parent!.color = 0;
+                        k.parent.parent!.color = 1;
+                        LeftRotate(k.parent.parent);
+                    }
+                } 
+                else 
+                {
+                    u = k.parent.parent.right!;
+
+                    if (u.color == 1) 
+                    {
+                        u.color = 0;
+                        k.parent.color = 0;
+                        k.parent.parent.color = 1;
+                        k = k.parent.parent;
+                    } 
+                    else 
+                    {
+                        if (k == k.parent.right) 
+                        {
+                            k = k.parent;
+                            LeftRotate(k);
+                        }
+                        k.parent!.color = 0;
+                        k.parent.parent!.color = 1;
+                        RightRotate(k.parent.parent);
+                    }
+                }
+                
+                if (k == root) 
+                {
+                    break;
+                }
+            }
+            root.color = 0;
+        }
+
+        private void LeftRotate(RedBlackNode x) 
+        {
+            var y = x.right!;
+            x.right = y.left;
+            if (y.left != TNULL) 
+            {
+                y.left.parent = x;
+            }
+            
+            y.parent = x.parent;
+            if (x.parent == null) 
+            {
+                root = y;
+            } 
+            else if (x == x.parent.left) 
+            {
+                x.parent.left = y;
+            } 
+            else {
+                x.parent.right = y;
+            }
+            y.left = x;
+            x.parent = y;
+        }
+
+        private void RightRotate(RedBlackNode x)
+        {
+            var y = x.left!;
+            x.left = y.right;
+            if (y.right != TNULL)
+            {
+                y.right.parent = x;
+            }
+
+            y.parent = x.parent;
+            if (x.parent == null)
+            {
+                this.root = y;
+            }
+            else if (x == x.parent.right)
+            {
+                x.parent.right = y;
             }
             else
             {
-                return parent.Left;
-            }
-        }
-        private static RedBlackNode? GetUncle(RedBlackNode? node) => GetSibling(node?.Parent);
-
-        private static void RotateLeft(RedBlackNode node)
-        {
-            var right = node.Right!;
-            var parent = node.Parent;
-
-            node.Right = right.Left;
-            right.Left = node;
-            node.Parent = right;
-
-            if (node.Right != null)
-            {
-                node.Right.Parent = node;
+                x.parent.left = y;
             }
 
-            if (parent != null)
-            {
-                if (node == parent.Left)
-                {
-                    parent.Left = right;
-                }
-                else
-                {
-                    parent.Right = right;
-                }
-            }
-            
-            right.Parent = parent;
+            y.right = x;
+            x.parent = y;
         }
         
-        private static void RotateRight(RedBlackNode node)
+        // Balance the tree after deletion of a node
+        private void FixDelete(RedBlackNode x) 
         {
-            var left = node.Left!;
-            var parent = node.Parent;
+            RedBlackNode s;
+            while (x != root && x.color == 0) {
+                if (x == x.parent.left) {
+                    s = x.parent.right;
+                    if (s.color == 1) {
+                        s.color = 0;
+                        x.parent.color = 1;
+                        LeftRotate(x.parent);
+                        s = x.parent.right;
+                    }
 
-            node.Left = left.Right;
-            left.Right = node;
-            node.Parent = left;
+                    if (s.left.color == 0 && s.right.color == 0) {
+                        s.color = 1;
+                        x = x.parent;
+                    } else {
+                        if (s.right.color == 0) {
+                            s.left.color = 0;
+                            s.color = 1;
+                            RightRotate(s);
+                            s = x.parent.right;
+                        }
 
-            if (node.Left != null)
-            {
-                node.Left.Parent = node;
-            }
+                        s.color = x.parent.color;
+                        x.parent.color = 0;
+                        s.right.color = 0;
+                        LeftRotate(x.parent);
+                        x = root;
+                    }
+                } else {
+                    s = x.parent.left;
+                    if (s.color == 1) {
+                        s.color = 0;
+                        x.parent.color = 1;
+                        RightRotate(x.parent);
+                        s = x.parent.left;
+                    }
 
-            
-            if (parent != null)
-            {
-                if (node == parent.Left)
-                {
-                    parent.Left = left;
+                    if (s.right.color == 0 && s.right.color == 0) {
+                        s.color = 1;
+                        x = x.parent;
+                    } else {
+                        if (s.left.color == 0) {
+                            s.right.color = 0;
+                            s.color = 1;
+                            LeftRotate(s);
+                            s = x.parent.left;
+                        }
+
+                        s.color = x.parent.color;
+                        x.parent.color = 0;
+                        s.left.color = 0;
+                        RightRotate(x.parent);
+                        x = root;
+                    }
                 }
-                else
-                {
-                    parent.Right = left;
-                }
             }
-            
-            left.Parent = parent;
+            x.color = 0;
         }
 
-        private static RedBlackNode Insert(RedBlackNode? root, T item, [NotNull] IComparer<T> comparer)
+        private void RbTransplant(RedBlackNode u, RedBlackNode v) 
         {
-            if (comparer == null)
-            {
-                throw new ArgumentNullException(nameof(comparer));
+            if (u.parent == null) {
+                root = v;
+            } else if (u == u.parent.left) {
+                u.parent.left = v;
+            } else {
+                u.parent.right = v;
             }
-
-            var node = new RedBlackNode
-            {
-                Value = item,
-            };
-
-            // Insert new Node into the current tree.
-            InsertRecursive(root, node, comparer);
-            
-            // Repair the tree in case any of the red-black properties have been violated.
-            FixInsert(node);
-
-            // Find the new root to return.
-            root = node;
-            while (root.Parent != null)
-            {
-                root = root.Parent;
-            }
-
-            root.Color = Color.Black;
-            return root;
-            
-            // Recursively descend the tree until a leaf is found.
-            static void InsertRecursive(RedBlackNode? root, RedBlackNode node, IComparer<T> comparer)
-            {
-                var current = root;
-
-                while (current != null)
-                {
-                    var cmp = comparer.Compare(node.Value, current.Value);
-                    if (cmp < 0)
-                    {
-                        if (current.Left == null)
-                        {
-                            current.Left = node;
-                            break;
-                        }
-
-                        current = current.Left;
-                    }
-                    else
-                    {
-                        if (current.Right == null)
-                        {
-                            current.Right = node;
-                            break;
-                        }
-
-                        current = current.Right;
-                    }
-                }
-                
-                node.Parent = root;
-                node.Left = null;
-                node.Right = null;
-                node.Color = Color.Red;
-            }
-
-            static void FixInsert(RedBlackNode? node)
-            {
-                while (node?.Parent != null && node.Color == Color.Red)
-                {
-                    var parent = node.Parent;
-                    var grandParent = GetGrandParent(node);
-
-                    if (grandParent == null)
-                    {
-                        break;
-                    }
-
-                    if (parent == grandParent.Left)
-                    {
-                        var uncle = grandParent.Right;
-                        if (uncle != null && uncle.Color == Color.Red)
-                        {
-                            grandParent.Color = Color.Red;
-                            parent.Color = Color.Black;
-                            uncle.Color = Color.Black;
-                            node = grandParent;
-                        }
-                        else
-                        {
-                            if (node == parent.Right)
-                            {
-                                RotateLeft(parent);
-                                node = parent;
-                                parent = parent.Parent;
-                            }
-                            
-                            RotateRight(grandParent);
-                            (parent!.Color, grandParent.Color) = (grandParent.Color, parent.Color);
-                            node = parent;
-                        }
-                    }
-                    else
-                    {
-                        var uncle = GetUncle(node);
-
-                        if (uncle != null && uncle.Color == Color.Red)
-                        {
-                            grandParent.Color = Color.Red;
-                            parent.Color = Color.Black;
-                            uncle.Color = Color.Black;
-                            node = grandParent;
-                        }
-                        else
-                        {
-                            if (node == parent.Left)
-                            {
-                                RotateRight(parent);
-                                node = parent;
-                                parent = parent.Parent;
-                            }
-
-                            RotateLeft(grandParent);
-                            (parent!.Color, grandParent.Color) = (grandParent.Color, parent.Color);
-                            node = parent;
-                        }
-                    }
-                }
-            }
+            v.parent = u.parent;
         }
 
-        private static RedBlackNode? Delete(RedBlackNode node)
+        private void DeleteNodeHelper(RedBlackNode node, T value) 
         {
-            var replace = Replace(node);
-            var isBlack = (replace == null || replace.Color == Color.Black) && node.Color == Color.Black;
-
-            var parent = node.Parent;
-
-            if (replace == null) 
-            {
-                if (parent != null) 
-                { 
-                    if (isBlack) 
-                    { 
-                        FixDoubleBlack(node); 
-                    } 
-                    else
-                    {
-                        var sibling = GetSibling(node);
-                        if (sibling != null)
-                        {
-                            sibling.Color = Color.Red;
-                        }
-                    }
-                    
-                    if (node == parent.Left)
-                    {
-                        parent.Left = null;
-                    } 
-                    else 
-                    { 
-                        parent.Right = null; 
-                    } 
+            var z = TNULL;
+            RedBlackNode x, y;
+            while (node != TNULL) {
+                if (Comparer.Compare(node.Value, value) == 0) {
+                    z = node;
                 }
-                
-                Free(node);
-                return GetRoot(parent); 
-            } 
-            
-            if (node.Left == null || node.Right == null) 
-            { 
-                if (node.Parent == null) 
-                { 
-                    node.Value = replace.Value; 
-                    Free(node); 
-                } 
-                else 
+
+                if (Comparer.Compare(node.Value, value) <= 0) 
                 {
-                    if (node.IsOnLeft) 
-                    { 
-                        parent!.Left = replace; 
-                    } 
-                    else 
-                    { 
-                        parent!.Right = replace; 
-                    } 
-                    
-                    Free(node);
-                    replace.Parent = parent; 
-                    if (isBlack) 
-                    { 
-                        FixDoubleBlack(replace); 
-                    } 
-                    else 
-                    { 
-                        replace.Color = Color.Black; 
-                    } 
+                    node = node.right;
+                } else {
+                    node = node.left;
                 }
-                return GetRoot(replace); 
-            } 
-            
-            (node.Value, replace.Value) = (replace.Value, node.Value);
-            return Delete(replace);
-
-            static void Free(RedBlackNode node)
-            {
-                node.Parent = null;
-                node.Left = null;
-                node.Right = null;
-                node.Value = default!;
-            }
-            
-            static RedBlackNode? Replace(RedBlackNode node)
-            {
-                if (node.Left != null && node.Right != null)
-                {
-                    return Min(node.Right);
-                }
-
-                if (node.Left == null && node.Right != null)
-                {
-                    return null;
-                }
-
-                return node.Left ?? node.Right;
             }
 
-            static RedBlackNode? Min(RedBlackNode node)
+            if (z == TNULL) 
             {
-                while (node.Left != null)
-                {
-                    node = node.Left;
-                }
-
-                return node;
+                return;
             }
 
-            static RedBlackNode? GetRoot(RedBlackNode? node)
-            {
-                if (node == null)
-                {
-                    return null;
-                }
-                
-                while (node.Parent != null)
-                {
-                    node = node.Parent;
+            y = z;
+            int yOriginalColor = y.color;
+            if (z.left == TNULL) {
+                x = z.right;
+                RbTransplant(z, z.right);
+            } else if (z.right == TNULL) {
+                x = z.left;
+                RbTransplant(z, z.left);
+            } else {
+                y = Minimum(z.right);
+                yOriginalColor = y.color;
+                x = y.right;
+                if (y.parent == z) {
+                    x.parent = y;
+                } else {
+                    RbTransplant(y, y.right);
+                    y.right = z.right;
+                    y.right.parent = y;
                 }
 
-                return node;
+                RbTransplant(z, y);
+                y.left = z.left;
+                y.left.parent = y;
+                y.color = z.color;
             }
-            
-            static void FixDoubleBlack(RedBlackNode node) 
-            {
-                if (node.Parent == null)
-                {
-                    // Reached root 
-                    return;
-                }
-
-                var sibling = GetSibling(node);
-                var parent = node.Parent;
-                
-                if (sibling == null) 
-                { 
-                    // No sibiling, double black pushed up 
-                    FixDoubleBlack(parent); 
-                }
-                else 
-                { 
-                    if (sibling.Color == Color.Red) 
-                    { 
-                        // Sibling red 
-                        parent.Color = Color.Red; 
-                        sibling.Color = Color.Black;
-                        if (sibling.IsOnLeft) 
-                        { 
-                            // left case 
-                            RotateRight(parent); 
-                        } 
-                        else 
-                        { 
-                            // right case 
-                            RotateLeft(parent); 
-                        } 
-                        
-                        FixDoubleBlack(node); 
-                    } 
-                    else 
-                    { 
-                        // Sibling black 
-                        if (sibling.HasRedChild) 
-                        { 
-                            // at least 1 red children 
-                            if (sibling.Left != null && sibling.Left.Color == Color.Red) 
-                            { 
-                                if (sibling.IsOnLeft) 
-                                { 
-                                    // left left 
-                                    sibling.Left.Color = sibling.Color; 
-                                    sibling.Color = parent.Color; 
-                                    RotateRight(parent); 
-                                } 
-                                else 
-                                { 
-                                    // right left 
-                                    sibling.Left.Color = parent.Color; 
-                                    RotateRight(sibling); 
-                                    RotateLeft(parent); 
-                                } 
-                            } 
-                            else 
-                            { 
-                                if (sibling.IsOnLeft) 
-                                { 
-                                    // left right 
-                                    sibling.Right!.Color = parent.Color; 
-                                    RotateLeft(sibling); 
-                                    RotateRight(parent); 
-                                } 
-                                else 
-                                { 
-                                    // right right 
-                                    sibling.Right!.Color = sibling.Color; 
-                                    sibling.Color = parent.Color; 
-                                    RotateLeft(parent); 
-                                } 
-                            } 
-                            parent.Color = Color.Black; 
-                        } 
-                        else 
-                        { 
-                            // 2 black children 
-                            sibling.Color = Color.Red;
-                            if (parent.Color == Color.Black)
-                            {
-                                FixDoubleBlack(parent);
-                            }
-                            else
-                            {
-                                parent.Color = Color.Black;
-                            } 
-                        } 
-                    } 
-                } 
+            if (yOriginalColor == 0) {
+                FixDelete(x);
             }
         }
         
-        
+        private RedBlackNode Minimum(RedBlackNode node) 
+        {
+            while (node.left != TNULL) {
+                node = node.left;
+            }
+            return node;
+        }
+
         /// <summary>
         /// Creates a shallow copy of the <see cref="RedBlackTree{T}"/>.
         /// </summary>
@@ -698,22 +560,22 @@ namespace NCollection
 
                 if (_state == -1)
                 {
-                    _node = _tree._root;
+                    _node = _tree.root;
                     _state = 0;
                 }
                 else if (_state == 0)
                 {
-                    _node = _node?.Right;
+                    _node = _node?.right;
                 }
                
                 if(_state != -2)
                 {
-                    while (!_stack.IsEmpty || _node != null)
+                    while (!_stack.IsEmpty || _node != null || _node != _tree.TNULL)
                     {
                         if (_node != null)
                         {
                             _stack.Push(_node);
-                            _node = _node.Left;
+                            _node = _node.left;
                         }
                         else
                         {
@@ -723,7 +585,7 @@ namespace NCollection
                     }
                 }
 
-                if (_state == -2 || _node == null)
+                if (_state == -2 || _node == null || _node == _tree.TNULL)
                 {
                     _state = -2;
                     _node = null;
@@ -782,30 +644,30 @@ namespace NCollection
                 
                 if (_state == -1)
                 {
-                    _node = _tree._root;
+                    _node = _tree.root;
                     _state = 0;
                 }
                 else if (_state == 0)
                 {
-                    if (_node!.Left != null)
+                    if (_node!.left != null)
                     {
                         _stack.Push(_node);
-                        _node = _node.Left;
+                        _node = _node.left;
                     }
-                    else if (_node.Right != null)
+                    else if (_node.right != null)
                     {
                         _stack.Push(_node);
-                        _node = _node.Right;
+                        _node = _node.right;
                     }
                     else
                     {
                         var current = _stack.Pop();
-                        while (current.Right == null && !_stack.IsEmpty)
+                        while (current.right == null && !_stack.IsEmpty)
                         {
                             current = _stack.Pop();
                         }
                         
-                        _node = current.Right;
+                        _node = current.right;
                     }
                 }
 
@@ -878,7 +740,7 @@ namespace NCollection
                 
                 if (_state == -1)
                 {
-                    _node = _tree._root;
+                    _node = _tree.root;
                     _state = 0;
                 }
                 
@@ -896,22 +758,22 @@ namespace NCollection
                     {
                         if (node != null)
                         {
-                            if (node.Right == last)
+                            if (node.right == last)
                             {
                                 _node = node;
                                 break;
                             }
 
                             _stack.Push(node);
-                            if (node.Left == last)
+                            if (node.left == last)
                             {
                                 last = node;
-                                node = node.Right;
+                                node = node.right;
                             }
                             else
                             {
                                 last = node;
-                                node = node.Left;
+                                node = node.left;
                             }
                         }
                         else

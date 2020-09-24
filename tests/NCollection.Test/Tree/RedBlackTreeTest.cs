@@ -28,31 +28,31 @@ namespace NCollection.Test.Tree
         {
             return new RedBlackTree<T>(enumerable);
         }
-
-        [Theory]
-        [InlineData(3)]
-        public void IsBalance(int length)
-        {
-            var array = CreateAValidArray(length);
-            var tree = new RedBlackTree<T>(array);
-
-            var left = Height(tree._root!.Left);
-            var right = Height(tree._root.Right);
-
-            left.Should().Be(right);
-
-            static int Height(RedBlackTree<T>.RedBlackNode node)
-            {
-                if (node == null)
-                {
-                    return 0;
-                }
-
-                var left = Height(node.Left);
-                var right = Height(node.Right);
-                return Math.Max(left, right) + 1;
-            }
-        }
+        //
+        // [Theory]
+        // [InlineData(3)]
+        // public void IsBalance(int length)
+        // {
+        //     var array = CreateAValidArray(length);
+        //     var tree = new RedBlackTree<T>(array);
+        //
+        //     var left = Height(tree._root!.Left);
+        //     var right = Height(tree._root.Right);
+        //
+        //     left.Should().Be(right);
+        //
+        //     static int Height(RedBlackTree<T>.RedBlackNode node)
+        //     {
+        //         if (node == null)
+        //         {
+        //             return 0;
+        //         }
+        //
+        //         var left = Height(node.Left);
+        //         var right = Height(node.Right);
+        //         return Math.Max(left, right) + 1;
+        //     }
+        // }
         
         [Fact]
         public void Constructor_Throw_When_Comparer_IsNull()
