@@ -28,31 +28,6 @@ namespace NCollection.Test.Tree
         {
             return new RedBlackTree<T>(enumerable);
         }
-        //
-        // [Theory]
-        // [InlineData(3)]
-        // public void IsBalance(int length)
-        // {
-        //     var array = CreateAValidArray(length);
-        //     var tree = new RedBlackTree<T>(array);
-        //
-        //     var left = Height(tree._root!.Left);
-        //     var right = Height(tree._root.Right);
-        //
-        //     left.Should().Be(right);
-        //
-        //     static int Height(RedBlackTree<T>.RedBlackNode node)
-        //     {
-        //         if (node == null)
-        //         {
-        //             return 0;
-        //         }
-        //
-        //         var left = Height(node.Left);
-        //         var right = Height(node.Right);
-        //         return Math.Max(left, right) + 1;
-        //     }
-        // }
         
         [Fact]
         public void Constructor_Throw_When_Comparer_IsNull()
@@ -62,13 +37,13 @@ namespace NCollection.Test.Tree
             Assert.Throws<ArgumentNullException>(() => new RedBlackTree<T>(cmp, new T[0]));
         }
 
-        //[Fact]
+        [Fact]
         public abstract void Inorder();
         
-        //[Fact]
+        [Fact]
         public abstract void Postorder();
         
-        //[Fact]
+        [Fact]
         public abstract void Preorder();
     }
     
@@ -76,17 +51,53 @@ namespace NCollection.Test.Tree
     {
         public override void Inorder()
         {
-            throw new NotImplementedException();
+            var array = new[] {54, 74, 172, 109, 154, 52, 127, 123, 171, 8};
+            var tree = CreateTree(array);
+            var expected = new[] {8, 52, 54, 74, 109, 123, 127, 154, 171, 172};
+            var enumerable = tree.InorderTraversal();
+
+            var index = 0;
+            while (enumerable.MoveNext())
+            {
+                enumerable.Current.Should().Be(expected[index]);
+                index++;
+            }
+
+            index.Should().Be(expected.Length);
         }
 
         public override void Postorder()
         {
-            throw new NotImplementedException();
+            var array = new[] {54, 74, 172, 109, 154, 52, 127, 123, 171, 8};
+            var tree = CreateTree(array);
+            var expected = new[] {8, 54, 52, 109, 127, 123, 171, 172, 154, 74};
+            var enumerable = tree.PostorderTraversal();
+
+            var index = 0;
+            while (enumerable.MoveNext())
+            {
+                enumerable.Current.Should().Be(expected[index]);
+                index++;
+            }
+
+            index.Should().Be(expected.Length);
         }
 
         public override void Preorder()
         {
-            throw new NotImplementedException();
+            var array = new[] {54, 74, 172, 109, 154, 52, 127, 123, 171, 8};
+            var tree = CreateTree(array);
+            var expected = new[] {74, 52, 8, 54, 154, 123, 109, 127, 172, 171};
+            var enumerable = tree.PreorderTraversal();
+
+            var index = 0;
+            while (enumerable.MoveNext())
+            {
+                enumerable.Current.Should().Be(expected[index]);
+                index++;
+            }
+
+            index.Should().Be(expected.Length);
         }
     }
 
@@ -94,17 +105,84 @@ namespace NCollection.Test.Tree
     {
         public override void Inorder()
         {
-            throw new NotImplementedException();
+            var array = new[]
+            {
+                "muscle", "unit", "novel", "runner", "electronics", "gold", 
+                "recovery", "cable", "photograph", "conglomerate"
+            };
+            var tree = CreateTree(array);
+            var expected = new[]
+            {
+                "cable", "conglomerate", "electronics", "gold", "muscle", 
+                "novel", "photograph", "recovery", "runner", "unit"
+            };
+            var enumerable = tree.InorderTraversal();
+
+            var index = 0;
+            while (enumerable.MoveNext())
+            {
+                enumerable.Current.Should().Be(expected[index]);
+                index++;
+            }
+
+            index.Should().Be(expected.Length);
         }
 
         public override void Postorder()
         {
-            throw new NotImplementedException();
+            var array = new[]
+            {
+                "muscle", "unit", "novel", "runner", "electronics", "gold", 
+                "recovery", "cable", "photograph", "conglomerate"
+            };
+            
+            var tree = CreateTree(array);
+            var expected = new[]
+            {
+                "cable", "electronics", "conglomerate", "muscle", "gold", 
+                "photograph", "recovery", "unit", "runner", "novel"
+            };
+            
+            
+            var enumerable = tree.PostorderTraversal();
+            
+            var index = 0;
+            while (enumerable.MoveNext())
+            {
+                enumerable.Current.Should().Be(expected[index]);
+                
+                index++;
+            }
+            
+            index.Should().Be(expected.Length);
         }
 
         public override void Preorder()
         {
-            throw new NotImplementedException();
+            var array = new[]
+            {
+                "muscle", "unit", "novel", "runner", "electronics", "gold", 
+                "recovery", "cable", "photograph", "conglomerate"
+            };
+            
+            var tree = CreateTree(array);
+            
+            var expected = new[]
+            {
+                "novel", "gold", "conglomerate", "cable", "electronics",
+                "muscle", "runner", "recovery", "photograph", "unit"
+            };
+            
+            var enumerable = tree.PreorderTraversal();
+            
+            var index = 0;
+            while (enumerable.MoveNext())
+            {
+                enumerable.Current.Should().Be(expected[index]);
+                index++;
+            }
+            
+            index.Should().Be(expected.Length);
         }
     }
 }

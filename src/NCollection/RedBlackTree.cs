@@ -755,7 +755,7 @@ namespace NCollection
                 _version = _tree._version;
                 _node = null;
                 _state = -1;
-                _stack =new LinkedStack<RedBlackNode>();
+                _stack = new LinkedStack<RedBlackNode>();
             }
 
             public bool MoveNext()
@@ -772,26 +772,17 @@ namespace NCollection
                 }
                 else if (_state == 0)
                 {
+                    if (_node!.Right != null)
+                    {
+                        _stack.Push(_node.Right);
+                    }
+                    
                     if (_node!.Left != null)
                     {
-                        _stack.Push(_node);
-                        _node = _node.Left;
+                        _stack.Push(_node.Left);
                     }
-                    else if (_node.Right != null)
-                    {
-                        _stack.Push(_node);
-                        _node = _node.Right;
-                    }
-                    else
-                    {
-                        var current = _stack.Pop();
-                        while (current.Right == null && !_stack.IsEmpty)
-                        {
-                            current = _stack.Pop();
-                        }
-                        
-                        _node = current.Right;
-                    }
+
+                    _stack.TryPop(out _node);
                 }
 
                 if (_state == -2 || _node == null)
@@ -810,18 +801,7 @@ namespace NCollection
                 _stack.Clear();
             }
 
-            public T Current
-            {
-                get
-                {
-                    if (_node == null)
-                    {
-                        return default!;
-                    }
-
-                    return _node.Value;
-                }
-            }
+            public T Current => _node != null ? _node.Value : default!;
 
             object? IEnumerator.Current => Current;
 
@@ -842,7 +822,9 @@ namespace NCollection
             private readonly RedBlackTree<T> _tree;
             private readonly LinkedStack<RedBlackNode> _stack;
             private readonly int _version;
+            private RedBlackNode? _peekNode;
             private RedBlackNode? _node;
+            private RedBlackNode? _lastNodeVisited;
             private int _state;
 
             public PostorderTraversalEnumerator(RedBlackTree<T> tree)
@@ -851,7 +833,9 @@ namespace NCollection
                 _version = _tree._version;
                 _node = null;
                 _state = -1;
-                _stack =new LinkedStack<RedBlackNode>();
+                _stack = new LinkedStack<RedBlackNode>();
+                _lastNodeVisited = null;
+                _peekNode = null;
             }
 
             public bool MoveNext()
@@ -866,50 +850,40 @@ namespace NCollection
                     _node = _tree._root;
                     _state = 0;
                 }
-                
+
                 if (_state != -2)
                 {
-                    var node = _node;
-                    var last = node;
-                    
-                    if (_state == 0)
+                    var isEmpty = true;
+                    while (!_stack.IsEmpty || _node != null)
                     {
-                        node = _stack.Pop();
-                    }
-                    
-                    while (!_stack.IsEmpty || node != null)
-                    {
-                        if (node != null)
+                        isEmpty = false;
+                        if (_node != null)
                         {
-                            if (node.Right == last)
-                            {
-                                _node = node;
-                                break;
-                            }
-
-                            _stack.Push(node);
-                            if (node.Left == last)
-                            {
-                                last = node;
-                                node = node.Right;
-                            }
-                            else
-                            {
-                                last = node;
-                                node = node.Left;
-                            }
+                            _stack.Push(_node);
+                            _node = _node.Left;
                         }
                         else
                         {
-                            last = node;
-                            node = _stack.Pop();
+                            _peekNode = _stack.Peek();
+                            if (_peekNode.Right != null && _lastNodeVisited != _peekNode.Right)
+                            {
+                                _node = _peekNode.Right;
+                            }
+                            else
+                            {
+                                _lastNodeVisited = _stack.Pop();
+                                break;
+                            }
                         }
                     }
+
+                    if (isEmpty)
+                    {
+                        _state = -2;
+                    }
                 }
-
-
-
-                if (_state == -2 || _node == null)
+                
+                if (_state == -2 || _peekNode == null)
                 {
                     _state = -2;
                     return false;
@@ -922,21 +896,12 @@ namespace NCollection
             {
                 _state = -1;
                 _node = null;
+                _lastNodeVisited = null;
+                _peekNode = null;
                 _stack.Clear();
             }
 
-            public T Current
-            {
-                get
-                {
-                    if (_node == null)
-                    {
-                        return default!;
-                    }
-
-                    return _node.Value;
-                }
-            }
+            public T Current => _peekNode == null ? default! : _peekNode.Value;
 
             object? IEnumerator.Current => Current;
 
