@@ -7,9 +7,9 @@ using JetBrains.Annotations;
 namespace NCollection
 {
     /// <summary>
-    /// 
+    /// Represent a strong typed Red-Black tree implementation. https://en.wikipedia.org/wiki/Red%E2%80%93black_tree
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the elements in the collection.</typeparam>
     [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
     [DebuggerDisplay("Count = {Count}")]
     public class RedBlackTree<T> : AbstractTree<T>, ICloneable
@@ -484,7 +484,7 @@ namespace NCollection
             
             if (originalColor == Color.Black) 
             {
-                FixDelete(ref root, toFix);
+                FixDelete(ref root!, toFix!);
             }
 
             return true;
