@@ -300,7 +300,7 @@ namespace NCollection
 
             return node.Color == Color.Red;
         }
-        
+
         private static void Insert(ref RedBlackNode? root, in T item, [NotNull] in IComparer<T> comparer) 
         {
             if (comparer == null)
@@ -354,13 +354,13 @@ namespace NCollection
             {
                 while (IsRed(current.Parent)) 
                 {
-                    RedBlackNode uncle;
+                    RedBlackNode? uncle;
                     if (current.Parent == current.Parent?.Parent?.Right) 
                     {
-                        uncle = current.Parent?.Parent?.Left!;
+                        uncle = current.Parent?.Parent?.Left;
                         if (IsRed(uncle)) 
                         {
-                            uncle.Color = Color.Black;
+                            uncle!.Color = Color.Black;
                             current.Parent!.Color = Color.Black;
                             current.Parent!.Parent!.Color = Color.Red;
                             current = current.Parent.Parent;
@@ -379,11 +379,11 @@ namespace NCollection
                     } 
                     else 
                     {
-                        uncle = current.Parent?.Parent?.Right!;
+                        uncle = current.Parent?.Parent?.Right;
 
                         if (IsRed(uncle)) 
                         {
-                            uncle.Color = Color.Black;
+                            uncle!.Color = Color.Black;
                             current.Parent!.Color = Color.Black;
                             current.Parent!.Parent!.Color = Color.Red;
                             current = current.Parent.Parent;
@@ -407,7 +407,7 @@ namespace NCollection
                         break;
                     }
                 }
-        
+                
                 root.Color = Color.Black;
             }
         }
@@ -432,60 +432,68 @@ namespace NCollection
                 node = comparer.Compare(node.Value, value) <= 0 ? node.Right : node.Left;
             }
 
-            if (current == TNULL) 
+            if (current == TNULL || current == null) 
             {
                 return false;
             }
 
-            var yOriginalColor = current.Color;
+            var originalColor = current.Color;
             
             RedBlackNode? toFix;
             if (current.Left == TNULL || current.Left == null) 
             {
-                toFix = current.Right!;
-                RbTransplant(ref root, current, current.Right!);
+                toFix = current.Right;
+                RbTransplant(ref root, current, current.Right);
             } 
-            else if (current.Right == TNULL || current.Left == null) 
+            else if (current.Right == TNULL || current.Right == null) 
             {
-                toFix = current.Left!;
-                RbTransplant(ref root, current, current.Left!);
+                toFix = current.Left;
+                RbTransplant(ref root, current, current.Left);
             } 
             else 
             {
                 var minimum = Minimum(current.Right);
-                yOriginalColor = minimum.Color;
-                toFix = minimum.Right!;
+                originalColor = minimum.Color;
+                toFix = minimum.Right;
+                
                 if (minimum.Parent == current) 
                 {
-                    toFix.Parent = minimum;
+                    if (toFix != null)
+                    {
+                        toFix.Parent = minimum;
+                    }
                 } 
                 else 
                 {
                     RbTransplant(ref root, minimum, minimum.Right);
                     minimum.Right = current.Right;
-                    minimum.Right!.Parent = minimum;
+
+                    if (minimum.Right != null)
+                    {
+                        minimum.Right.Parent = minimum;
+                    }
                 }
 
                 RbTransplant(ref root, current, minimum);
                 minimum.Left = current.Left;
-                minimum.Left.Parent = minimum;
+                
+                if (minimum.Left != null)
+                {
+                    minimum.Left.Parent = minimum;
+                }
+                
                 minimum.Color = current.Color;
             }
             
-            if (yOriginalColor == Color.Black) 
+            if (originalColor == Color.Black) 
             {
                 FixDelete(ref root, toFix);
             }
 
             return true;
             
-            static RedBlackNode Minimum(RedBlackNode? node) 
+            static RedBlackNode Minimum(RedBlackNode node) 
             {
-                if (node == null)
-                {
-                    return default!;
-                }
-                
                 while (node.Left != TNULL && node.Left != null) 
                 {
                     node = node.Left;
@@ -519,69 +527,113 @@ namespace NCollection
             {
                 while (node != root && node.Color == Color.Black)
                 {
-                    RedBlackNode sibling;
                     if (node == node.Parent?.Left) 
                     {
-                        sibling = node.Parent!.Right!;
+                        var sibling = node.Parent!.Right;
                         if (IsRed(sibling)) 
                         {
-                            sibling.Color = Color.Black;
+                            sibling!.Color = Color.Black;
                             node.Parent.Color = Color.Red;
                             LeftRotate(ref root, node.Parent);
                             sibling = node.Parent!.Right!;
                         }
 
-                        if (!IsRed(sibling.Left) && !IsRed(sibling.Right))
+                        if (!IsRed(sibling?.Left) && !IsRed(sibling?.Right))
                         {
-                            sibling.Color = Color.Red;
+                            if (sibling != null)
+                            {
+                                sibling.Color = Color.Red;
+                            }
+                            
                             node = node.Parent;
                         } 
                         else 
                         {
-                            if (!IsRed(sibling.Right)) 
+                            if (!IsRed(sibling?.Right)) 
                             {
-                                sibling.Left!.Color = Color.Black;
-                                sibling.Color = Color.Red;
-                                RightRotate(ref root, sibling);
-                                sibling = node.Parent.Right!;
+                                if (sibling != null)
+                                {
+                                    sibling.Color = Color.Red;
+                                    
+                                    if (sibling.Left != null)
+                                    {
+                                        sibling.Left.Color = Color.Black;
+                                    }
+
+                                    RightRotate(ref root, sibling);
+                                }
+                                
+                                sibling = node.Parent.Right;
                             }
 
-                            sibling.Color = node.Parent.Color;
+
+                            if (sibling != null)
+                            {
+                                sibling.Color = node.Parent.Color;
+                                if (sibling.Right != null)
+                                {
+                                    sibling.Right.Color = Color.Black;
+                                }
+                            }
+
                             node.Parent.Color = Color.Black;
-                            sibling.Right!.Color = Color.Black;
                             LeftRotate(ref root, node.Parent);
                             node = root;
                         }
                     } 
                     else 
                     {
-                        sibling = node.Parent!.Left!;
+                        var sibling = node.Parent!.Left;
                         if (IsRed(sibling)) 
                         {
-                            sibling.Color = Color.Black;
+                            if (sibling != null)
+                            {
+                                sibling.Color = Color.Black;
+                            }
+                            
                             node.Parent.Color = Color.Red;
                             RightRotate(ref root, node.Parent);
-                            sibling = node.Parent.Left!;
+                            sibling = node.Parent.Left;
                         }
 
-                        if (!IsRed(sibling.Right) && !IsRed(sibling.Right)) 
+                        if (!IsRed(sibling?.Right) && !IsRed(sibling?.Right)) 
                         {
-                            sibling.Color = Color.Red;
+                            if (sibling != null)
+                            {
+                                sibling.Color = Color.Red;
+                            }
+                            
                             node = node.Parent;
                         } 
                         else 
                         {
-                            if (!IsRed(sibling.Left)) 
+                            if (!IsRed(sibling?.Left)) 
                             {
-                                sibling.Right!.Color = Color.Black;
-                                sibling.Color = Color.Red;
-                                LeftRotate(ref root, sibling);
-                                sibling = node.Parent.Left!;
+                                if (sibling != null)
+                                {
+                                    sibling.Color = Color.Red;
+                                    if (sibling.Right != null)
+                                    {
+                                        sibling.Right.Color = Color.Black;
+                                    }
+                                    
+                                    LeftRotate(ref root, sibling);
+                                }
+                                
+                                sibling = node.Parent.Left;
                             }
 
-                            sibling.Color = node.Parent.Color;
+                            if (sibling != null)
+                            {
+                                sibling.Color = node.Parent.Color;
+                                
+                                if (sibling.Left != null)
+                                {
+                                    sibling.Left.Color = Color.Black;
+                                }
+                            }
+
                             node.Parent.Color = Color.Black;
-                            sibling.Left!.Color = Color.Black;
                             RightRotate(ref root, node.Parent);
                             node = root;
                         }
@@ -589,7 +641,7 @@ namespace NCollection
                 }
             
                 node.Color = Color.Black;
-        }
+            }
         }
 
         /// <summary>
