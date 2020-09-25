@@ -23,6 +23,7 @@ ProjectSection(SolutionItems) = preProject
 	GitVersion.yml = GitVersion.yml
 	.travis.yml = .travis.yml
 	README.md = README.md
+	.editorconfig = .editorconfig
 EndProjectSection
 EndProject
 Global

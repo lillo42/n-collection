@@ -147,7 +147,7 @@ namespace NCollection
         {
             get
             {
-                var length = 0;
+                int length;
                 if (range.End.IsFromEnd)
                 {
                     length = Count - range.Start.Value;
