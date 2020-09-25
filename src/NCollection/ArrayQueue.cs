@@ -230,8 +230,8 @@ namespace NCollection
                 else
                 {
                     Array.Copy(_elements, index + 1, _elements, index, Count - (index + 1));
-                     _elements[Count - 1] = _elements[0];
-                     Array.Copy(_elements, 1, _elements, 0, tail - 1);
+                    _elements[Count - 1] = _elements[0];
+                    Array.Copy(_elements, 1, _elements, 0, tail - 1);
                 }
                 
                 if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())

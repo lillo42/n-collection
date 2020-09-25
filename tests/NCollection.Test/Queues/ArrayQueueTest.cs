@@ -2,7 +2,7 @@
 
 namespace NCollection.Test.Queues
 {
-    public class ArrayQueueTest_String : AbstractQueueTest<string>
+    public class ArrayQueueTestString : AbstractQueueTest<string>
     {
         protected override AbstractCollection<string> CreateCollection(int size)
         {
@@ -25,7 +25,7 @@ namespace NCollection.Test.Queues
         }
     }
     
-    public class ArrayQueueTest_Int : AbstractQueueTest<int>
+    public class ArrayQueueTestInt : AbstractQueueTest<int>
     {
         protected override AbstractCollection<int> CreateCollection(int size)
         {

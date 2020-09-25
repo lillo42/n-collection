@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace NCollection.Test.Stack
 {
-    public class ArrayStackTest_String : AbstractStackTest<string>
+    public class ArrayStackTestString : AbstractStackTest<string>
     {
         protected override AbstractStack<string> CreateStack(IEnumerable<string> enumerable)
         {
@@ -25,7 +25,7 @@ namespace NCollection.Test.Stack
         }
     }
     
-    public class ArrayStackTest_Int : AbstractStackTest<int>
+    public class ArrayStackTestInt : AbstractStackTest<int>
     {
         protected override AbstractStack<int> CreateStack(IEnumerable<int> enumerable)
         {

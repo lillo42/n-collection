@@ -258,9 +258,6 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="System.Collections.ICollection"/>
-        void ICollection.CopyTo(Array array, int index)
-        {
-           CopyTo((T[])array, index);
-        }
+        void ICollection.CopyTo(Array array, int index) => CopyTo((T[])array, index);
     }
 }

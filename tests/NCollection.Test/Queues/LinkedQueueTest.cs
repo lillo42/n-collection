@@ -2,7 +2,7 @@
 
 namespace NCollection.Test.Queues
 {
-    public class LinkedQueueTest_String : AbstractQueueTest<string>
+    public class LinkedQueueTestString : AbstractQueueTest<string>
     {
         protected override bool ContainsInitialCapacity => false;
 
@@ -27,7 +27,7 @@ namespace NCollection.Test.Queues
         }
     }
 
-    public class LinkedQueueTest_Int : AbstractQueueTest<int>
+    public class LinkedQueueTestInt : AbstractQueueTest<int>
     {
         protected override bool ContainsInitialCapacity => false;
         

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace NCollection.Test.List
 {
-    public class LinkedListTest_String : AbstractListTest<string>
+    public class LinkedListTestString : AbstractListTest<string>
     {
         protected override bool ContainsInitialCapacity => false;
         
@@ -28,7 +28,7 @@ namespace NCollection.Test.List
 
     }
     
-    public class LinkedListTest_Int : AbstractListTest<int>
+    public class LinkedListTestInt : AbstractListTest<int>
     {
         protected override bool ContainsInitialCapacity => false;
         

@@ -357,7 +357,6 @@ namespace NCollection.Test.Stack
         [Fact]
         public void AbstractStackTest_TryPop_Invalid()
         {
-            var queue = new Queue<T>();
             var stack = CreateStack();
             stack.TryPop(out var peek).Should().BeFalse();
             peek.Should().Be(default(T));
@@ -400,7 +399,6 @@ namespace NCollection.Test.Stack
 
         #region ToArray
         
-        [InlineData(100)]
         public override void AbstractionCollectionTest_ToArray(int size)
         {
             var array = CreateAValidArray(size);

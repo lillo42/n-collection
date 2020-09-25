@@ -7,6 +7,7 @@ namespace NCollection
     /// The internal
     /// </summary>
     /// <typeparam name="T"></typeparam>
+    // ReSharper disable once InconsistentNaming
     internal sealed class ICollectionDebugView<T>
     {
         private readonly ICollection<T> _collection;

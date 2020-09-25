@@ -89,7 +89,7 @@ namespace NCollection
                 {
                     _root = new RedBlackNode();
                     _version++;
-                    CloneRecursive(tree._root, _root, tree._version, tree);
+                    CloneRecursive(tree._root, _root);
                 }
             }
             else
@@ -126,7 +126,7 @@ namespace NCollection
                 {
                     _root = new RedBlackNode();
                     _version++;
-                    CloneRecursive(tree._root, _root, tree._version, tree);
+                    CloneRecursive(tree._root, _root);
                 }
             }
             else
@@ -139,25 +139,20 @@ namespace NCollection
             }
         }
         
-        private static void CloneRecursive(RedBlackNode original, RedBlackNode @new, in int version, in RedBlackTree<T> tree)
+        private static void CloneRecursive(RedBlackNode original, RedBlackNode @new)
         {
-            if (version != tree._version)
-            {
-                throw new InvalidOperationException("RedBlackTree was changed");
-            }
-                
             @new.Value = original.Value;
 
             if (original.Left != null)
             {
                 @new.Left = new RedBlackNode();
-                CloneRecursive(original.Left, @new.Left, version, tree);
+                CloneRecursive(original.Left, @new.Left);
             }
                 
             if (original.Right != null)
             {
                 @new.Right = new RedBlackNode();
-                CloneRecursive(original.Right, @new.Right, version, tree);
+                CloneRecursive(original.Right, @new.Right);
             }
         }
 

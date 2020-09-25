@@ -184,7 +184,7 @@ namespace NCollection
         }
         
         /// <inheritdoc cref="IList{T}"/>
-        public override bool AddAll(int index, [NotNull] IEnumerable<T> source)
+        public override bool AddAll(int index, IEnumerable<T> source)
         {
             if (source == null)
             {

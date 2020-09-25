@@ -2,12 +2,11 @@ using System.Collections.Generic;
 
 namespace NCollection.Test.Stack
 {
-    public class LinkedStackTest_String : AbstractStackTest<string>
+    public class LinkedStackTestString : AbstractStackTest<string>
     {
         protected override bool ContainsInitialCapacity => false;
         protected override AbstractStack<string> CreateStack()
         {
-            var a = new LinkedList<int>();
             return new LinkedStack<string>();
         }
 
@@ -27,7 +26,7 @@ namespace NCollection.Test.Stack
         }
     }
     
-    public class LinkedStackTest_Int : AbstractStackTest<int>
+    public class LinkedStackTestInt : AbstractStackTest<int>
     {
         protected override bool ContainsInitialCapacity => false;
 

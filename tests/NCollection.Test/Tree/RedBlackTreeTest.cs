@@ -11,12 +11,12 @@ namespace NCollection.Test.Tree
 
         protected override AbstractCollection<T> CreateCollection(int size)
         {
-            throw new System.NotImplementedException();
+            throw new InvalidOperationException();
         }
 
         protected override AbstractCollection<T> CreateCollection(int size, IEnumerable<T> source)
         {
-            throw new System.NotImplementedException();
+            throw new InvalidOperationException();
         }
 
         protected override AbstractTree<T> CreateTree()
@@ -47,7 +47,7 @@ namespace NCollection.Test.Tree
         public abstract void Preorder();
     }
     
-    public class RedBlackTreeTest_Int : RedBlackTreeTest<int>
+    public class RedBlackTreeTestInt : RedBlackTreeTest<int>
     {
         public override void Inorder()
         {
@@ -101,7 +101,7 @@ namespace NCollection.Test.Tree
         }
     }
 
-    public class RedBlackTreeTest_String : RedBlackTreeTest<string>
+    public class RedBlackTreeTestString : RedBlackTreeTest<string>
     {
         public override void Inorder()
         {

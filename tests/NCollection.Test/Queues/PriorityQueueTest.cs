@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace NCollection.Test.Queues
 {
-    public class PriorityQueueTest_String : AbstractQueueTest<string>
+    public class PriorityQueueTestString : AbstractQueueTest<string>
     {
         protected override string GetPeekValue(string[] array)
         {
@@ -33,7 +32,7 @@ namespace NCollection.Test.Queues
         }
     }
     
-    public class PriorityQueueTest_Int : AbstractQueueTest<int>
+    public class PriorityQueueTestInt : AbstractQueueTest<int>
     {
         protected override int GetPeekValue(int[] array)
         {
@@ -62,7 +61,7 @@ namespace NCollection.Test.Queues
         }
     }
     
-    public class PriorityQueueTest_Int_Reverse : AbstractQueueTest<int>
+    public class PriorityQueueTestIntReverse : AbstractQueueTest<int>
     {
         protected override int GetPeekValue(int[] array)
         {

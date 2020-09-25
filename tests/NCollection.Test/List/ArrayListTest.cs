@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace NCollection.Test.List
 {
-    public class ArrayListTest_String : AbstractListTest<string>
+    public class ArrayListTestString : AbstractListTest<string>
     {
         protected override AbstractCollection<string> CreateCollection(int size)
         {
@@ -25,7 +25,7 @@ namespace NCollection.Test.List
         }
     }
     
-    public class ArrayListTest_Int : AbstractListTest<int>
+    public class ArrayListTestInt : AbstractListTest<int>
     {
         protected override AbstractCollection<int> CreateCollection(int size)
         {
