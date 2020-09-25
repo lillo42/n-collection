@@ -45,11 +45,7 @@ namespace NCollection
 
         private int _version = int.MinValue;
         
-        private RedBlackNode _root;
-        private static readonly RedBlackNode TNULL = new RedBlackNode
-        {
-            Color = Color.Black
-        };
+        private RedBlackNode? _root;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RedBlackTree{T}"/>.
@@ -57,7 +53,6 @@ namespace NCollection
         public RedBlackTree()
         {
             Comparer = Comparer<T>.Default;
-            _root = TNULL;
         }
 
         /// <summary>
@@ -68,7 +63,6 @@ namespace NCollection
         public RedBlackTree(IComparer<T> comparer)
         {
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
-            _root = TNULL;
         }
 
         /// <summary>
@@ -84,15 +78,19 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(source));
             }
             
-            _root = TNULL;
             
             if (source is RedBlackTree<T> tree)
             {
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = tree.Count;
                 Comparer = tree.Comparer;
-                _version++;
-                CloneRecursive(tree._root, _root, tree._version, tree);
+
+                if (tree._root != null)
+                {
+                    _root = new RedBlackNode();
+                    _version++;
+                    CloneRecursive(tree._root, _root, tree._version, tree);
+                }
             }
             else
             {
@@ -118,15 +116,18 @@ namespace NCollection
             {
                 throw new ArgumentNullException(nameof(source));
             }
-            
-            _root = TNULL;
 
             if (source is RedBlackTree<T> tree)
             {
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = tree.Count;
-                _version++;
-                CloneRecursive(tree._root, _root, tree._version, tree);
+                
+                if (tree._root != null)
+                {
+                    _root = new RedBlackNode();
+                    _version++;
+                    CloneRecursive(tree._root, _root, tree._version, tree);
+                }
             }
             else
             {
@@ -190,14 +191,14 @@ namespace NCollection
         /// <inheritdoc />
         public override bool Contains(T item)
         {
-            return Find(item) != TNULL;
+            return Find(item) != null;
         }
 
         /// <inheritdoc />
         public override void Clear()
         {
             FreeRecursive(_root);
-            _root = TNULL;
+            _root = null;
             Count = 0;
             _version = int.MinValue;
             
@@ -218,10 +219,10 @@ namespace NCollection
             }
         }
 
-        private RedBlackNode Find(T item)
+        private RedBlackNode? Find(T item)
         {
             var current = _root;
-            while (current != TNULL && current != null)
+            while (current != null)
             {
                 var result = Comparer.Compare(item, current.Value);
                 if (result == 0)
@@ -232,7 +233,7 @@ namespace NCollection
                 current = result > 0 ? current.Right : current.Left;
             }
             
-            return TNULL;
+            return null;
         }
         
         private static void LeftRotate(ref RedBlackNode root, RedBlackNode node) 
@@ -240,7 +241,7 @@ namespace NCollection
             var right = node.Right!;
             node.Right = right.Left;
             
-            if (right.Left != TNULL && right.Left != null) 
+            if (right.Left != null) 
             {
                 right.Left.Parent = node;
             }
@@ -268,7 +269,7 @@ namespace NCollection
             var left = node.Left!;
             node.Left = left.Right;
             
-            if (left.Right != TNULL && left.Right != null)
+            if (left.Right != null)
             {
                 left.Right.Parent = node;
             }
@@ -308,16 +309,12 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(comparer));
             }
             
-            var node = new RedBlackNode(item)
-            {
-                Left = TNULL,
-                Right = TNULL
-            };
+            var node = new RedBlackNode(item);
 
             RedBlackNode? other = null;
             var current = root;
 
-            while (current != TNULL && current != null)
+            while (current != null)
             {
                 other = current;
                 current = comparer.Compare(node.Value, current.Value) < 0 ? current.Left : current.Right;
@@ -420,9 +417,9 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(comparer));
             }
             
-            var current = TNULL;
+            RedBlackNode? current = null;
 
-            while (node != TNULL && node != null)
+            while (node != null)
             {
                 if (comparer.Compare(node.Value, value) == 0) 
                 {
@@ -432,7 +429,7 @@ namespace NCollection
                 node = comparer.Compare(node.Value, value) <= 0 ? node.Right : node.Left;
             }
 
-            if (current == TNULL || current == null) 
+            if (current == null) 
             {
                 return false;
             }
@@ -440,12 +437,12 @@ namespace NCollection
             var originalColor = current.Color;
             
             RedBlackNode? toFix;
-            if (current.Left == TNULL || current.Left == null) 
+            if (current.Left == null) 
             {
                 toFix = current.Right;
                 RbTransplant(ref root, current, current.Right);
             } 
-            else if (current.Right == TNULL || current.Right == null) 
+            else if (current.Right == null) 
             {
                 toFix = current.Left;
                 RbTransplant(ref root, current, current.Left);
@@ -494,7 +491,7 @@ namespace NCollection
             
             static RedBlackNode Minimum(RedBlackNode node) 
             {
-                while (node.Left != TNULL && node.Left != null) 
+                while (node.Left != null) 
                 {
                     node = node.Left;
                 }
@@ -525,7 +522,7 @@ namespace NCollection
             
             static void FixDelete(ref RedBlackNode root, RedBlackNode node) 
             {
-                while (node != root && node.Color == Color.Black)
+                while (node != root && node != null && node.Color == Color.Black)
                 {
                     if (node == node.Parent?.Left) 
                     {
@@ -639,8 +636,11 @@ namespace NCollection
                         }
                     }
                 }
-            
-                node.Color = Color.Black;
+
+                if (node != null)
+                {
+                    node.Color = Color.Black;
+                }
             }
         }
 
@@ -693,7 +693,7 @@ namespace NCollection
                
                 if(_state != -2)
                 {
-                    while (!_stack.IsEmpty || _node != null || _node != TNULL)
+                    while (!_stack.IsEmpty || _node != null)
                     {
                         if (_node != null)
                         {
@@ -708,7 +708,7 @@ namespace NCollection
                     }
                 }
 
-                if (_state == -2 || _node == null || _node == TNULL)
+                if (_state == -2 || _node == null)
                 {
                     _state = -2;
                     _node = null;
