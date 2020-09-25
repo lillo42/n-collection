@@ -125,6 +125,7 @@ namespace NCollection
                 prev.Previous = null;
             }
 
+            _head = null;
             Count = 0;
         }
 
