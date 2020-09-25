@@ -364,23 +364,16 @@ namespace NCollection.Test
         {
             var array = CreateAValidArray(size);
             var collection = CreateCollection(array);
-            var other = CreateCollection();
             
             collection.Should().HaveCount(size);
             
             foreach (var item in array)
             {
                 collection.Remove(item).Should().BeTrue();
-                other.Add(item);
                 collection.Contains(item).Should().BeFalse();
             }
             
             collection.Should().BeEmpty();
-            
-            foreach (var item in array)
-            {
-                other.Remove(item).Should().BeTrue();
-            }
         }
         
         [Fact]
