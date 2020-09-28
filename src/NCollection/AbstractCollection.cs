@@ -200,17 +200,22 @@ namespace NCollection
             {
                 throw new ArgumentNullException(nameof(source));
             }
-            
-            var modified = false;
 
-            var array = source.ToArray();
-            foreach (var item in ToArray())
+            if (Count == 0)
             {
-                if (!array.Contains(item))
-                {
-                    Remove(item);
-                    modified = true;
-                }
+                return false;
+            }
+
+            if (Equals(source, this))
+            {
+                Clear();
+                return true;
+            }
+
+            var modified = false; 
+            foreach (var item in source)
+            {
+                modified &= Remove(item);
             }
 
             return modified;

@@ -14,6 +14,13 @@ namespace NCollection
     [DebuggerDisplay("Count = {Count}")]
     public class RedBlackTree<T> : AbstractTree<T>, ICloneable
     {
+        internal enum InsertBehavior
+        {
+            AllowDuplicate,
+            UpdateIfExist,
+            NotInsertIfExist
+        }
+        
         internal enum Color : byte
         {
             Black,
@@ -164,7 +171,7 @@ namespace NCollection
         /// <inheritdoc />
         public override bool TryAdd(T item)
         {
-            Insert(ref _root, item, Comparer);
+            Insert(ref _root, item, Comparer, InsertBehavior.AllowDuplicate);
             Count++;
             _version++;
             return true;
@@ -297,7 +304,7 @@ namespace NCollection
             return node.Color == Color.Red;
         }
 
-        private static void Insert(ref RedBlackNode? root, in T item, [NotNull] in IComparer<T> comparer) 
+        internal static bool Insert(ref RedBlackNode? root, in T item, [NotNull] in IComparer<T> comparer, in InsertBehavior behavior) 
         {
             if (comparer == null)
             {
@@ -312,7 +319,29 @@ namespace NCollection
             while (current != null)
             {
                 other = current;
-                current = comparer.Compare(node.Value, current.Value) < 0 ? current.Left : current.Right;
+
+                if (comparer.Compare(node.Value, current.Value) < 0)
+                {
+                    current = current.Left;
+                }
+                else
+                {
+                    switch (behavior)
+                    {
+                        case InsertBehavior.AllowDuplicate:
+                            current = current.Right;
+                            break;
+                        case InsertBehavior.UpdateIfExist:
+                            current.Value = item;
+                            return true;
+                            break;
+                        case InsertBehavior.NotInsertIfExist:
+                            return false;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(behavior), behavior, null);
+                    }
+                }
             }
 
             node.Parent = other;
@@ -332,15 +361,16 @@ namespace NCollection
             if (node.Parent == null) 
             {
                 node.Color = Color.Black;
-                return;
+                return true;
             }
 
             if (node.Parent.Parent == null) 
             {
-                return;
+                return true;
             }
 
             FixInsert(ref root!, node);
+            return true;
             
             static void FixInsert(ref RedBlackNode root, RedBlackNode current)
             {
@@ -405,7 +435,7 @@ namespace NCollection
         }
 
         // Balance the tree after deletion of a node
-        private static bool Delete(ref RedBlackNode? root, RedBlackNode? node, in T value, [NotNull] in IComparer<T> comparer) 
+        internal static bool Delete(ref RedBlackNode? root, RedBlackNode? node, in T value, [NotNull] in IComparer<T> comparer) 
         {
             if (comparer == null)
             {
