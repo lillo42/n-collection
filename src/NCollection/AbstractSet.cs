@@ -1,14 +1,14 @@
-﻿namespace NCollection
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Transactions;
-    using JetBrains.Annotations;
+﻿using System;
+using System.Collections.Generic;
+using JetBrains.Annotations;
 
+namespace NCollection
+{
     /// <summary>
-    /// 
+    /// This class provides a skeletal implementation of the <see cref="ISet{T}"/>
+    /// interface, to minimize the effort required to implement this interface. 
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the elements in the collection.</typeparam>
     public abstract class AbstractSet<T> : AbstractCollection<T>, ISet<T>
     {
         // store lower 31 bits of hash code
@@ -30,20 +30,21 @@
         /// <exception cref="ArgumentNullException">When <paramref name="comparer"/> is <see langword="null"/>.</exception>
         protected AbstractSet([NotNull] IComparer<T> comparer)
         {
+            // ReSharper disable once VirtualMemberCallInConstructor
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
         }
         
         /// <summary>
         /// The <see cref="IComparer{T}"/>
         /// </summary>
-        public virtual IComparer<T> Comparer { get; }
+        public virtual IComparer<T> Comparer { get; protected set; }
 
         /// <summary>
         /// Generate hash code of <paramref name="item"/>.
         /// </summary>
         /// <param name="item">The item to get hash code</param>
         /// <returns>The hash code of <paramref name="item"/>.</returns>
-        protected int Hash(T item)
+        protected virtual int Hash(T item)
         {
             if (item == null)
             {
@@ -85,14 +86,19 @@
                     return collection.Count > 0;
                 }
 
-                if (other is AbstractSet<T> hash && AreEqualityComparersEqual(this, hash))
+                if (other is AbstractSet<T> set && AreComparersEqual(this, set))
                 {
-                    return IsSubsetOfHashSetWithSameEc(hash);
+                    if (Count >= set.Count)
+                    {
+                        return false;
+                    }
+                    
+                    return IsSubsetOfHashSetWithSameEc(set);
                 }
             }
             
-            var result = CheckUniqueAndUnfoundElements(other, false);
-            return result._uniqueCount == Count && result._unfoundCount > 0;
+            var (uniqueCount, unfoundCount) = CheckUniqueAndUnfoundElements(other, false);
+            return uniqueCount == Count && unfoundCount > 0;
         }
 
         /// <inheritdoc />
@@ -103,12 +109,7 @@
                 throw new ArgumentNullException(nameof(other));
             }
 
-            if (Count == 0)
-            {
-                return;
-            }
-
-            if (Equals(other, this))
+            if (Count == 0 || Equals(other, this))
             {
                 return;
             }
@@ -118,6 +119,11 @@
                 if (collection.Count == 0)
                 {
                     Clear();
+                    return;
+                }
+
+                if (other is AbstractSet<T> set && AreComparersEqual(this, set))
+                {
                     return;
                 }
             }
@@ -144,12 +150,7 @@
                 throw new ArgumentNullException(nameof(other));
             }
 
-            if (Count == 0)
-            {
-                return false;
-            }
-
-            if (Equals(other, this))
+            if (Count == 0 || Equals(other, this)) 
             {
                 return false;
             }
@@ -162,7 +163,7 @@
                 }
 
 
-                if (other is AbstractSet<T> set && AreEqualityComparersEqual(this, set))
+                if (other is AbstractSet<T> set && AreComparersEqual(this, set))
                 {
                     if (set.Count >= Count)
                     {
@@ -173,8 +174,8 @@
                 }
             }
 
-            var result = CheckUniqueAndUnfoundElements(other, true);
-            return result._uniqueCount < Count && result._unfoundCount == 0;
+            var (uniqueCount, unfoundCount) = CheckUniqueAndUnfoundElements(other, true);
+            return uniqueCount < Count && unfoundCount == 0;
         }
 
         /// <inheritdoc />
@@ -185,12 +186,7 @@
                 throw new ArgumentNullException(nameof(other));
             }
 
-            if (Count == 0)
-            {
-                return true;
-            }
-
-            if (Equals(other, this))
+            if (Count == 0 || Equals(other, this))
             {
                 return true;
             }
@@ -202,14 +198,14 @@
                     return false;
                 }
 
-                if (other is AbstractSet<T> hash && AreEqualityComparersEqual(this, hash))
+                if (other is AbstractSet<T> hash && AreComparersEqual(this, hash))
                 {
                     return IsSubsetOfHashSetWithSameEc(hash);
                 }
             }
 
-            var result = CheckUniqueAndUnfoundElements(other, false);
-            return result._unfoundCount == Count && result._unfoundCount >= 0;
+            var (uniqueCount, unfoundCount) = CheckUniqueAndUnfoundElements(other, false);
+            return uniqueCount == Count && unfoundCount >= 0;
         }
 
         /// <inheritdoc />
@@ -237,12 +233,11 @@
 
                 // try to compare based on counts alone if other is a hashset with
                 // same equality comparer
-                if (other is AbstractSet<T> otherAsSet && AreEqualityComparersEqual(this, otherAsSet))
+                if (other is AbstractSet<T> otherAsSet 
+                    && AreComparersEqual(this, otherAsSet)
+                    && otherAsSet.Count > Count)
                 {
-                    if (otherAsSet.Count > Count)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
 
@@ -292,7 +287,7 @@
                 return true;
             }
 
-            if (other is AbstractSet<T> set && AreEqualityComparersEqual(this, set))
+            if (other is AbstractSet<T> set && AreComparersEqual(this, set))
             {
                 if (Count != set.Count)
                 {
@@ -310,14 +305,38 @@
                 }
             }
             
-            var result = CheckUniqueAndUnfoundElements(other, true);
-            return result._uniqueCount == Count && result._unfoundCount == 0;
+            var (uniqueCount, unfoundCount) = CheckUniqueAndUnfoundElements(other, true);
+            return uniqueCount == Count && unfoundCount == 0;
         }
 
         /// <inheritdoc />
         public virtual void SymmetricExceptWith(IEnumerable<T> other)
         {
-            
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            if (Count == 0)
+            {
+                UnionWith(other);
+                return;
+            }
+
+            if (Equals(other, this))
+            {
+                Clear();
+                return;
+            }
+
+            if (other is AbstractSet<T> set && AreComparersEqual(this, set))
+            {
+                SymmetricExceptWithUniqueHashSet(set);
+            }
+            else
+            {
+                SymmetricExceptWithEnumerable(other);
+            }
         }
         
         /// <inheritdoc />
@@ -341,7 +360,7 @@
         /// </summary>
         /// <param name="other">The <see cref="IEnumerable{T}"/></param>
         /// <returns>Return if contains all elements</returns>
-        protected bool ContainsAllElements([NotNull]IEnumerable<T> other)
+        protected virtual bool ContainsAllElements([NotNull]IEnumerable<T> other)
         {
             foreach (var element in other)
             {
@@ -362,11 +381,8 @@
         /// <param name="set1"></param>
         /// <param name="set2"></param>
         /// <returns></returns>
-        protected static bool AreEqualityComparersEqual(AbstractSet<T> set1, AbstractSet<T> set2)
-        {
-            return set1.Comparer.Equals(set2.Comparer);
-        }
-        
+        protected static bool AreComparersEqual(AbstractSet<T> set1, AbstractSet<T> set2) => set1.Comparer.Equals(set2.Comparer);
+
         /// <summary>
         /// Determines counts that can be used to determine equality, subset, and superset. This
         /// is only used when other is an IEnumerable and not a HashSet. If other is a HashSet
@@ -391,20 +407,20 @@
         /// <param name="returnIfUnfound">Allows us to finish faster for equals and proper superset
         /// because unfoundCount must be 0.</param>
         /// <returns></returns>
-        private ElementCount CheckUniqueAndUnfoundElements(IEnumerable<T> other, bool returnIfUnfound)
+        protected virtual (int UniqueCount, int UnfoundCount) CheckUniqueAndUnfoundElements(IEnumerable<T> other, bool returnIfUnfound)
         {
             // need special case in case this has no elements.
             if (Count == 0)
             {
                 var numElementsInOther = 0;
-                foreach (var item in other)
+                foreach (var _ in other)
                 {
                     numElementsInOther++;
                     // break right away, all we want to know is whether other has 0 or 1 elements
                     break;
                 }
                 
-                return new ElementCount(0, numElementsInOther);
+                return (0, numElementsInOther);
             }
             
             // count of items in other not found in this
@@ -435,7 +451,7 @@
                 }
             }
 
-            return new ElementCount(uniqueFoundCount, uniqueFoundCount);
+            return (uniqueFoundCount, unfoundCount);
         }
         
         /// <summary>
@@ -451,7 +467,7 @@
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        protected bool IsSubsetOfHashSetWithSameEc(AbstractSet<T> other)
+        protected virtual bool IsSubsetOfHashSetWithSameEc(AbstractSet<T> other)
         {
             foreach (var item in this)
             {
@@ -464,17 +480,55 @@
             return true;
         }
         
-        // used for set checking operations (using enumerables) that rely on counting
-        internal readonly struct ElementCount
+        /// <summary>
+        /// if other is a set, we can assume it doesn't have duplicate elements, so use this
+        /// technique: if can't remove, then it wasn't present in this set, so add.
+        ///
+        /// As with other methods, callers take care of ensuring that other is a hashset using the
+        /// same equality comparer.
+        /// </summary>
+        /// <param name="other"></param>
+        protected virtual void SymmetricExceptWithUniqueHashSet(AbstractSet<T> other)
         {
-            public ElementCount(int uniqueCount, int unfoundCount)
+            foreach (var item in other)
             {
-                _uniqueCount = uniqueCount;
-                _unfoundCount = unfoundCount;
+                if (!Remove(item))
+                {
+                    TryAdd(item);
+                }
             }
-            
-            internal readonly int _uniqueCount;
-            internal readonly int _unfoundCount;
+        }
+        
+        /// <summary>
+        /// Implementation notes:
+        ///
+        /// Used for symmetric except when other isn't a HashSet. This is more tedious because
+        /// other may contain duplicates. HashSet technique could fail in these situations:
+        /// 1. Other has a duplicate that's not in this: HashSet technique would add then
+        /// remove it.
+        /// 2. Other has a duplicate that's in this: HashSet technique would remove then add it
+        /// back.
+        /// In general, its presence would be toggled each time it appears in other.
+        ///
+        /// This technique uses bit marking to indicate whether to add/remove the item. If already
+        /// present in collection, it will get marked for deletion. If added from other, it will
+        /// get marked as something not to remove.
+        ///
+        /// </summary>
+        /// <param name="other"></param>
+        protected virtual void SymmetricExceptWithEnumerable(IEnumerable<T> other)
+        {
+            var tmp = new HashSet<T>(Count);
+            foreach (var item in other)
+            {
+                if(tmp.Add(item))
+                {
+                    if (!TryAdd(item))
+                    {
+                        Remove(item);
+                    }
+                }
+            }
         }
     }
 }

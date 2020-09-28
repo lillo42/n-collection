@@ -193,7 +193,7 @@ namespace NCollection
         /// <inheritdoc />
         public override bool Contains(T item)
         {
-            return Find(item) != null;
+            return Find(_root, item, Comparer) != null;
         }
 
         /// <inheritdoc />
@@ -221,12 +221,12 @@ namespace NCollection
             }
         }
 
-        private RedBlackNode? Find(T item)
+        internal static RedBlackNode? Find(RedBlackNode? root, T item, IComparer<T> comparer)
         {
-            var current = _root;
+            var current = root;
             while (current != null)
             {
-                var result = Comparer.Compare(item, current.Value);
+                var result = comparer.Compare(item, current.Value);
                 if (result == 0)
                 {
                     return current;
@@ -685,18 +685,14 @@ namespace NCollection
         private struct InorderTraversalEnumerator : IEnumerator<T>
         {
             private readonly RedBlackTree<T> _tree;
-            private readonly LinkedStack<RedBlackNode> _stack;
             private readonly int _version;
-            private RedBlackNode? _node;
-            private int _state;
+            private readonly RedBlackTreeInOrderTraversalEnumerator _enumerator;
 
             public InorderTraversalEnumerator(RedBlackTree<T> tree)
             {
                 _tree = tree;
                 _version = _tree._version;
-                _node = null;
-                _state = -1;
-                _stack =new LinkedStack<RedBlackNode>();
+                _enumerator = new RedBlackTreeInOrderTraversalEnumerator(_tree._root);
             }
 
             public bool MoveNext()
@@ -706,9 +702,44 @@ namespace NCollection
                     throw new InvalidOperationException("RedBlackTree was changed");
                 }
 
+                return _enumerator.MoveNext();
+            }
+
+            public void Reset()
+            {
+                _enumerator.Reset();
+            }
+
+            public T Current => _enumerator.Current;
+
+            object? IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+                _enumerator.Dispose();
+            }
+        }
+       
+        internal class RedBlackTreeInOrderTraversalEnumerator : IEnumerator<T>
+        {
+            private readonly RedBlackNode? _root;
+            private readonly LinkedStack<RedBlackNode> _stack;
+            private RedBlackNode? _node;
+            private int _state;
+
+            public RedBlackTreeInOrderTraversalEnumerator(RedBlackNode? root)
+            {
+                _root = root;
+                _node = null;
+                _state = -1;
+                _stack = new LinkedStack<RedBlackNode>();
+            }
+
+            public bool MoveNext()
+            {
                 if (_state == -1)
                 {
-                    _node = _tree._root;
+                    _node = _root;
                     _state = 0;
                 }
                 else if (_state == 0)
@@ -759,7 +790,7 @@ namespace NCollection
                 _stack.Clear();
             }
         }
-       
+        
         /// <inheritdoc />
         public override IEnumerator<T> PreorderTraversal()
         {
