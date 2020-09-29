@@ -8,6 +8,14 @@ namespace NCollection.Test
 {
     public abstract class AbstractionCollectionTest<T>
     {
+        public static IEnumerable<object[]> ValidCollectionSizes()
+        {
+            yield return new object[] { 0 };
+            yield return new object[] { 1 };
+            yield return new object[] { 75 };
+            yield return new object[] { 100 };
+        }
+        
         protected Fixture Fixture { get; } = new Fixture();
         protected virtual bool IsReadOnly => false;
         protected virtual bool ContainsInitialCapacity => false;
@@ -99,7 +107,7 @@ namespace NCollection.Test
         [InlineData(10)]
         [InlineData(75)]
         [InlineData(100)]
-        public void AbstractionCollectionTest_TryAdd_Validity(int size)
+        public virtual void AbstractionCollectionTest_TryAdd_Validity(int size)
         {
             var array = CreateAValidArray(size);
             var collection = CreateCollection();
@@ -118,7 +126,7 @@ namespace NCollection.Test
         [InlineData(10)]
         [InlineData(75)]
         [InlineData(100)]
-        public void AbstractionCollectionTest_TryAdd_AfterClear(int size)
+        public virtual void AbstractionCollectionTest_TryAdd_AfterClear(int size)
         {
             var array = CreateAValidArray(size);
             var collection = CreateCollection();
