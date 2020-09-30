@@ -24,7 +24,7 @@ namespace NCollection.Test.Set
             return result;
         }
         protected abstract AbstractSet<T> CreateSet();
-        protected abstract AbstractSet<T> CreateSet(IEnumerable<T> enumerable);
+        protected abstract AbstractSet<T> CreateSet(IEnumerable<T> source);
         protected override AbstractCollection<T> CreateCollection()
         {
             return CreateSet();
@@ -94,7 +94,7 @@ namespace NCollection.Test.Set
         
         [Theory]
         [MemberData(nameof(ValidCollectionSizes))]
-        public void ISet_Generic_ExceptWith_Itself(int size)
+        public void AbstractSet_ExceptWith_Itself(int size)
         {
             var set = CreateSet(CreateAValidArray(size));
             Validate_ExceptWith(set, set);

@@ -82,7 +82,10 @@ namespace NCollection
 
             if (source is System.Collections.Generic.ICollection<T> collection)
             {
-                _elements = new RedBlackTree<T>.RedBlackNode?[collection.Count];
+                if (collection.Count > 0)
+                {
+                    _elements = new RedBlackTree<T>.RedBlackNode?[collection.Count];
+                }
 
                 if (source is AbstractSet<T> set)
                 {
@@ -112,9 +115,13 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(source));
             }
             
+            _elements = new RedBlackTree<T>.RedBlackNode?[16];
             if (source is System.Collections.Generic.ICollection<T> collection)
             {
-                _elements = new RedBlackTree<T>.RedBlackNode?[collection.Count];
+                if (collection.Count > 0)
+                {
+                    _elements = new RedBlackTree<T>.RedBlackNode?[collection.Count];
+                }
             }
 
             foreach (var item in source)
@@ -123,53 +130,63 @@ namespace NCollection
                 TryAdd(item);
             }
         }
-        
-        
+
+        private int Index(int hash)
+        {
+            if (hash == 0)
+            {
+                return 0;
+            }
+            
+            return hash % _elements.Length;
+        }
+
         /// <inheritdoc />
         public override bool TryAdd(T item)
         {
-            var hash = Hash(item);
+            while (true)
+            {
+                var hash = Hash(item);
 
-            var index = hash % _elements.Length;
-            if (_elements[index] == null)
-            {
-                _elements[index] = new RedBlackTree<T>.RedBlackNode(item);
-            }
-            else if (Hash(_elements[index]!.Value) == hash)
-            {
-                if (!RedBlackTree<T>.Insert(ref _elements[index], item, Comparer,
-                    RedBlackTree<T>.InsertBehavior.NotInsertIfExist))
+                var index = Index(hash);
+                if (_elements[index] == null)
                 {
-                    return false;
+                    _elements[index] = new RedBlackTree<T>.RedBlackNode(item);
                 }
-            }
-            else
-            {
-                var tmp = new RedBlackTree<T>.RedBlackNode[_elements.Length * 2];
-
-                foreach (var value in _elements)
+                else if (Hash(_elements[index]!.Value) == hash)
                 {
-                    if (value != null)
+                    if (!RedBlackTree<T>.Insert(ref _elements[index], item, Comparer, RedBlackTree<T>.InsertBehavior.NotInsertIfExist))
                     {
-                        index = Hash(value!.Value);
-                        tmp[index % tmp.Length] = value;
+                        return false;
                     }
                 }
-                
-                _elements = tmp;
-                index = hash % _elements.Length;
-                _elements[index] = new RedBlackTree<T>.RedBlackNode(item);
-            }
+                else
+                {
+                    var tmp = new RedBlackTree<T>.RedBlackNode[_elements.Length * 2];
 
-            Count++;
-            return true;
+                    foreach (var value in _elements)
+                    {
+                        if (value != null)
+                        {
+                            index = Hash(value!.Value);
+                            tmp[index % tmp.Length] = value;
+                        }
+                    }
+
+                    _elements = tmp;
+                    continue;
+                }
+
+                Count++;
+                return true;
+            }
         }
 
         /// <inheritdoc />
         public override bool Remove(T item)
         {
             var hash = Hash(item);
-            var index = hash % _elements.Length;
+            var index = Index(hash);
             if (_elements[index] == null)
             {
                 return false;
@@ -192,7 +209,7 @@ namespace NCollection
                 return false;
             }
 
-            var index = Hash(item) % _elements.Length;
+            var index = Index(Hash(item));
 
             return RedBlackTree<T>.Find(_elements[index], item, Comparer) != null;
         }
@@ -233,7 +250,7 @@ namespace NCollection
             {
                 _hash = hash;
                 _version = version;
-                _index = -1;
+                _index = 0;
                 _current = null;
             }
 
@@ -251,10 +268,11 @@ namespace NCollection
 
                 while (_index < _hash._elements.Length)
                 {
-                    _index++;
-                    if (_hash._elements[_index] != null)
+                    var item = _hash._elements[_index++]; 
+                    if (item != null)
                     {
-                        _current = new RedBlackTree<T>.RedBlackTreeInOrderTraversalEnumerator(_hash._elements[_index]);
+                        _current = new RedBlackTree<T>.RedBlackTreeInOrderTraversalEnumerator(item);
+                        _current.MoveNext();
                         return true;
                     }
                 }
@@ -265,7 +283,7 @@ namespace NCollection
 
             public void Reset()
             {
-                _index = -1;
+                _index = 0;
                 _current = null;
             }
 
