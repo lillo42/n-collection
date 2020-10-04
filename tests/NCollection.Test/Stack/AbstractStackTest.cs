@@ -41,7 +41,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_Push_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateStack();
 
             foreach (var item in array)
@@ -60,7 +60,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_Push_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateStack();
 
             foreach (var item in array)
@@ -92,7 +92,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_TryPush_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateStack();
 
             foreach (var item in array)
@@ -111,7 +111,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_TryPush_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateStack();
 
             foreach (var item in array)
@@ -142,7 +142,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_Peek_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateStack();
 
             foreach (var item in array)
@@ -169,7 +169,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_Peek_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateStack();
 
             foreach (var item in array)
@@ -194,7 +194,7 @@ namespace NCollection.Test.Stack
         [Fact]
         public void AbstractStackTest_Peek_AfterClear_Throw()
         {
-            var array = CreateAValidArray(10);
+            var array = CreatArray(10);
             var stack = CreateStack(array);
             stack.Clear();
             Assert.Throws<InvalidOperationException>(() => stack.Peek());
@@ -211,7 +211,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_TryPeek_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateStack();
 
             foreach (var item in array)
@@ -239,7 +239,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_TryPeek_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateStack();
 
             foreach (var item in array)
@@ -265,7 +265,7 @@ namespace NCollection.Test.Stack
         [Fact]
         public void AbstractStackTest_TryPeek_AfterClear_Invalid()
         {
-            var array = CreateAValidArray(10);
+            var array = CreatArray(10);
             var stack = CreateStack(array);
             stack.Clear();
             stack.TryPeek(out var peek).Should().BeFalse();
@@ -283,7 +283,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_Pop_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateStack();
 
             foreach (var item in array)
@@ -310,7 +310,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_Pop_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateStack(array);
             
             stack.Should().HaveCount(size);
@@ -328,7 +328,7 @@ namespace NCollection.Test.Stack
         [Fact]
         public void AbstractStackTest_Pop_AfterClear_Throw()
         {
-            var array = CreateAValidArray(10);
+            var array = CreatArray(10);
             var stack = CreateStack(array);
             stack.Clear();
             Assert.Throws<InvalidOperationException>(() => stack.Pop());
@@ -345,7 +345,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_TryPop_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateStack(array);
 
             stack.Should().HaveCount(size);
@@ -369,7 +369,7 @@ namespace NCollection.Test.Stack
         [InlineData(100)]
         public void AbstractStackTest_TryPop_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateStack(array);
             
             
@@ -388,7 +388,7 @@ namespace NCollection.Test.Stack
         [Fact]
         public void AbstractStackTest_TryPop_AfterClear_Invalid()
         {
-            var array = CreateAValidArray(10);
+            var array = CreatArray(10);
             var stack = CreateStack(array);
             stack.Clear();
             stack.TryPop(out var peek).Should().BeFalse();
@@ -401,7 +401,7 @@ namespace NCollection.Test.Stack
         
         public override void AbstractionCollectionTest_ToArray(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateCollection(array);
 
             collection.ToArray().Should().BeEquivalentTo(array.Reverse());

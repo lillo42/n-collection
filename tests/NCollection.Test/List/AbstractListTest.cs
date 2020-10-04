@@ -36,7 +36,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public void AbstractListTest_IndexOf_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
 
             collection.Should().HaveCount(size);
@@ -50,7 +50,7 @@ namespace NCollection.Test.List
         [Fact]
         public void AbstractListTest_IndexOf_Invalid()
         {
-            var collection = CreateList(CreateAValidArray(10));
+            var collection = CreateList(CreatArray(10));
 
             collection.IndexOf(Create()).Should().Be(-1);
         }
@@ -66,7 +66,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public void AbstractListTest_LastIndexOf_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
             collection.AddAll(array);
             collection.Should().HaveCount(size * 2);
@@ -82,7 +82,7 @@ namespace NCollection.Test.List
         [Fact]
         public void AbstractListTest_LastIndexOf_Invalid()
         {
-            var collection = CreateList(CreateAValidArray(10));
+            var collection = CreateList(CreatArray(10));
 
             collection.LastIndexOf(Create()).Should().Be(-1);
         }
@@ -98,7 +98,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public virtual void AbstractListTest_Add_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
 
             var position = size / 2;
@@ -115,7 +115,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public virtual void AbstractListTest_Add_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
 
             collection.Should().HaveCount(size);
@@ -142,11 +142,11 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public virtual void AbstractListTest_AddAll_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
 
             var position = size / 2;
-            var items = CreateAValidArray(size);
+            var items = CreatArray(size);
             collection.AddAll(position, items);
 
             for (var i = 0; i < size; i++)
@@ -162,14 +162,14 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public virtual void AbstractListTest_AddAll_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
 
             collection.Clear();
             collection.AddAll(array);
             
             var position = size / 2;
-            var items = CreateAValidArray(size);
+            var items = CreatArray(size);
             collection.AddAll(position, items);
 
             for (var i = 0; i < size; i++)
@@ -189,7 +189,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public void AbstractListTest_RemoveAt_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
 
             var position = size / 2;
@@ -209,7 +209,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public void AbstractListTest_RemoveAt_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
             
             collection.Clear();
@@ -236,7 +236,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public void AbstractListTest_Index_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
             
             var position = size / 2;
@@ -257,7 +257,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public void AbstractListTest_Range_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
             var range = collection[..];
             
@@ -273,7 +273,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public void AbstractListTest_Range_Half_ToEnd(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
             var position = size / 2;
             var range = collection[position..];
@@ -291,7 +291,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public void AbstractListTest_Range_0_To_Half(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
             var position = size / 2;
             var range = collection[..position];
@@ -308,7 +308,7 @@ namespace NCollection.Test.List
         [InlineData(100)]
         public void AbstractListTest_Range_Exclude_Board(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateList(array);
             var range = collection[1..(size - 1)];
             

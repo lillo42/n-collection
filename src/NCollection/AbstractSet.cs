@@ -124,22 +124,56 @@ namespace NCollection
 
                 if (other is AbstractSet<T> set && AreComparersEqual(this, set))
                 {
+                    IntersectWithHashSetWithSameEC(set);
                     return;
                 }
             }
-            
-            var tmp = new ArrayList<T>(Count);
-            
+
+            IntersectWithEnumerable(other);
+        }
+        
+        /// <summary>
+        /// If other is a hashset that uses same equality comparer, intersect is much faster 
+        /// because we can use other's Contains
+        /// </summary>
+        /// <param name="other"></param>
+        protected virtual void IntersectWithHashSetWithSameEC(AbstractSet<T> other)
+        {
+            foreach (var item in this)
+            {
+                if (!other.Contains(item))
+                {
+                    Remove(item);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Iterate over other. If contained in this, mark an element in bit array corresponding to
+        /// its position in _slots. If anything is unmarked (in bit array), remove it.
+        /// 
+        /// This attempts to allocate on the stack, if below StackAllocThreshold.
+        /// </summary>
+        /// <param name="other"></param>
+        protected virtual void IntersectWithEnumerable(IEnumerable<T> other)
+        {
+            var exist = new HashSet<T>(Comparer);
+            // mark if contains: find index of in slots array and mark corresponding element in bit array
             foreach (var item in other)
             {
                 if (Contains(item))
                 {
-                    tmp.Add(item);
+                    exist.Add(item);
                 }
             }
 
-            Clear();
-            AddAll(tmp);
+            foreach (var item in this)
+            {
+                if (!exist.Contains(item))
+                {
+                    Remove(item);
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -436,7 +470,7 @@ namespace NCollection
             {
                 if(Contains(item))
                 {
-                    if (!hash.Add(item))
+                    if (hash.Add(item))
                     {
                         uniqueFoundCount++;
                     }   

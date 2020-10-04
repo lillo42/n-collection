@@ -33,7 +33,7 @@ namespace NCollection.Test.Queues
         #region Enqueue
         public void AbstractQueueTest_Enqueue_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateQueue();
 
             foreach (var item in array)
@@ -61,7 +61,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_Enqueue_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateQueue();
 
             foreach (var item in array)
@@ -84,7 +84,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_TryEnqueue_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateQueue();
 
             foreach (var item in array)
@@ -103,7 +103,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_TryEnqueue_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var collection = CreateQueue();
 
             foreach (var item in array)
@@ -134,7 +134,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_Peek_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var queue = CreateQueue(array);
 
             queue.Should().HaveCount(size);
@@ -156,7 +156,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_Peek_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var queue = CreateQueue(array);
             
             
@@ -177,7 +177,7 @@ namespace NCollection.Test.Queues
         [Fact]
         public void AbstractQueueTest_Peek_AfterClear_Throw()
         {
-            var array = CreateAValidArray(10);
+            var array = CreatArray(10);
             var queue = CreateQueue(array);
             queue.Clear();
             Assert.Throws<InvalidOperationException>(() => queue.Peek());
@@ -194,7 +194,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_TryPeek_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateQueue();
 
             foreach (var item in array)
@@ -227,7 +227,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_TryPeek_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var queue = CreateQueue(array);
             
             
@@ -249,7 +249,7 @@ namespace NCollection.Test.Queues
         [Fact]
         public void AbstractQueueTest_TryPeek_AfterClear_Invalid()
         {
-            var array = CreateAValidArray(10);
+            var array = CreatArray(10);
             var stack = CreateQueue(array);
             stack.Clear();
             stack.TryPeek(out var peek).Should().BeFalse();
@@ -267,7 +267,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_Dequeue_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateQueue(array);
 
             stack.Should().HaveCount(size);
@@ -290,7 +290,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_Dequeue_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateQueue(array);
             
             stack.Should().HaveCount(size);
@@ -308,7 +308,7 @@ namespace NCollection.Test.Queues
         [Fact]
         public void AbstractQueueTest_Dequeue_AfterClear_Throw()
         {
-            var array = CreateAValidArray(10);
+            var array = CreatArray(10);
             var stack = CreateQueue(array);
             stack.Clear();
             Assert.Throws<InvalidOperationException>(() => stack.Dequeue());
@@ -325,7 +325,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_TryDequeue_Validity(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateQueue(array);
 
             stack.Should().HaveCount(size);
@@ -349,7 +349,7 @@ namespace NCollection.Test.Queues
         [InlineData(100)]
         public void AbstractQueueTest_TryDequeue_AfterClear(int size)
         {
-            var array = CreateAValidArray(size);
+            var array = CreatArray(size);
             var stack = CreateQueue(array);
             
             
@@ -368,7 +368,7 @@ namespace NCollection.Test.Queues
         [Fact]
         public void AbstractQueueTest_TryDequeue_AfterClear_Invalid()
         {
-            var array = CreateAValidArray(10);
+            var array = CreatArray(10);
             var stack = CreateQueue(array);
             stack.Clear();
             stack.TryDequeue(out var peek).Should().BeFalse();

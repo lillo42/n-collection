@@ -334,10 +334,8 @@ namespace NCollection
                         case InsertBehavior.UpdateIfExist:
                             current.Value = item;
                             return true;
-                            break;
                         case InsertBehavior.NotInsertIfExist:
                             return false;
-                            break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(behavior), behavior, null);
                     }
