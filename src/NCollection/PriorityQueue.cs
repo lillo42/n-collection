@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -52,6 +51,11 @@ namespace NCollection
 
         private Node?[] _elements;
         private int _version = int.MinValue;
+        
+        /// <summary>
+        /// The <see cref="IArrayProvider{T}"/> instance.
+        /// </summary>
+        public IArrayProvider<Node?> ArrayProvider { get; }
 
         #region Constructor
 
@@ -59,9 +63,20 @@ namespace NCollection
         /// Initializes a new instance of the <see cref="PriorityQueue{T}"/>.
         /// </summary>
         public PriorityQueue()
+            : this(ArrayProvider<Node?>.Instance)
+        {
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PriorityQueue{T}"/>.
+        /// </summary>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="arrayProvider"/> is null.</exception>
+        public PriorityQueue(IArrayProvider<Node?> arrayProvider)
         {
             Comparer = Comparer<T>.Default;
-            _elements = ArrayPool<Node?>.Shared.Rent(16);
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            _elements = ArrayProvider.GetOrCreate(4);
         }
 
         /// <summary>
@@ -70,6 +85,19 @@ namespace NCollection
         /// <param name="initialCapacity">The initial number of elements that the <see cref="PriorityQueue{T}"/> can contain.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="initialCapacity"/>is less than zero.</exception>
         public PriorityQueue(int initialCapacity)
+            : this(initialCapacity, ArrayProvider<Node?>.Instance)
+        {
+            
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <paramref name="initialCapacity"/>.
+        /// </summary>
+        /// <param name="initialCapacity">The initial number of elements that the <see cref="PriorityQueue{T}"/> can contain.</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="arrayProvider"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="initialCapacity"/>is less than zero.</exception>
+        public PriorityQueue(int initialCapacity, IArrayProvider<Node?> arrayProvider)
         {
             if (initialCapacity < 0)
             {
@@ -77,8 +105,10 @@ namespace NCollection
             }
 
             Comparer = Comparer<T>.Default;
-            _elements = ArrayPool<Node?>.Shared.Rent(initialCapacity);
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            _elements = ArrayProvider.GetOrCreate(initialCapacity);
         }
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityQueue{T}"/>.
@@ -86,8 +116,21 @@ namespace NCollection
         /// <param name="comparer">The <see cref="IComparer{T}"/> that will be used to order this priority queue</param>
         /// <param name="initialCapacity">The initial number of elements that the <see cref="PriorityQueue{T}"/> can contain.</param>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="initialCapacity"/>is less than zero.</exception>
-        /// /// <exception cref="ArgumentNullException"><paramref name="comparer"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="comparer"/> is <see langword="null"/>.</exception>
         public PriorityQueue(int initialCapacity, IComparer<T> comparer)
+            : this(initialCapacity, comparer, ArrayProvider<Node?>.Instance)
+        {
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PriorityQueue{T}"/>.
+        /// </summary>
+        /// <param name="comparer">The <see cref="IComparer{T}"/> that will be used to order this priority queue</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <param name="initialCapacity">The initial number of elements that the <see cref="PriorityQueue{T}"/> can contain.</param>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="initialCapacity"/>is less than zero.</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="comparer"/> or <paramref name="arrayProvider" /> is <see langword="null"/>.</exception>
+        public PriorityQueue(int initialCapacity, IComparer<T> comparer, IArrayProvider<Node?> arrayProvider)
         {
             if (initialCapacity < 0)
             {
@@ -95,40 +138,54 @@ namespace NCollection
             }
 
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
-            _elements = ArrayPool<Node?>.Shared.Rent(initialCapacity);
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            _elements = ArrayProvider.GetOrCreate(initialCapacity);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PriorityQueue{T}"/>.
         /// </summary>
         /// <param name="source">The <see cref="IEnumerable{T}"/> to copy elements from.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="source"/> is null</exception>
+        /// <exception cref="ArgumentNullException">If the <paramref name="source"/> is null</exception>
         public PriorityQueue(IEnumerable<T> source)
+            : this(source, ArrayProvider<Node?>.Instance)
         {
-            switch (source)
+            
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PriorityQueue{T}"/>.
+        /// </summary>
+        /// <param name="source">The <see cref="IEnumerable{T}"/> to copy elements from.</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">If the <paramref name="source"/> or <paramref name="arrayProvider" /> is null</exception>
+        public PriorityQueue(IEnumerable<T> source, IArrayProvider<Node?> arrayProvider)
+        {
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+
+            if (source == null)
             {
-                case null:
-                    throw new ArgumentNullException(nameof(source));
-                case PriorityQueue<T> priorityQueue:
-                    Comparer = priorityQueue.Comparer;
-                    // ReSharper disable once VirtualMemberCallInConstructor
-                    Count = priorityQueue.Count;
+                throw new ArgumentNullException(nameof(source));
+            }
 
-                    _elements = ArrayPool<Node?>.Shared.Rent(priorityQueue._elements.Length);
-                    Array.Copy(priorityQueue._elements, _elements, priorityQueue.Count);
-                    break;
-                default:
+            if (source is PriorityQueue<T> priorityQueue)
+            {
+                Comparer = priorityQueue.Comparer;
+                // ReSharper disable once VirtualMemberCallInConstructor
+                Count = priorityQueue.Count;
+
+                _elements = ArrayProvider.GetOrCreate(priorityQueue._elements.Length);
+                Array.Copy(priorityQueue._elements, _elements, priorityQueue.Count);
+            }
+            else
+            {
+                Comparer = Comparer<T>.Default;
+                _elements = ArrayProvider.GetOrCreate(4);
+
+                foreach (var item in source)
                 {
-                    Comparer = Comparer<T>.Default;
-                    _elements = ArrayPool<Node?>.Shared.Rent(16);
-
-                    foreach (var item in source)
-                    {
-                        // ReSharper disable once VirtualMemberCallInConstructor
-                        Enqueue(item);
-                    }
-
-                    break;
+                    // ReSharper disable once VirtualMemberCallInConstructor
+                    Enqueue(item);
                 }
             }
         }
@@ -137,9 +194,22 @@ namespace NCollection
         /// Initializes a new instance of the <see cref="PriorityQueue{T}"/>.
         /// </summary>
         /// <param name="source">The <see cref="IEnumerable{T}"/> to copy elements from.</param>
-        /// <param name="comparer">The <see cref="IComparer{T}"/> that will be used to order this priority queue</param>
-        /// <exception cref="ArgumentNullException"><paramref name="source"/> or <paramref name="comparer"/> is <see langword="null"/></exception>
+        /// <param name="comparer">The <see cref="IComparer{T}"/> that will be used to order this priority queue.</param>
+        /// <exception cref="ArgumentNullException">If the <paramref name="source"/> or the <paramref name="comparer"/> is <see langword="null"/>.</exception>
         public PriorityQueue(IEnumerable<T> source, IComparer<T> comparer)
+            : this(source, comparer, ArrayProvider<Node?>.Instance)
+        {
+            
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PriorityQueue{T}"/>.
+        /// </summary>
+        /// <param name="source">The <see cref="IEnumerable{T}"/> to copy elements from.</param>
+        /// <param name="comparer">The <see cref="IComparer{T}"/> that will be used to order this priority queue.</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">If the <paramref name="source"/> or the <paramref name="comparer"/> or the <paramref name="arrayProvider"/> is <see langword="null"/>.</exception>
+        public PriorityQueue(IEnumerable<T> source, IComparer<T> comparer, IArrayProvider<Node?> arrayProvider)
         {
             if (source == null)
             {
@@ -147,18 +217,20 @@ namespace NCollection
             }
 
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
+            ArrayProvider = arrayProvider;
+            
             if (source is PriorityQueue<T> priorityQueue)
             {
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = priorityQueue.Count;
                 _version = priorityQueue._version;
 
-                _elements = ArrayPool<Node?>.Shared.Rent(priorityQueue._elements.Length);
+                _elements = ArrayProvider.GetOrCreate(priorityQueue._elements.Length);
                 Array.Copy(priorityQueue._elements, _elements, priorityQueue.Count);
             }
             else
             {
-                _elements = ArrayPool<Node?>.Shared.Rent(16);
+                _elements = ArrayProvider.GetOrCreate(4);
 
                 foreach (var item in source)
                 {
@@ -172,11 +244,23 @@ namespace NCollection
         /// Initializes a new instance of the <see cref="PriorityQueue{T}"/>.
         /// </summary>
         /// <param name="comparer">The <see cref="IComparer{T}"/> that will be used to order this priority queue</param>
-        /// <exception cref="ArgumentNullException"><paramref name="comparer"/> is <see langword="null"/></exception>
+        /// <exception cref="ArgumentNullException">if the <paramref name="comparer"/> is <see langword="null"/></exception>
         public PriorityQueue(IComparer<T> comparer)
+            : this(ArrayProvider<Node?>.Instance)
         {
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
-            _elements = ArrayPool<Node>.Shared.Rent(16);
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PriorityQueue{T}"/>.
+        /// </summary>
+        /// <param name="comparer">The <see cref="IComparer{T}"/> that will be used to order this priority queue</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="comparer"/> or the <paramref name="arrayProvider"/> is <see langword="null"/></exception>
+        public PriorityQueue(IComparer<T> comparer, IArrayProvider<Node?> arrayProvider)
+            : this(arrayProvider)
+        {
+            Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
         }
 
         #endregion
@@ -192,9 +276,9 @@ namespace NCollection
         {
             if (Count == _elements.Length)
             {
-                var tmp = ArrayPool<Node?>.Shared.Rent(_elements.Length << 1);
+                var tmp = ArrayProvider.GetOrCreate(_elements.Length << 1);
                 Array.Copy(_elements, tmp, Count);
-                ArrayPool<Node?>.Shared.Return(_elements, true);
+                ArrayProvider.Return(_elements);
                 _elements = tmp;
             }
 
@@ -352,18 +436,14 @@ namespace NCollection
         /// Creates a shallow copy of the <see cref="PriorityQueue{T}"/>.
         /// </summary>
         /// <returns>A shallow copy of the <see cref="PriorityQueue{T}"/>.</returns>
-        public PriorityQueue<T> Clone() => new PriorityQueue<T>(this);
+        public PriorityQueue<T> Clone() => new(this, Comparer, ArrayProvider);
         object ICloneable.Clone() => Clone();
-        
-        private class Node
-        {
-            public Node(T value)
-            {
-                Value = value;
-            }
 
-            public T Value { get; }
-        }
+        /// <summary>
+        /// The node.
+        /// </summary>
+        /// <param name="Value">The value.</param>
+        public record Node(T Value);
 
         private struct PriorityQueueEnumerator : IEnumerator<T>
         {

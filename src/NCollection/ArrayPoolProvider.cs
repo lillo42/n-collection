@@ -11,6 +11,11 @@ namespace NCollection
         private readonly ArrayPool<T> _pool;
 
         /// <summary>
+        /// The instance <see cref="ArrayPoolProvider{T}"/>.
+        /// </summary>
+        public static ArrayPoolProvider<T> Instance { get; } = new();
+
+        /// <summary>
         /// Initialize <see cref="ArrayPoolProvider{T}"/> with share instance of <see cref="ArrayPool{T}"/>.
         /// </summary>
         public ArrayPoolProvider()
