@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,27 +17,59 @@ namespace NCollection
         private int _head;
         private int _tail;
         private T[] _elements;
+        
+        /// <summary>
+        /// The <see cref="IArrayProvider{T}"/> instance.
+        /// </summary>
+        public IArrayProvider<T> ArrayProvider { get; }
 
+        /// <summary>
+        /// Initialize <see cref="ArrayQueue{T}"/>.
+        /// </summary>
+        public ArrayQueue()
+            : this(ArrayProvider<T>.Instance)
+        {
+            
+        }
+        
         /// <summary>
         /// Initialize <see cref="ArrayQueue{T}"/>
         /// </summary>
-        public ArrayQueue()
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="arrayProvider"/> is null.</exception>
+        public ArrayQueue(IArrayProvider<T> arrayProvider)
         {
-            _elements = ArrayPool<T>.Shared.Rent(16);
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            _elements = ArrayProvider.GetOrCreate(4);
         }
-        
+
         /// <summary>
         /// Initialize <see cref="ArrayQueue{T}"/>
         /// </summary>
         /// <param name="initialCapacity">The initial capacity of the array</param>
         /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
         public ArrayQueue(int initialCapacity)
+            : this(initialCapacity, ArrayProvider<T>.Instance)
+        {
+            
+        }
+
+        /// <summary>
+        /// Initialize <see cref="ArrayQueue{T}"/>
+        /// </summary>
+        /// <param name="initialCapacity">The initial capacity of the array</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="arrayProvider"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
+        public ArrayQueue(int initialCapacity, IArrayProvider<T> arrayProvider)
         {
             if (initialCapacity < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(initialCapacity), "The value should be greater or equal than 1");
             }
-            _elements = ArrayPool<T>.Shared.Rent(initialCapacity);
+            
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            _elements = ArrayProvider.GetOrCreate(initialCapacity);
         }
 
         /// <summary>
@@ -47,15 +78,30 @@ namespace NCollection
         /// <param name="source">The elements to be copy</param>
         /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is <see langword="null"/></exception>
         public ArrayQueue(IEnumerable<T> source)
+            : this(source, ArrayProvider<T>.Instance)
+        {
+            
+        }
+        
+        /// <summary>
+        /// Initialize <see cref="ArrayQueue{T}"/> copying the element in <see cref="IEnumerable{T}"/>
+        /// </summary>
+        /// <param name="source">The elements to be copy</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> or <paramref name="arrayProvider"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is <see langword="null"/></exception>
+        public ArrayQueue(IEnumerable<T> source, IArrayProvider<T> arrayProvider)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
+            
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
 
             if (source is ArrayQueue<T> queue)
             {
-                _elements = ArrayPool<T>.Shared.Rent(queue._elements.Length);
+                _elements = ArrayProvider.GetOrCreate(queue._elements.Length);
                 Array.Copy(queue._elements, _elements, queue.Count);
                 _head = queue._head;
                 _tail = queue._tail;
@@ -64,7 +110,7 @@ namespace NCollection
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
-                _elements = ArrayPool<T>.Shared.Rent(collection.Count);
+                _elements = ArrayProvider.GetOrCreate(collection.Count);
                 collection.CopyTo(_elements, 0);
                 _head = 0;
                 _tail = collection.Count;
@@ -73,7 +119,7 @@ namespace NCollection
             }
             else
             {
-                _elements = ArrayPool<T>.Shared.Rent(16);
+                _elements = ArrayProvider.GetOrCreate(4);
                 foreach (var item in source)
                 {
                     // ReSharper disable once VirtualMemberCallInConstructor
@@ -90,15 +136,32 @@ namespace NCollection
         /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is <see langword="null"/></exception>
         /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
         public ArrayQueue(int initialCapacity, IEnumerable<T> source)
+            : this(initialCapacity, source, ArrayProvider<T>.Instance)
+        {
+            
+        }
+        
+        
+        /// <summary>
+        /// Initialize <see cref="ArrayQueue{T}"/> copying the element in <see cref="IEnumerable{T}"/>
+        /// </summary>
+        /// <param name="source">The elements to be copy</param>
+        /// <param name="initialCapacity">The initial capacity of the array</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> or <paramref name="arrayProvider"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
+        public ArrayQueue(int initialCapacity, IEnumerable<T> source, IArrayProvider<T> arrayProvider)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            
             if (source is ArrayQueue<T> queue)
             {
-                _elements = ArrayPool<T>.Shared.Rent(queue._elements.Length);
+                _elements = ArrayProvider.GetOrCreate(queue._elements.Length);
                 Array.Copy(queue._elements, _elements, queue.Count);
                 _head = queue._head;
                 _tail = queue._tail;
@@ -107,14 +170,14 @@ namespace NCollection
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
-                _elements = ArrayPool<T>.Shared.Rent(collection.Count);
+                _elements = ArrayProvider.GetOrCreate(collection.Count);
                 collection.CopyTo(_elements, 0);
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = collection.Count;
             }
             else
             {
-                _elements = ArrayPool<T>.Shared.Rent(initialCapacity);
+                _elements = ArrayProvider.GetOrCreate(initialCapacity);
                 foreach (var item in source)
                 {
                     // ReSharper disable once VirtualMemberCallInConstructor
@@ -122,15 +185,13 @@ namespace NCollection
                 }
             }
         }
-        
-       
 
         /// <inheritdoc cref="IQueue{T}"/>
         public override bool TryEnqueue(T item)
         {
             if (Count == _elements.Length)
             {
-                var tmp = ArrayPool<T>.Shared.Rent(_elements.Length << 1);
+                var tmp = ArrayProvider.GetOrCreate(_elements.Length << 1);
                 
                 if (_tail > _head)
                 {
@@ -145,7 +206,7 @@ namespace NCollection
                 _head = 0;
                 _tail = Count;
                 
-                ArrayPool<T>.Shared.Return(_elements, true);
+                ArrayProvider.Return(_elements);
                 _elements = tmp;
             }
             
@@ -329,7 +390,7 @@ namespace NCollection
         /// Creates a new <see cref="ArrayQueue{T}"/> that is a copy of the current instance.
         /// </summary>
         /// <returns>A new <see cref="ArrayQueue{T}"/> that is a copy of this instance.</returns>
-        public ArrayQueue<T> Clone() => new ArrayQueue<T>(this);
+        public ArrayQueue<T> Clone() => new(this, ArrayProvider);
 
         object ICloneable.Clone() => Clone();
         

@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,61 +17,107 @@ namespace NCollection
         private T[] _elements;
 
         /// <summary>
-        /// The array that contains elements
+        /// The array that contains elements.
         /// </summary>
-        public T[] Elements => _elements;
+        public virtual T[] Elements => _elements;
+        
+        /// <summary>
+        /// The <see cref="IArrayProvider{T}"/> instance.
+        /// </summary>
+        public IArrayProvider<T> ArrayProvider { get; }
 
         /// <summary>
-        /// Initialize <see cref="ArrayList{T}"/>
+        /// Initialize <see cref="ArrayList{T}"/>.
         /// </summary>
         public ArrayList()
+            : this(ArrayProvider<T>.Instance)
         {
-            _elements = ArrayPool<T>.Shared.Rent(16);
+            
         }
         
         /// <summary>
         /// Initialize <see cref="ArrayList{T}"/>
         /// </summary>
-        /// <param name="initialCapacity">The initial capacity of the array</param>
-        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="arrayProvider"/> is null.</exception>
+        public ArrayList(IArrayProvider<T> arrayProvider)
+        {
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            _elements = ArrayProvider.GetOrCreate(4);
+        }
+        
+        /// <summary>
+        /// Initialize <see cref="ArrayList{T}"/>.
+        /// </summary>
+        /// <param name="initialCapacity">The initial capacity of the array.</param>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0.</exception>
         public ArrayList(int initialCapacity)
+            : this(initialCapacity, ArrayProvider<T>.Instance)
+        {
+            
+        }
+        
+        /// <summary>
+        /// Initialize <see cref="ArrayList{T}"/>.
+        /// </summary>
+        /// <param name="initialCapacity">The initial capacity of the array.</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="arrayProvider"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0.</exception>
+        public ArrayList(int initialCapacity, IArrayProvider<T> arrayProvider)
         {
             if (initialCapacity < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(initialCapacity), "The value should be greater or equal than 1");
             }
-            _elements = ArrayPool<T>.Shared.Rent(initialCapacity);
+            
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            _elements = ArrayProvider.GetOrCreate(initialCapacity);
         }
-
+        
         /// <summary>
         /// Initialize <see cref="ArrayList{T}"/> copying the element in <see cref="IEnumerable{T}"/>
         /// </summary>
         /// <param name="source">The elements to be copy</param>
         /// <exception cref="ArgumentNullException">if the  <paramref name="source"/> is <see langword="null"/></exception>
         public ArrayList(IEnumerable<T> source)
+            : this(source, ArrayProvider<T>.Instance)
+        {
+            
+        }
+
+        /// <summary>
+        /// Initialize <see cref="ArrayList{T}"/> copying the element in <see cref="IEnumerable{T}"/>
+        /// </summary>
+        /// <param name="source">The elements to be copy</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> or <paramref name="arrayProvider"/> is null.</exception>
+        public ArrayList(IEnumerable<T> source, IArrayProvider<T> arrayProvider)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
+            
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
 
             if (source is ArrayList<T> list)
             {
-                _elements = ArrayPool<T>.Shared.Rent(list._elements.Length);
+                _elements = ArrayProvider.GetOrCreate(list._elements.Length);
                 Array.Copy(list._elements, _elements, list.Count);
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = list.Count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
-                _elements = ArrayPool<T>.Shared.Rent(collection.Count);
+                _elements = ArrayProvider.GetOrCreate(collection.Count);
                 collection.CopyTo(_elements, 0);
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = collection.Count;
             }
             else
             {
-                _elements = ArrayPool<T>.Shared.Rent(16);
+                _elements = ArrayProvider.GetOrCreate(4);
                 foreach (var item in source)
                 {
                     // ReSharper disable once VirtualMemberCallInConstructor
@@ -82,13 +127,27 @@ namespace NCollection
         }
 
         /// <summary>
-        /// Initialize <see cref="ArrayList{T}"/> copying the element in <see cref="IEnumerable{T}"/>
+        /// Initialize <see cref="ArrayList{T}"/> copying the element in <see cref="IEnumerable{T}"/>.
         /// </summary>
-        /// <param name="source">The elements to be copy</param>
-        /// <param name="initialCapacity">The initial capacity of the array</param>
-        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is null </exception>
-        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
+        /// <param name="source">The elements to be copy.</param>
+        /// <param name="initialCapacity">The initial capacity of the array.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0.</exception>
         public ArrayList(int initialCapacity, IEnumerable<T> source)
+            : this(initialCapacity, source, ArrayProvider<T>.Instance)
+        {
+            
+        }
+
+        /// <summary>
+        /// Initialize <see cref="ArrayList{T}"/> copying the element in <see cref="IEnumerable{T}"/>.
+        /// </summary>
+        /// <param name="source">The elements to be copy.</param>
+        /// <param name="initialCapacity">The initial capacity of the array.</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> or <paramref name="arrayProvider"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0.</exception>
+        public ArrayList(int initialCapacity, IEnumerable<T> source, IArrayProvider<T> arrayProvider)
         {
             if (initialCapacity < 1)
             {
@@ -100,23 +159,25 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(source));
             }
 
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            
             if (source is ArrayList<T> list)
             {
-                _elements = ArrayPool<T>.Shared.Rent(list._elements.Length);
+                _elements = ArrayProvider.GetOrCreate(list._elements.Length);
                 Array.Copy(list._elements, _elements, list.Count);
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = list.Count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
-                _elements = ArrayPool<T>.Shared.Rent(collection.Count);
+                _elements = ArrayProvider.GetOrCreate(collection.Count);
                 collection.CopyTo(_elements, 0);
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = collection.Count;
             }
             else
             {
-                _elements = ArrayPool<T>.Shared.Rent(initialCapacity);
+                _elements = ArrayProvider.GetOrCreate(initialCapacity);
                 foreach (var item in source)
                 {
                     // ReSharper disable once VirtualMemberCallInConstructor
@@ -192,9 +253,9 @@ namespace NCollection
         {
             if (_elements.Length < min)
             {
-                var tmp = ArrayPool<T>.Shared.Rent(Count << 1);
+                var tmp = ArrayProvider.GetOrCreate(Count << 1);
                 Array.Copy(_elements, tmp, Count);
-                ArrayPool<T>.Shared.Return(_elements, true);
+                ArrayProvider.Return(_elements);
                 _elements = tmp;
             }
         }
@@ -307,7 +368,7 @@ namespace NCollection
         /// <inheritdoc />
         public override void Clear()
         {
-            Array.Clear(Elements, 0, Count);
+            Array.Clear(_elements, 0, Count);
             Count = 0;
         }
 
@@ -369,11 +430,8 @@ namespace NCollection
         /// Creates a new <see cref="ArrayList{T}"/> that is a copy of the current instance.
         /// </summary>
         /// <returns>A new <see cref="ArrayList{T}"/> that is a copy of this instance.</returns>
-        public ArrayList<T> Clone()
-        {
-            return new ArrayList<T>(this);
-        }
-        
+        public ArrayList<T> Clone() => new(this, ArrayProvider);
+
         object ICloneable.Clone() => Clone();
     }
 }

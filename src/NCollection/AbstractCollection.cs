@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace NCollection
 {
@@ -31,9 +30,9 @@ namespace NCollection
 
         /// <inheritdoc cref="ICollection{T}"/>
         public virtual bool IsEmpty => Count == 0;
-
-        #endregion
         
+        #endregion
+
         /// <inheritdoc cref="System.Collections.Generic.ICollection{T}"/>
         public abstract IEnumerator<T> GetEnumerator();
 

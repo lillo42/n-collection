@@ -1,5 +1,4 @@
 using System;
-using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,58 +17,105 @@ namespace NCollection
     {
         private T[] _elements;
         
+        /// <summary>
+        /// The <see cref="IArrayProvider{T}"/> instance.
+        /// </summary>
+        public IArrayProvider<T> ArrayProvider { get; }
+
 
         /// <summary>
-        /// Initialize <see cref="ArrayStack{T}"/>
+        /// Initialize <see cref="ArrayStack{T}"/>.
         /// </summary>
         public ArrayStack()
+            : this(ArrayProvider<T>.Instance)
         {
-            _elements = ArrayPool<T>.Shared.Rent(16);
+            
         }
         
         /// <summary>
-        /// Initialize <see cref="ArrayQueue{T}"/>
+        /// Initialize <see cref="ArrayStack{T}"/>.
         /// </summary>
-        /// <param name="initialCapacity">The initial capacity of the array</param>
-        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="arrayProvider"/> is null.</exception>
+        public ArrayStack(IArrayProvider<T> arrayProvider)
+        {
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            _elements = ArrayProvider.GetOrCreate(4);
+        }
+
+        /// <summary>
+        /// Initialize <see cref="ArrayQueue{T}"/>.
+        /// </summary>
+        /// <param name="initialCapacity">The initial capacity of the array.</param>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0.</exception>
         public ArrayStack(int initialCapacity)
+            : this(initialCapacity, ArrayProvider<T>.Instance)
+        {
+            
+        }
+        
+        /// <summary>
+        /// Initialize <see cref="ArrayQueue{T}"/>.
+        /// </summary>
+        /// <param name="initialCapacity">The initial capacity of the array.</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="arrayProvider"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0.</exception>
+        public ArrayStack(int initialCapacity, IArrayProvider<T> arrayProvider)
         {
             if (initialCapacity < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(initialCapacity), "The value should be greater or equal than 1");
             }
-            _elements = ArrayPool<T>.Shared.Rent(initialCapacity);
+
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            _elements = ArrayProvider.GetOrCreate(initialCapacity);
         }
 
+        
         /// <summary>
-        /// Initialize <see cref="ArrayStack{T}"/> copying the element in <see cref="IEnumerable{T}"/>
+        /// Initialize <see cref="ArrayStack{T}"/> copying the element in <see cref="IEnumerable{T}"/>.
         /// </summary>
-        /// <param name="source">The elements to be copy</param>
-        /// <exception cref="ArgumentNullException">if the  <paramref name="source"/> is <see langword="null"/></exception>
+        /// <param name="source">The elements to be copy.</param>
+        /// <exception cref="ArgumentNullException">if the  <paramref name="source"/> is <see langword="null"/>.</exception>
         public ArrayStack(IEnumerable<T> source)
+            : this(source, ArrayProvider<T>.Instance)
+        {
+            
+        }
+        
+        /// <summary>
+        /// Initialize <see cref="ArrayStack{T}"/> copying the element in <see cref="IEnumerable{T}"/>.
+        /// </summary>
+        /// <param name="source">The elements to be copy.</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> or <paramref name="arrayProvider"/> is null.</exception>
+        public ArrayStack(IEnumerable<T> source, IArrayProvider<T> arrayProvider)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+            
             if (source is ArrayStack<T> stack)
             {
-                _elements = ArrayPool<T>.Shared.Rent(stack._elements.Length);
+                _elements = ArrayProvider.GetOrCreate(stack._elements.Length);
                 Array.Copy(stack._elements, _elements, stack.Count);
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = stack.Count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
-                _elements = ArrayPool<T>.Shared.Rent(collection.Count);
+                _elements = ArrayProvider.GetOrCreate(collection.Count);
                 collection.CopyTo(_elements, 0);
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = collection.Count;
             }
             else
             {
-                _elements = ArrayPool<T>.Shared.Rent(16);
+                _elements = ArrayProvider.GetOrCreate(4);
                 foreach (var item in source)
                 {
                     // ReSharper disable once VirtualMemberCallInConstructor
@@ -79,13 +125,27 @@ namespace NCollection
         }
 
         /// <summary>
-        /// Initialize <see cref="ArrayStack{T}"/> copying the element in <see cref="IEnumerable{T}"/>
+        /// Initialize <see cref="ArrayStack{T}"/> copying the element in <see cref="IEnumerable{T}"/>.
         /// </summary>
-        /// <param name="source">The elements to be copy</param>
-        /// <param name="initialCapacity">The initial capacity of the array</param>
-        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is null </exception>
-        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
+        /// <param name="source">The elements to be copy.</param>
+        /// <param name="initialCapacity">The initial capacity of the array.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0.</exception>
         public ArrayStack(int initialCapacity, IEnumerable<T> source)
+            : this(initialCapacity, source, ArrayProvider<T>.Instance)
+        {
+            
+        }
+        
+        /// <summary>
+        /// Initialize <see cref="ArrayStack{T}"/> copying the element in <see cref="IEnumerable{T}"/>.
+        /// </summary>
+        /// <param name="source">The elements to be copy.</param>
+        /// <param name="initialCapacity">The initial capacity of the array.</param>
+        /// <param name="arrayProvider">The instance <see cref="IArrayProvider{T}"/>.</param>
+        /// <exception cref="ArgumentNullException">if the <paramref name="source"/> or <paramref name="arrayProvider"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0.</exception>
+        public ArrayStack(int initialCapacity, IEnumerable<T> source, IArrayProvider<T> arrayProvider)
         {
             if (initialCapacity < 1)
             {
@@ -97,23 +157,25 @@ namespace NCollection
                 throw new ArgumentNullException(nameof(source));
             }
 
+            ArrayProvider = arrayProvider ?? throw new ArgumentNullException(nameof(arrayProvider));
+
             if (source is ArrayStack<T> stack)
             {
-                _elements = ArrayPool<T>.Shared.Rent(stack._elements.Length);
+                _elements = ArrayProvider.GetOrCreate(stack._elements.Length);
                 Array.Copy(stack._elements, _elements, stack.Count);
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = stack.Count;
             }
             else if (source is System.Collections.Generic.ICollection<T> collection)
             {
-                _elements = ArrayPool<T>.Shared.Rent(collection.Count);
+                _elements = ArrayProvider.GetOrCreate(collection.Count);
                 collection.CopyTo(_elements, 0);
                 // ReSharper disable once VirtualMemberCallInConstructor
                 Count = collection.Count;
             }
             else
             {
-                _elements = ArrayPool<T>.Shared.Rent(initialCapacity);
+                _elements = ArrayProvider.GetOrCreate(initialCapacity);
                 foreach (var item in source)
                 {
                     // ReSharper disable once VirtualMemberCallInConstructor
@@ -188,9 +250,9 @@ namespace NCollection
         {
             if (Count == _elements.Length)
             {
-                var tmp = ArrayPool<T>.Shared.Rent(_elements.Length << 1);
+                var tmp = ArrayProvider.GetOrCreate(_elements.Length << 1);
                 Array.Copy(_elements, tmp, _elements.Length);
-                ArrayPool<T>.Shared.Return(_elements, true);
+                ArrayProvider.Return(_elements);
                 _elements = tmp;
             }
 
@@ -302,7 +364,7 @@ namespace NCollection
         /// Creates a new <see cref="ArrayStack{T}"/> that is a copy of the current instance.
         /// </summary>
         /// <returns>A new <see cref="ArrayStack{T}"/> that is a copy of this instance.</returns>
-        public ArrayStack<T> Clone() => new ArrayStack<T>(this);
+        public ArrayStack<T> Clone() => new(this, ArrayProvider);
 
         object ICloneable.Clone() => Clone();
     }
