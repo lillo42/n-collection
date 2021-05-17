@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using JetBrains.Annotations;
 
 namespace NCollection
 {
@@ -21,7 +20,6 @@ namespace NCollection
         /// <summary>
         /// The array that contains elements
         /// </summary>
-        [NotNull]
         public T[] Elements => _elements;
 
         /// <summary>
@@ -51,7 +49,7 @@ namespace NCollection
         /// </summary>
         /// <param name="source">The elements to be copy</param>
         /// <exception cref="ArgumentNullException">if the  <paramref name="source"/> is <see langword="null"/></exception>
-        public ArrayList([NotNull] IEnumerable<T> source)
+        public ArrayList(IEnumerable<T> source)
         {
             if (source == null)
             {
@@ -90,7 +88,7 @@ namespace NCollection
         /// <param name="initialCapacity">The initial capacity of the array</param>
         /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is null </exception>
         /// <exception cref="ArgumentOutOfRangeException">if <paramref name="initialCapacity"/> is less than 0</exception>
-        public ArrayList(int initialCapacity, [NotNull] IEnumerable<T> source)
+        public ArrayList(int initialCapacity, IEnumerable<T> source)
         {
             if (initialCapacity < 1)
             {

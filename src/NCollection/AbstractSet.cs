@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 
 namespace NCollection
 {
@@ -28,7 +27,7 @@ namespace NCollection
         /// </summary>
         /// <param name="comparer">The <see cref="IComparer{T}"/> that will be used to order this set.</param>
         /// <exception cref="ArgumentNullException">When <paramref name="comparer"/> is <see langword="null"/>.</exception>
-        protected AbstractSet([NotNull] IComparer<T> comparer)
+        protected AbstractSet(IComparer<T> comparer)
         {
             // ReSharper disable once VirtualMemberCallInConstructor
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
@@ -394,7 +393,7 @@ namespace NCollection
         /// </summary>
         /// <param name="other">The <see cref="IEnumerable{T}"/></param>
         /// <returns>Return if contains all elements</returns>
-        protected virtual bool ContainsAllElements([NotNull]IEnumerable<T> other)
+        protected virtual bool ContainsAllElements(IEnumerable<T> other)
         {
             foreach (var element in other)
             {

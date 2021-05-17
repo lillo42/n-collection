@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
-using JetBrains.Annotations;
 
 namespace NCollection
 {
@@ -71,7 +70,7 @@ namespace NCollection
         /// </summary>
         /// <param name="source">The elements to be copy</param>
         /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is null </exception>
-        public HashSet([NotNull] IEnumerable<T> source)
+        public HashSet(IEnumerable<T> source)
         {
             if (source == null)
             {
@@ -107,7 +106,7 @@ namespace NCollection
         /// <param name="source">The elements to be copy</param>
         /// /// <param name="comparer">The <see cref="IComparer{T}"/> that will be used to order this set.</param>
         /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is null </exception>
-        public HashSet([NotNull] IEnumerable<T> source, IComparer<T> comparer)
+        public HashSet(IEnumerable<T> source, IComparer<T> comparer)
             : this(comparer)
         {
             if (source == null)

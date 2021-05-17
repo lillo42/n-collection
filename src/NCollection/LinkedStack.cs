@@ -27,7 +27,7 @@ namespace NCollection
         /// </summary>
         /// <param name="source">The elements to be copy</param>
         /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is null </exception>
-        public LinkedStack([JetBrains.Annotations.NotNull] IEnumerable<T> source)
+        public LinkedStack(IEnumerable<T> source)
         {
             if (source == null)
             {

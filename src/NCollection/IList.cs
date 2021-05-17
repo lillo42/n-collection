@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using JetBrains.Annotations;
 
 namespace NCollection
 {
@@ -33,7 +32,7 @@ namespace NCollection
         /// <exception cref="ArgumentOutOfRangeException">if the index is out of range
         /// <paramref name="index"/> is less than 0 or  <paramref name="index"/> greater than <see cref="System.Collections.Generic.ICollection{T}.Count"/>
         /// </exception>
-        bool AddAll(int index, [NotNull]IEnumerable<T> source);
+        bool AddAll(int index, IEnumerable<T> source);
         
         
         /// <summary>Inserts an item to the <see cref="T:System.Collections.Generic.IList{T}" /> at the specified index.</summary>
@@ -67,6 +66,5 @@ namespace NCollection
         void System.Collections.Generic.IList<T>.Insert(int index, T item) => Add(index, item);
 
         #endregion
-        
     }
 }

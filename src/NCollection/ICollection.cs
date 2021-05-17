@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 
 namespace NCollection
 { 
@@ -38,7 +37,7 @@ namespace NCollection
         /// <param name="source">The <see cref="IEnumerable{T}"/> to be checked for containment in this collection</param>
         /// <returns>Return <see langword="true"/> if this if this collection contains all of the elements in the specified collection.</returns>
         /// <exception cref="ArgumentNullException">If the <paramref name="source"/> is <see langword="null"/></exception>
-        bool ContainsAll([NotNull] IEnumerable<T> source)
+        bool ContainsAll(IEnumerable<T> source)
         {
             if (source == null)
             {
@@ -67,7 +66,7 @@ namespace NCollection
         /// <param name="source">The <see cref="IEnumerable{T}"/> containing elements to be added to this collection</param>
         /// <returns> <see langword="true"/> if this collection changed as a result of the call</returns>
         /// <exception cref="ArgumentNullException">When <paramref name="source"/> is <see langword="true"/></exception>
-        bool AddAll([NotNull] IEnumerable<T> source)
+        bool AddAll(IEnumerable<T> source)
         {
             if (source == null)
             {
@@ -95,7 +94,7 @@ namespace NCollection
         /// <returns>true if this collection changed as a result of the call</returns>
         /// <exception cref="ArgumentNullException">When <paramref name="source"/> is <see langword="null"/></exception>
         /// <exception cref="InvalidOperationException">if the <see cref="RemoveAll"/> method is not supported by this collection or if could remove elemet</exception>
-        bool RemoveAll([NotNull] IEnumerable<T> source)
+        bool RemoveAll(IEnumerable<T> source)
         {
             if (source == null)
             {
@@ -154,7 +153,7 @@ namespace NCollection
         /// <param name="source">The <see cref="IEnumerable{T}"/> containing elements to be retained in this collection</param>
         /// <returns><see langword="true"/> if this collection changed as a result of the call</returns>
         /// <exception cref="ArgumentNullException">When <paramref name="source"/> is <see langword="null"/></exception>
-        bool RetainAll([NotNull] IEnumerable<T> source)
+        bool RetainAll(IEnumerable<T> source)
         {
             if (source == null)
             {

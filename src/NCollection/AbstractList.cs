@@ -64,11 +64,11 @@ namespace NCollection
             return modify;
         }
         
-        int IList.Add(object value)
+        int IList.Add(object? value)
         {
             try
             {
-                Add((T) value);
+                Add((T) value!);
             }
             catch (InvalidCastException)
             {
@@ -78,11 +78,11 @@ namespace NCollection
             return Count - 1;
         }
 
-        bool IList.Contains(object value)
+        bool IList.Contains(object? value)
         {
             try
             {
-                return Contains((T) value);
+                return Contains((T) value!);
             }
             catch (InvalidCastException)
             {
@@ -92,11 +92,11 @@ namespace NCollection
             return false;
         }
 
-        int IList.IndexOf(object value)
+        int IList.IndexOf(object? value)
         {
             try
             {
-                return IndexOf((T) value);
+                return IndexOf((T) value!);
             }
             catch (InvalidCastException)
             {
@@ -106,11 +106,11 @@ namespace NCollection
             return -1;
         }
 
-        void IList.Insert(int index, object value)
+        void IList.Insert(int index, object? value)
         {
             try
             {
-                Add(index, (T) value);
+                Add(index, (T) value!);
             }
             catch (InvalidCastException)
             {
@@ -118,11 +118,11 @@ namespace NCollection
             }
         }
 
-        void IList.Remove(object value)
+        void IList.Remove(object? value)
         {
             try
             {
-                Remove((T) value);
+                Remove((T) value!);
             }
             catch (InvalidCastException)
             {
@@ -130,7 +130,7 @@ namespace NCollection
             }
         }
         
-        object IList.this[int index]
+        object? IList.this[int index]
         {
             get => this[index]!;
             set

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using JetBrains.Annotations;
 
 namespace NCollection
 {
@@ -57,7 +56,7 @@ namespace NCollection
         /// </summary>
         /// <param name="source">The elements to be copy</param>
         /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is <see langword="null"/></exception>
-        public LinkedList([NotNull] IEnumerable<T> source)
+        public LinkedList(IEnumerable<T> source)
         {
             if (source == null)
             {

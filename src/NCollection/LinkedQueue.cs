@@ -30,7 +30,7 @@ namespace NCollection
         /// </summary>
         /// <param name="source">The elements to be copy</param>
         /// <exception cref="ArgumentNullException">if the <paramref name="source"/> is <see langword="null"/></exception>
-        public LinkedQueue([JetBrains.Annotations.NotNull] IEnumerable<T> source)
+        public LinkedQueue(IEnumerable<T> source)
         {
             if (source == null)
             {

@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using JetBrains.Annotations;
 
 namespace NCollection
 {
@@ -304,7 +303,7 @@ namespace NCollection
             return node.Color == Color.Red;
         }
 
-        internal static bool Insert(ref RedBlackNode? root, in T item, [NotNull] in IComparer<T> comparer, in InsertBehavior behavior) 
+        internal static bool Insert(ref RedBlackNode? root, in T item, in IComparer<T> comparer, in InsertBehavior behavior) 
         {
             if (comparer == null)
             {
@@ -433,7 +432,7 @@ namespace NCollection
         }
 
         // Balance the tree after deletion of a node
-        internal static bool Delete(ref RedBlackNode? root, RedBlackNode? node, in T value, [NotNull] in IComparer<T> comparer) 
+        internal static bool Delete(ref RedBlackNode? root, RedBlackNode? node, in T value, in IComparer<T> comparer) 
         {
             if (comparer == null)
             {

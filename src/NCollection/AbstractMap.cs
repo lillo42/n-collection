@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using JetBrains.Annotations;
 
 namespace NCollection
 {
@@ -25,14 +24,14 @@ namespace NCollection
         /// </summary>
         protected AbstractMap()
         {
-            
+            Comparer = EqualityComparer<TKey>.Default;
         }
         
         /// <summary>
         /// 
         /// </summary>
         /// <param name="comparer"></param>
-        protected AbstractMap([NotNull] IEqualityComparer<TKey> comparer)
+        protected AbstractMap(IEqualityComparer<TKey> comparer)
         { 
             Comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
 
